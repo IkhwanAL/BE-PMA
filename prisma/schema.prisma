@@ -1,0 +1,205 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+
+  id Int @id @default(autoincrement())
+
+  firstName String?
+
+  lastName String?
+
+  password String
+
+  email String @unique
+
+  username String @unique
+
+  isActive Boolean @default(false)
+
+  createdAt DateTime?
+
+  updatedAt DateTime?
+
+  Links Link[]
+
+  Projects Project[]
+
+  UserTeam UserTeam? // One To One 
+
+  UserTaskFromAssignee UserTaskFromAssignee[]
+
+  Activity Activity[]
+}
+
+model Link {
+  linkId Int @id @default(autoincrement())
+
+  userId Int
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  createdAt DateTime @default(now())
+
+  expiredAt DateTime @default(dbgenerated("DATE_ADD(NOW(), INTERVAL 1 DAY)"))
+
+  description String @db.VarChar(255)
+}
+
+model Project {
+  projectId Int @id @default(autoincrement())
+
+  projectName String @unique
+
+  projectDescription String
+
+  deadline DateTime
+
+  deadlineInString String
+
+  userOwner Int
+
+  createdAt DateTime?
+
+  updatedAt DateTime?
+
+  User User @relation(fields: [userOwner], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  UserTeam UserTeam[]
+
+  Activity Activity[]
+
+}
+
+model UserTeam {
+  teamId Int @id @default(autoincrement())
+
+  userId Int @unique
+
+  projectId Int
+
+  role Role @default(Tim)
+
+  addedAt DateTime? @default(now())
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  Project Project @relation(fields: [projectId], references: [projectId], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model ProjectActivity {
+  projectActivityId Int @id @default(autoincrement())
+
+  projectId Int
+
+  name String
+
+  critical Boolean
+
+  progress Float
+
+  position Position @default(To_Do)
+
+  timeToComplete Int
+
+  status Boolean @default(false)
+
+  description String
+
+  parent String
+
+  child String
+
+  createdAt DateTime?
+
+  updatedAt DateTime?
+
+  UserTaskFromAssignee UserTaskFromAssignee[]
+
+  SubDetailProjectActivity SubDetailProjectActivity[]
+
+  Activity Activity[]
+
+}
+
+model UserTaskFromAssignee {
+  idTask Int @id @default(autoincrement())
+
+  idUser Int
+
+  projectActivityId Int
+
+  createdAt DateTime @default(now())
+
+  User User @relation(fields: [idUser], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  ProjectAcvivity ProjectActivity @relation(fields: [projectActivityId], references: [projectActivityId], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model SubDetailProjectActivity {
+  subDetailProjectActivityId Int @id @default(autoincrement())
+
+  detailProyekId Int
+
+  description String
+
+  isComplete Boolean
+
+  createdAt DateTime?
+
+  updatedAt DateTime?
+
+  ProjectActivity ProjectActivity @relation(fields: [detailProyekId], references: [projectActivityId], onDelete: Cascade, onUpdate: Cascade)
+
+  Activity Activity[]
+}
+
+model Activity {
+  id Int @id @default(autoincrement())
+
+  activity String
+
+  userId Int
+
+  projectId Int
+
+  projectActivityId Int
+
+  subDetailProjectActivityId Int
+
+  User User @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  Project Project @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction)
+
+  ProjectActivity ProjectActivity @relation(fields: [projectActivityId], references: [projectActivityId], onDelete: NoAction, onUpdate: NoAction)
+
+  SubDetailProjectActivity SubDetailProjectActivity @relation(fields: [subDetailProjectActivityId], references: [subDetailProjectActivityId], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime @default(dbgenerated("DATE_ADD(NOW(), INTERVAL 1 DAY)"))
+}
+
+enum Role {
+  Proyek_Manager
+  Tim
+}
+
+enum Position {
+  To_Do
+  Doing
+  Review
+  Done
+}
