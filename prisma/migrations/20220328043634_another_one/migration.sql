@@ -1,0 +1,11 @@
+-- AlterTable
+ALTER TABLE `link` MODIFY `expiredAt` DATETIME(3) NOT NULL DEFAULT DATE_ADD(NOW(), INTERVAL 1 DAY);
+
+-- AlterTable
+ALTER TABLE `session` MODIFY `expiresAt` DATETIME(3) NOT NULL DEFAULT DATE_ADD(NOW(), INTERVAL 1 DAY);
+
+-- AlterTable
+ALTER TABLE `user` MODIFY `email` VARCHAR(191) NULL,
+    MODIFY `isActive` BOOLEAN NULL DEFAULT false,
+    MODIFY `password` VARCHAR(191) NULL,
+    MODIFY `username` VARCHAR(191) NULL;

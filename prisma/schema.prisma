@@ -18,13 +18,13 @@ model User {
 
   lastName String?
 
-  password String
+  password String?
 
-  email String @unique
+  email String? @unique
 
-  username String @unique
+  username String? @unique
 
-  isActive Boolean @default(false)
+  isActive Boolean? @default(false)
 
   createdAt DateTime?
 

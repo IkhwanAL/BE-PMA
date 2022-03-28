@@ -25,20 +25,36 @@ class UserDao {
     }
 
     async addUser(resource: CreateUserDto) {
+        const { link, ...user } = resource;
         return MysqlPrisma.user.create({
             data: {
-                ...resource,
+                ...user,
                 createdAt: new Date(),
+                updatedAt: new Date(),
+                Links: {
+                    create: [{ description: link }],
+                },
+            },
+        });
+    }
+
+    async patchUserById(id: number, resource: PatchUserDto) {
+        return MysqlPrisma.user.update({
+            where: {
+                id: id,
+            },
+            data: {
+                ...resource,
                 updatedAt: new Date(),
             },
         });
     }
 
-    async patchUserById(resource: PatchUserDto) {
-        return MysqlPrisma.user.update({
-            data: {
-                ...resource,
-                updatedAt: new Date(),
+    async getUserByEmail(email: string) {
+        return MysqlPrisma.user.findFirst({
+            where: {
+                email: email,
+                isActive: true,
             },
         });
     }

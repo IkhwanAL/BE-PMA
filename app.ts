@@ -70,6 +70,8 @@ server.listen(port, () => {
         route.configureRoutes();
         debugLog(`Routes configured for ${route.getName()}`);
     });
+
+    console.log(runningMessage);
 });
 
 // app.get('*', (req: express.Request, res: express.Response) => {

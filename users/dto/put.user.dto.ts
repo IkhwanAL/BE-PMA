@@ -1,8 +1,8 @@
 export interface PutUserDto {
-    id: string;
+    id?: number;
     email: string;
+    username: string;
     password: string;
-    firstName: string;
-    lastName: string;
-    permissionLevel: number;
+    firstName?: string;
+    lastName?: string;
 }

@@ -19,23 +19,23 @@ class UsersMiddleware {
             next();
         } else {
             res.status(400).send({
-                error: `Missing required fields email and password`,
+                error: `Missing required fields email and password and username`,
             });
         }
     }
 
-    // async validateSameEmailDoesntExist(
-    //     req: express.Request,
-    //     res: express.Response,
-    //     next: express.NextFunction
-    // ) {
-    //     const user = await userService.getUserByEmail(req.body.email);
-    //     if (user) {
-    //         res.status(400).send({ error: `User email already exists` });
-    //     } else {
-    //         next();
-    //     }
-    // }
+    async validateSameEmailDoesntExist(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        const user = await userService.readByEmail(req.body.email);
+        if (user) {
+            res.status(400).send({ error: `User email already exists` });
+        } else {
+            next();
+        }
+    }
 
     // async validateSameEmailBelongToSameUser(
     //     req: express.Request,
@@ -87,6 +87,20 @@ class UsersMiddleware {
     ) {
         req.body.id = req.params.userId;
         next();
+    }
+
+    async validRequriedUserLoginFieldss(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        if (req.body && req.body.email && req.body.password) {
+            next();
+        } else {
+            res.status(400).send({
+                error: `Missing required fields email and password`,
+            });
+        }
     }
 }
 

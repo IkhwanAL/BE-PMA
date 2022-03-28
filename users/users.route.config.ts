@@ -10,11 +10,16 @@ export class UserRoutes extends CommonRoutesConfig {
 
     configureRoutes(): express.Application {
         this.app
+            .route('/login')
+            .post(usersMiddleware.validRequriedUserLoginFieldss);
+
+        this.app.route('/verify').get(usersController.verify);
+
+        this.app
             .route('/users')
-            //     .get(usersController.listUsers)
             .post(
                 usersMiddleware.validateRequiredUserBodyFields,
-                // usersMiddleware.validateSameEmailDoesntExist,
+                usersMiddleware.validateSameEmailDoesntExist,
                 usersController.createUser
             );
 
