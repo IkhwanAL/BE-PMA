@@ -25,8 +25,8 @@ class UsersService implements CRUD {
         return UsersDao.getUsersById(id);
     }
 
-    async readByEmail(email: string) {
-        return UsersDao.getUserByEmail(email);
+    async readByEmail(email: string, isActive: boolean = false) {
+        return UsersDao.getUserByEmail(email, isActive);
     }
 
     // async putById(id: string, resource: PutUserDto) {
@@ -36,6 +36,10 @@ class UsersService implements CRUD {
     // async getUserByEmail(email: string) {
     //     return UsersDao.getUserByEmail(email);
     // }
+
+    async activating(email: string) {
+        return UsersDao.patchActiveUser(email);
+    }
 }
 
 export default new UsersService();

@@ -10,6 +10,7 @@
     "express": "^4.17.3",
     "express-session": "^1.17.2",
     "express-winston": "^4.2.0",
+    "moment": "^2.29.1",
     "mysql2": "^2.3.3",
     "nodemailer": "^6.7.3",
     "nodemailer-express-handlebars": "^5.0.0",
@@ -41,7 +42,8 @@
     "start": "tsc && node --unhandled-rejections=strict ./dist/app.js",
     "debug": "cross-env SET DEBUG=* && npm run start",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "generate": "npx prisma generate && yarn install"
+    "generate": "npx prisma generate && yarn install",
+    "dev": "nodemon --watch src/ --exec \"yarn run start\" --verbose -e ts"
   },
   "author": "IkhwanAl <ikhwanal235@gmail.com>"
 }

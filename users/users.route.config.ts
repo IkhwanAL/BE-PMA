@@ -11,7 +11,10 @@ export class UserRoutes extends CommonRoutesConfig {
     configureRoutes(): express.Application {
         this.app
             .route('/login')
-            .post(usersMiddleware.validRequriedUserLoginFieldss);
+            .post(
+                usersMiddleware.validRequriedUserLoginFieldss,
+                usersController.login
+            );
 
         this.app.route('/verify').get(usersController.verify);
 

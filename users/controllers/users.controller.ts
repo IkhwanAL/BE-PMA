@@ -4,6 +4,7 @@ import express from 'express';
 // we import our newly created user services
 import usersService from '../services/user.service';
 import { EmailNodeMailer } from '../../common/email/email.config.service';
+import { EncryptService } from '../../common/services/encrypt.service.config';
 
 // we import the argon2 library for password hashing
 import argon2 from 'argon2';
@@ -12,12 +13,18 @@ import CryptoJS from 'crypto-js';
 // we use debug with a custom context as described in Part 1
 import debug from 'debug';
 import 'dotenv/config';
+
 import { EncryptionTypes } from '../../common/types/Encription.types';
-import userService from '../services/user.service';
+import { SuccessType } from '../../common/types/success.types';
+import { FailedTypes } from '../../common/types/failed.types';
+
+import moment from 'moment';
 
 const log: debug.IDebugger = debug('app:users-controller');
 
 class UsersController {
+    // private crypt = new EncryptService();
+
     async getUserById(req: express.Request, res: express.Response) {
         const user = await usersService.readById(parseInt(req.body.id));
         res.status(200).send(user);
@@ -25,13 +32,15 @@ class UsersController {
 
     async createUser(req: express.Request, res: express.Response) {
         req.body.password = await argon2.hash(req.body.password);
-        const encrypt = CryptoJS.AES.encrypt(
-            JSON.stringify({ email: req.body.email }),
-            process.env.SECRET_KEY
-        );
+
+        const crypt = new EncryptService();
+
+        const encrypt = crypt.encrypt({ email: req.body.email });
 
         req.body.link = `http://${req.headers.host}/verify?q=${encrypt}`;
-        const { id, email, username } = await usersService.create(req.body);
+        const { id, email, username, Links } = await usersService.create(
+            req.body
+        );
 
         const transporter = new EmailNodeMailer();
 
@@ -43,6 +52,7 @@ class UsersController {
             context: {
                 username: username,
                 link: req.body.link,
+                expired: moment(Links[0].expiredAt).format('LLLL'),
             },
         });
 
@@ -79,31 +89,64 @@ class UsersController {
     //     }
 
     async login(req: express.Request, res: express.Response) {
-        const { password } = await usersService.readByEmail(req.body.email);
+        const { password, ...rest } = await usersService.readByEmail(
+            req.body.email,
+            true
+        );
 
         const verify = await argon2.verify(password, req.body.password);
 
         if (verify) {
-            res.status(200).send();
+            return res.status(200).send({
+                sukses: true,
+                message: 'Sukses Login',
+                status: 200,
+                data: rest,
+            } as SuccessType);
         } else {
-            res.status(401).send({
-                error: 'User Or Password Did not Exists',
-            });
+            return res.status(401).send({
+                error: 'User Or Passwird is Invalid Or User is Not Verifying',
+                message: 'User Or Password Not Found',
+                status: 401,
+                sukses: false,
+            } as FailedTypes);
         }
     }
 
     async verify(req: express.Request, res: express.Response) {
-        const { q } = req.query;
+        const query = req.query;
 
-        const { email } = JSON.parse(
-            CryptoJS.AES.decrypt(q.toString(), process.env.SECRET_KEY).toString(
-                CryptoJS.enc.Utf8
-            )
-        ) as EncryptionTypes;
+        const crypt = new EncryptService();
 
-        const user = await userService.readByEmail(email);
+        const decrypt = crypt.decrypt(query.q.toString()) as EncryptionTypes;
+
+        const user = await usersService.readByEmail(decrypt.email);
 
         if (user) {
+            const result = await usersService.activating(decrypt.email);
+
+            if (result) {
+                return res.status(200).send({
+                    data: {},
+                    message: 'Sukses Memverifikasi User',
+                    sukses: true,
+                    status: 200,
+                } as SuccessType);
+            }
+
+            return res.status(500).send({
+                message: 'Mohon Untuk Di Coba untuk beberapa saat',
+                error: 'Verification',
+                status: 500,
+                sukses: false,
+            } as FailedTypes);
+        } else {
+            return res.status(404).send({
+                error: 'NotFound',
+                message: `User Dengan Email ${decrypt.email} Tidak Ada`,
+                status: 404,
+                sukses: false,
+            } as FailedTypes);
         }
     }
 }

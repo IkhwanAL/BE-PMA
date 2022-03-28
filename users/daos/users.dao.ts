@@ -35,6 +35,9 @@ class UserDao {
                     create: [{ description: link }],
                 },
             },
+            include: {
+                Links: true,
+            },
         });
     }
 
@@ -50,10 +53,21 @@ class UserDao {
         });
     }
 
-    async getUserByEmail(email: string) {
+    async getUserByEmail(email: string, isActive: boolean) {
         return MysqlPrisma.user.findFirst({
             where: {
                 email: email,
+                isActive: isActive,
+            },
+        });
+    }
+
+    async patchActiveUser(email: string) {
+        return MysqlPrisma.user.update({
+            where: {
+                email: email,
+            },
+            data: {
                 isActive: true,
             },
         });
