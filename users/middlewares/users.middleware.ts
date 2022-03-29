@@ -37,33 +37,33 @@ class UsersMiddleware {
         }
     }
 
-    // async validateSameEmailBelongToSameUser(
-    //     req: express.Request,
-    //     res: express.Response,
-    //     next: express.NextFunction
-    // ) {
-    //     const user = await userService.getUserByEmail(req.body.email);
-    //     if (user && user.id === req.params.userId) {
-    //         next();
-    //     } else {
-    //         res.status(400).send({ error: `Invalid email` });
-    //     }
-    // }
+    async validateSameEmailBelongToSameUser(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        const user = await userService.readByEmail(req.body.email);
+        if (user && user.id === parseInt(req.params.userId)) {
+            next();
+        } else {
+            res.status(400).send({ error: `Invalid email` });
+        }
+    }
 
     // Here we need to use an arrow function to bind `this` correctly
-    // validatePatchEmail = async (
-    //     req: express.Request,
-    //     res: express.Response,
-    //     next: express.NextFunction
-    // ) => {
-    //     if (req.body.email) {
-    //         log('Validating email', req.body.email);
+    validatePatchEmail = async (
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) => {
+        if (req.body.email) {
+            log('Validating email', req.body.email);
 
-    //         this.validateSameEmailBelongToSameUser(req, res, next);
-    //     } else {
-    //         next();
-    //     }
-    // };
+            this.validateSameEmailBelongToSameUser(req, res, next);
+        } else {
+            next();
+        }
+    };
 
     // async validateUserExists(
     //     req: express.Request,

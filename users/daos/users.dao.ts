@@ -42,6 +42,7 @@ class UserDao {
     }
 
     async patchUserById(id: number, resource: PatchUserDto) {
+        console.log(resource);
         return MysqlPrisma.user.update({
             where: {
                 id: id,

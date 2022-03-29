@@ -40,10 +40,10 @@ export class UserRoutes extends CommonRoutesConfig {
         //     usersController.put,
         // ]);
 
-        // this.app.patch(`/users/:userId`, [
-        //     usersMiddleware.validatePatchEmail,
-        //     usersController.patch,
-        // ]);
+        this.app.patch(`/users/:userId`, [
+            usersMiddleware.validatePatchEmail,
+            usersController.patchU,
+        ]);
 
         return this.app;
     }
