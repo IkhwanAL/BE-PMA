@@ -9,13 +9,9 @@ class UsersService implements CRUD {
         return UsersDao.addUser(resource);
     }
 
-    // async deleteById(id: string) {
-    //     return UsersDao.removeUserById(id);
-    // }
-
-    // async list(limit: number, page: number) {
-    //     return UsersDao.getUser();
-    // }
+    async deleteById(id: number) {
+        return UsersDao.removeUserById(id);
+    }
 
     async patchById(id: number, resource: PatchUserDto) {
         return UsersDao.patchUserById(id, resource);
@@ -29,16 +25,12 @@ class UsersService implements CRUD {
         return UsersDao.getUserByEmail(email, isActive);
     }
 
-    // async putById(id: string, resource: PutUserDto) {
-    //     return UsersDao.putUserById(id, resource);
-    // }
-
-    // async getUserByEmail(email: string) {
-    //     return UsersDao.getUserByEmail(email);
-    // }
-
     async activating(email: string) {
         return UsersDao.patchActiveUser(email);
+    }
+
+    async changePassword(id: number, password: string) {
+        return UsersDao.changePassById(id, password);
     }
 }
 

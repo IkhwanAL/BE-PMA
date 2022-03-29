@@ -43,7 +43,7 @@ class UsersMiddleware {
         }
     }
 
-    async Authentiocation(
+    async Authentication(
         req: express.Request,
         res: express.Response,
         next: express.NextFunction
@@ -65,14 +65,15 @@ class UsersMiddleware {
             const user = await usersDao.getUsersById(id);
 
             if (user) {
-                req['auth']['id'] = id;
-                req['auth']['email'] = user.email;
+                req.body.id = user.id;
+                req.body.email = user.email;
 
                 next();
             } else {
                 return HttpResponse.Unauthorized(res);
             }
         } catch (error) {
+            console.log(error);
             return HttpResponse.Unauthorized(res);
         }
     }
@@ -111,27 +112,25 @@ class UsersMiddleware {
         }
     };
 
-    // async validateUserExists(
-    //     req: express.Request,
-    //     res: express.Response,
-    //     next: express.NextFunction
-    // ) {
-    //     const user = await userService.readById(req.params.userId);
-    //     if (user) {
-    //         next();
-    //     } else {
-    //         res.status(404).send({
-    //             error: `User ${req.params.userId} not found`,
-    //         });
-    //     }
-    // }
+    async validateUserExists(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        const user = await userService.readById(req.body.id);
+        if (user) {
+            next();
+        } else {
+            return HttpResponse.NotFound(res);
+        }
+    }
 
     async extractUserId(
         req: express.Request,
         res: express.Response,
         next: express.NextFunction
     ) {
-        req.body.id = req.params.userId;
+        req.body.id = parseInt(req.params.userId);
         next();
     }
 

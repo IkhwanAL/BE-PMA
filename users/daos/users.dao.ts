@@ -42,7 +42,6 @@ class UserDao {
     }
 
     async patchUserById(id: number, resource: PatchUserDto) {
-        console.log(resource);
         return MysqlPrisma.user.update({
             where: {
                 id: id,
@@ -70,6 +69,26 @@ class UserDao {
             },
             data: {
                 isActive: true,
+            },
+        });
+    }
+
+    async removeUserById(id: number) {
+        return MysqlPrisma.user.delete({
+            where: {
+                id: id,
+            },
+        });
+    }
+
+    async changePassById(id: number, password: string) {
+        return MysqlPrisma.user.update({
+            where: {
+                id: id,
+            },
+            data: {
+                password: password,
+                updatedAt: new Date(),
             },
         });
     }

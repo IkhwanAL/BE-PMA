@@ -29,7 +29,7 @@ class UsersController {
 
     async getUserById(req: express.Request, res: express.Response) {
         const user = await usersService.readById(parseInt(req.body.id));
-        res.status(200).send(user);
+        return res.status(200).send(user);
     }
 
     async createUser(req: express.Request, res: express.Response) {
@@ -77,7 +77,7 @@ class UsersController {
                 'lastName',
                 'phoneNumber',
             ];
-            const { id, ...restOfBody } = req.body;
+            const { id, email, ...restOfBody } = req.body;
 
             for (const key in restOfBody) {
                 const allow = allowedPatch.findIndex((x) => x === key);
@@ -87,13 +87,26 @@ class UsersController {
             }
 
             await userService.patchById(id, restOfBody);
+
+            return HttpResponse.Created(res, {});
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
 
     async refreshLink(req: express.Request, res: express.Response) {}
+
+    async changePassword(req: express.Request, res: express.Response) {
+        try {
+            const password = await argon2.hash(req.body.password);
+
+            await userService.changePassword(req.body.id, password);
+
+            return HttpResponse.NoContent(res);
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    }
 
     //     async put(req: express.Request, res: express.Response) {
     //         req.body.password = await argon2.hash(req.body.password);
@@ -101,10 +114,15 @@ class UsersController {
     //         res.status(204).send();
     //     }
 
-    //     async removeUser(req: express.Request, res: express.Response) {
-    //         log(await usersService.deleteById(req.body.id));
-    //         res.status(204).send();
-    //     }
+    async removeUser(req: express.Request, res: express.Response) {
+        try {
+            await userService.deleteById(req.body.id);
+
+            return HttpResponse.NoContent(res);
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    }
 
     async login(req: express.Request, res: express.Response) {
         const { password, ...rest } = await usersService.readByEmail(
@@ -127,10 +145,9 @@ class UsersController {
             const now = new Date();
             now.setTime(now.getTime() + 5 * 3600 * 1000);
 
-            res.cookie('q', refreshToken, {
+            res.cookie('asd', refreshToken, {
                 expires: now,
                 httpOnly: true,
-                secure: true,
             });
 
             if (!req.session['user']) {
@@ -141,7 +158,7 @@ class UsersController {
                 sukses: true,
                 message: 'Sukses Login',
                 status: 200,
-                data: { ...rest, token: accessToken },
+                data: { token: accessToken },
             } as SuccessType);
         } else {
             return res.status(401).send({

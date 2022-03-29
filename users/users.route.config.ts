@@ -17,7 +17,9 @@ export class UserRoutes extends CommonRoutesConfig {
             );
 
         this.app.route('/verify').get(usersController.verify);
+        // this.app.route('/refreshLink');
 
+        // Register
         this.app
             .route('/users')
             .post(
@@ -28,11 +30,21 @@ export class UserRoutes extends CommonRoutesConfig {
 
         this.app.param('userId', usersMiddleware.extractUserId);
 
+        //
         this.app
-            .route('/users/:userId')
-            // .all(usersMiddleware.validateUserExists)
-            .get(usersController.getUserById);
-        // .delete(usersController.removeUser);
+            .route('/users/')
+            .all(
+                usersMiddleware.Authentication,
+                usersMiddleware.validateUserExists
+            )
+            .get(usersController.getUserById)
+            .delete(usersController.removeUser);
+
+        this.app.patch('/users/changeps', [
+            usersMiddleware.Authentication,
+            usersMiddleware.validateUserExists,
+            usersController.changePassword,
+        ]);
 
         // this.app.put(`/users/:userId`, [
         //     usersMiddleware.validateRequiredUserBodyFields,
@@ -40,8 +52,10 @@ export class UserRoutes extends CommonRoutesConfig {
         //     usersController.put,
         // ]);
 
-        this.app.patch(`/users/:userId`, [
-            usersMiddleware.validatePatchEmail,
+        this.app.patch(`/users`, [
+            // usersMiddleware.validatePatchEmail,
+            usersMiddleware.Authentication,
+            usersMiddleware.validateUserExists,
             usersController.patchUser,
         ]);
 
