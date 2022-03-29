@@ -8,7 +8,6 @@ import { EncryptService } from '../../common/services/encrypt.service.config';
 
 // we import the argon2 library for password hashing
 import argon2 from 'argon2';
-import CryptoJS from 'crypto-js';
 
 // we use debug with a custom context as described in Part 1
 import debug from 'debug';
@@ -19,6 +18,9 @@ import { SuccessType } from '../../common/types/success.types';
 import { FailedTypes } from '../../common/types/failed.types';
 
 import moment from 'moment';
+import { HttpResponse } from '../../common/services/http.service.config';
+import userService from '../services/user.service';
+import { JwtService } from '../../common/services/jwt.service.config';
 
 const log: debug.IDebugger = debug('app:users-controller');
 
@@ -67,15 +69,31 @@ class UsersController {
         });
     }
 
-    async refreshLink(req: express.Request, res: express.Response) {}
+    async patchUser(req: express.Request, res: express.Response) {
+        try {
+            const allowedPatch = [
+                'username',
+                'firstName',
+                'lastName',
+                'phoneNumber',
+            ];
+            const { id, ...restOfBody } = req.body;
 
-    // async patch(req: express.Request, res: express.Response) {
-    //     if (req.body.password) {
-    //         req.body.password = await argon2.hash(req.body.password);
-    //     }
-    //     log(await usersService.patchById(req.body.id, req.body));
-    //     res.status(204).send();
-    // }
+            for (const key in restOfBody) {
+                const allow = allowedPatch.findIndex((x) => x === key);
+                if (allow == -1) {
+                    return HttpResponse.BadRequest(res);
+                }
+            }
+
+            await userService.patchById(id, restOfBody);
+        } catch (error) {
+            console.log(error);
+            return HttpResponse.InternalServerError(res);
+        }
+    }
+
+    async refreshLink(req: express.Request, res: express.Response) {}
 
     //     async put(req: express.Request, res: express.Response) {
     //         req.body.password = await argon2.hash(req.body.password);
@@ -96,16 +114,38 @@ class UsersController {
 
         const verify = await argon2.verify(password, req.body.password);
 
+        const token = new JwtService();
+
+        const accessToken = token.encryptToken({ id: rest.id }, 1 * 60 * 60);
+
+        const refreshToken = token.encryptToken(
+            { id: rest.id, email: rest.email },
+            5 * 60 * 60
+        );
+
         if (verify) {
+            const now = new Date();
+            now.setTime(now.getTime() + 5 * 3600 * 1000);
+
+            res.cookie('q', refreshToken, {
+                expires: now,
+                httpOnly: true,
+                secure: true,
+            });
+
+            if (!req.session['user']) {
+                req.session['user'] = { id: rest.id, email: rest.email };
+            }
+
             return res.status(200).send({
                 sukses: true,
                 message: 'Sukses Login',
                 status: 200,
-                data: rest,
+                data: { ...rest, token: accessToken },
             } as SuccessType);
         } else {
             return res.status(401).send({
-                error: 'User Or Passwird is Invalid Or User is Not Verifying',
+                error: 'User Or Password is Invalid Or User is Not Verifying',
                 message: 'User Or Password Not Found',
                 status: 401,
                 sukses: false,
@@ -148,6 +188,13 @@ class UsersController {
                 sukses: false,
             } as FailedTypes);
         }
+    }
+
+    async logout(req: express.Request, res: express.Response) {
+        res.clearCookie('q');
+        delete req.session['user'];
+
+        return HttpResponse.NoContent(res);
     }
 }
 

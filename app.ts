@@ -21,6 +21,24 @@ const Routes: Array<CommonRoutesConfig> = [];
 
 const debugLog: debug.IDebugger = debug('app');
 
+app.use(
+    expressSession({
+        cookie: {
+            maxAge: 7 * 24 * 60 * 60 * 1000, // ms
+            httpOnly: true,
+            secure: true,
+        },
+        secret: 'S3C43T_G3N50KYU',
+        resave: true,
+        saveUninitialized: true,
+        store: new PrismaSessionStore(MysqlPrisma, {
+            checkPeriod: 2 * 60 * 1000, //ms
+            dbRecordIdIsSessionId: true,
+            dbRecordIdFunction: undefined,
+        }),
+    })
+);
+
 app.use(express.json());
 
 app.use(cors());
@@ -39,22 +57,6 @@ if (!process.env.DEBUG) {
 }
 
 app.use(expressWinston.logger(loggerOptions));
-
-app.use(
-    expressSession({
-        cookie: {
-            maxAge: 7 * 24 * 60 * 60 * 1000, // ms
-        },
-        secret: 'S3C43T_G3N50KYU',
-        resave: true,
-        saveUninitialized: true,
-        store: new PrismaSessionStore(MysqlPrisma, {
-            checkPeriod: 2 * 60 * 1000, //ms
-            dbRecordIdIsSessionId: true,
-            dbRecordIdFunction: undefined,
-        }),
-    })
-);
 
 Routes.push(new UserRoutes(app));
 

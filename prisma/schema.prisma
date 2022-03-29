@@ -20,6 +20,8 @@ model User {
 
   password String?
 
+  phoneNumber String?
+
   email String? @unique
 
   username String? @unique
