@@ -16,10 +16,11 @@ class UserDao {
         return MysqlPrisma.user.findMany();
     }
 
-    async getUsersById(id: number) {
+    async getUsersById(id: number, isActive = true) {
         return MysqlPrisma.user.findFirst({
             where: {
                 id: id,
+                isActive: isActive,
             },
         });
     }
@@ -104,6 +105,7 @@ class UserDao {
                 User: {
                     select: {
                         username: true,
+                        email: true,
                     },
                 },
             },

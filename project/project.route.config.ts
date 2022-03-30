@@ -18,11 +18,12 @@ export class ProjectRoute extends CommonRoutesConfig {
         this.app.param('idProject', projectMiddleware.extractidProject);
 
         this.app
-            .route('project/:idProject')
+            .route('/project/:idProject')
             .all(
                 projectMiddleware.Authentication,
                 projectMiddleware.checkProject
             )
+            .get(projectController.getOneProject)
             .delete(projectController.deleteProject)
             .patch(projectController.patchProject);
 

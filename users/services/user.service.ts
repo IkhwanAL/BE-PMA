@@ -19,8 +19,8 @@ class UsersService implements CRUD {
         return UsersDao.patchUserById(id, resource);
     }
 
-    async readById(id: number) {
-        return UsersDao.getUsersById(id);
+    async readById(id: number, isActive = true) {
+        return UsersDao.getUsersById(id, isActive);
     }
 
     async readByEmail(email: string, isActive: boolean = false) {

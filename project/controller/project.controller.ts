@@ -68,7 +68,26 @@ class ProjectController {
                 idProject,
                 rest
             );
+
+            return HttpResponse.Created(res, {
+                projectName: project.projectName,
+                projectDescription: project.projectDescription,
+            });
         } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    }
+
+    async getOneProject(req: Request, res: Response) {
+        try {
+            const project = await projectService.getOne(
+                req.body.id,
+                req.body.idProject
+            );
+
+            return HttpResponse.Ok(res, project);
+        } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }

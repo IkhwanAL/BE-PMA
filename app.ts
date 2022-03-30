@@ -10,6 +10,7 @@ import cors from 'cors';
 import { CommonRoutesConfig } from './common/common.route.config';
 import { UserRoutes } from './users/users.route.config';
 import debug from 'debug';
+import { ProjectRoute } from './project/project.route.config';
 
 const app = express();
 
@@ -59,6 +60,7 @@ if (!process.env.DEBUG) {
 app.use(expressWinston.logger(loggerOptions));
 
 Routes.push(new UserRoutes(app));
+Routes.push(new ProjectRoute(app));
 
 const runningMessage = `Server running at http://localhost:${port}`;
 
@@ -70,6 +72,7 @@ server.listen(port, () => {
     debugLog(`Server running at http://localhost:${port}`);
     Routes.forEach((route: CommonRoutesConfig) => {
         route.configureRoutes();
+
         debugLog(`Routes configured for ${route.getName()}`);
     });
 

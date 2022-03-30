@@ -39,7 +39,7 @@ class UsersController {
 
         req.body.link = `http://${
             req.headers.host
-        }/verify?q=${decodeURIComponent(encrypt)}`;
+        }/verify?q=${encodeURIComponent(encrypt)}`;
         const { id, email, username, Links } = await usersService.create(
             req.body
         );

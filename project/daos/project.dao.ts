@@ -23,6 +23,11 @@ class ProjectDao {
         });
     }
 
+    async readProjectByIdUserTeamAndIdProject(
+        idUserTeam: number,
+        idProject: number
+    ) {}
+
     async readAll(idUser: number) {
         return MysqlPrisma.project.findMany({
             where: {

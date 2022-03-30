@@ -23,7 +23,7 @@ class ProjectMiddleware extends CommonMiddleware {
     }
 
     async extractidProject(req: Request, res: Response, next: NextFunction) {
-        req.body.idProject = req.params.idProject;
+        req.body.idProject = parseInt(req.params.idProject);
         next();
     }
 }

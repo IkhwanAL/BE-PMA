@@ -1,6 +1,7 @@
 import { PatchUserDto } from '../../users/dto/patch.user.dto';
 import projectDao from '../daos/project.dao';
 import { CreateProjectDto } from '../dto/create.project.dto';
+import { PatchProjectDto } from '../dto/patch.project.dto';
 
 class ProjectService {
     async create(id: number, resource: CreateProjectDto) {
@@ -18,9 +19,13 @@ class ProjectService {
     async patchProject(
         idUser: number,
         idProject: number,
-        resource: PatchUserDto
+        resource: PatchProjectDto
     ) {
-        return;
+        return projectDao.patch(idUser, idProject, resource);
+    }
+
+    async getOne(idUser: number, idProject: number) {
+        return projectDao.readProjectByIdProjectOrIdUser(idUser, idProject);
     }
 }
 
