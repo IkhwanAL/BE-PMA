@@ -62,11 +62,11 @@ model Project {
 
   projectName String @unique
 
-  projectDescription String
+  projectDescription String @db.Text
 
-  deadline DateTime
+  deadline DateTime?
 
-  deadlineInString String
+  deadlineInString String?
 
   userOwner Int
 

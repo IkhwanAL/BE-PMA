@@ -7,10 +7,11 @@ import { HttpResponse } from '../../common/services/http.service.config';
 import { JwtService } from '../../common/services/jwt.service.config';
 import { EncryptionTypes } from '../../common/types/Encription.types';
 import usersDao from '../daos/users.dao';
+import { CommonMiddleware } from '../../common/middleware/common.middleware.config';
 
 const log: debug.IDebugger = debug('app:users-controller');
 
-class UsersMiddleware {
+class UsersMiddleware extends CommonMiddleware {
     async validateRequiredUserBodyFields(
         req: express.Request,
         res: express.Response,
@@ -43,48 +44,13 @@ class UsersMiddleware {
         }
     }
 
-    async Authentication(
-        req: express.Request,
-        res: express.Response,
-        next: express.NextFunction
-    ) {
-        const bearerToken = req.headers.authorization;
-        const jwt = new JwtService();
-
-        if (!bearerToken) {
-            return HttpResponse.Unauthorized(res);
-        }
-
-        const token = bearerToken.split(' ')[1];
-
-        try {
-            const decode = jwt.decryptToken(token);
-
-            const { id } = decode as EncryptionTypes;
-
-            const user = await usersDao.getUsersById(id);
-
-            if (user) {
-                req.body.id = user.id;
-                req.body.email = user.email;
-
-                next();
-            } else {
-                return HttpResponse.Unauthorized(res);
-            }
-        } catch (error) {
-            console.log(error);
-            return HttpResponse.Unauthorized(res);
-        }
-    }
-
     async validateSameEmailBelongToSameUser(
         req: express.Request,
         res: express.Response,
         next: express.NextFunction
     ) {
         const user = await userService.readByEmail(req.body.email, true);
-        console.log(user, 'asd');
+
         if (user && user.id === parseInt(req.params.userId)) {
             next();
         } else {
@@ -148,6 +114,26 @@ class UsersMiddleware {
                 status: 400,
                 message: '',
             } as FailedTypes);
+        }
+    }
+
+    async validateEmailIsExists(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        try {
+            const user = await userService.readByEmail(req.body.email);
+
+            if (!user) {
+                return HttpResponse.NotFound(res);
+            }
+
+            req.body.id = user.id;
+
+            next();
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
         }
     }
 }

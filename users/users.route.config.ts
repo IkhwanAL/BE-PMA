@@ -17,7 +17,6 @@ export class UserRoutes extends CommonRoutesConfig {
             );
 
         this.app.route('/verify').get(usersController.verify);
-        // this.app.route('/refreshLink');
 
         // Register
         this.app
@@ -27,6 +26,12 @@ export class UserRoutes extends CommonRoutesConfig {
                 usersMiddleware.validateSameEmailDoesntExist,
                 usersController.createUser
             );
+
+        this.app.post(
+            '/refresh',
+            usersMiddleware.validateEmailIsExists,
+            usersController.refreshLink
+        );
 
         this.app.param('userId', usersMiddleware.extractUserId);
 
@@ -45,12 +50,6 @@ export class UserRoutes extends CommonRoutesConfig {
             usersMiddleware.validateUserExists,
             usersController.changePassword,
         ]);
-
-        // this.app.put(`/users/:userId`, [
-        //     usersMiddleware.validateRequiredUserBodyFields,
-        //     usersMiddleware.validateSameEmailBelongToSameUser,
-        //     usersController.put,
-        // ]);
 
         this.app.patch(`/users`, [
             // usersMiddleware.validatePatchEmail,

@@ -25,8 +25,6 @@ import { JwtService } from '../../common/services/jwt.service.config';
 const log: debug.IDebugger = debug('app:users-controller');
 
 class UsersController {
-    // private crypt = new EncryptService();
-
     async getUserById(req: express.Request, res: express.Response) {
         const user = await usersService.readById(parseInt(req.body.id));
         return res.status(200).send(user);
@@ -37,9 +35,11 @@ class UsersController {
 
         const crypt = new EncryptService();
 
-        const encrypt = crypt.encrypt({ email: req.body.email });
+        const encrypt = crypt.encrypt({ email: req.body.email }).toString();
 
-        req.body.link = `http://${req.headers.host}/verify?q=${encrypt}`;
+        req.body.link = `http://${
+            req.headers.host
+        }/verify?q=${decodeURIComponent(encrypt)}`;
         const { id, email, username, Links } = await usersService.create(
             req.body
         );
@@ -94,7 +94,44 @@ class UsersController {
         }
     }
 
-    async refreshLink(req: express.Request, res: express.Response) {}
+    async refreshLink(req: express.Request, res: express.Response) {
+        try {
+            const crypt = new EncryptService();
+
+            const encrypt = crypt.encrypt({ email: req.body.email }).toString();
+
+            const link = `http://${
+                req.headers.host
+            }/verify?q=${encodeURIComponent(encrypt)}`;
+            const Link = await userService.createLink(req.body.id, link);
+
+            if (!Link) {
+                return HttpResponse.Confilct(res);
+            }
+
+            const transporter = new EmailNodeMailer();
+
+            transporter.setOptionEmail({
+                from: 'ikhwanal235@gmail.com',
+                to: req.body.email,
+                subject: 'Verify Register User',
+                template: 'register',
+                context: {
+                    link: link,
+                    expired: moment(Link.expiredAt).format('LLLL'),
+                    username: Link.User.username,
+                },
+            });
+
+            const { response } = await transporter.send();
+
+            if (response.includes('OK')) {
+                return HttpResponse.Ok(res, {});
+            }
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    }
 
     async changePassword(req: express.Request, res: express.Response) {
         try {
@@ -107,12 +144,6 @@ class UsersController {
             return HttpResponse.InternalServerError(res);
         }
     }
-
-    //     async put(req: express.Request, res: express.Response) {
-    //         req.body.password = await argon2.hash(req.body.password);
-    //         log(await usersService.putById(req.body.id, req.body));
-    //         res.status(204).send();
-    //     }
 
     async removeUser(req: express.Request, res: express.Response) {
         try {
@@ -175,7 +206,9 @@ class UsersController {
 
         const crypt = new EncryptService();
 
-        const decrypt = crypt.decrypt(query.q.toString()) as EncryptionTypes;
+        const decrypt = crypt.decrypt(
+            decodeURIComponent(query.q.toString())
+        ) as EncryptionTypes;
 
         const user = await usersService.readByEmail(decrypt.email);
 

@@ -1,8 +1,10 @@
 import UsersDao from '../daos/users.dao';
 import { CRUD } from '../../common/interfaces/crud.interface';
 import { CreateUserDto } from '../dto/create.user.dto';
-import { PutUserDto } from '../dto/put.user.dto';
+import { Response } from 'express';
 import { PatchUserDto } from '../dto/patch.user.dto';
+import { HttpResponse } from '../../common/services/http.service.config';
+import usersDao from '../daos/users.dao';
 
 class UsersService implements CRUD {
     async create(resource: CreateUserDto) {
@@ -31,6 +33,10 @@ class UsersService implements CRUD {
 
     async changePassword(id: number, password: string) {
         return UsersDao.changePassById(id, password);
+    }
+
+    async createLink(id: number, link: string) {
+        return usersDao.addNewlink(id, link);
     }
 }
 

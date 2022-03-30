@@ -1,0 +1,8 @@
+-- AlterTable
+ALTER TABLE `link` MODIFY `expiredAt` DATETIME(3) NOT NULL DEFAULT DATE_ADD(NOW(), INTERVAL 1 DAY);
+
+-- AlterTable
+ALTER TABLE `project` MODIFY `projectDescription` TEXT NOT NULL;
+
+-- AlterTable
+ALTER TABLE `session` MODIFY `expiresAt` DATETIME(3) NOT NULL DEFAULT DATE_ADD(NOW(), INTERVAL 1 DAY);

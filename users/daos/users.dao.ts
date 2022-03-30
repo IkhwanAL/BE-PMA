@@ -92,6 +92,23 @@ class UserDao {
             },
         });
     }
+
+    async addNewlink(id: number, link: string) {
+        return MysqlPrisma.link.create({
+            data: {
+                userId: id,
+                description: link,
+                createdAt: new Date(),
+            },
+            include: {
+                User: {
+                    select: {
+                        username: true,
+                    },
+                },
+            },
+        });
+    }
 }
 
 export default new UserDao();
