@@ -27,6 +27,17 @@ class ProjectService {
     async getOne(idUser: number, idProject: number) {
         return projectDao.readProjectByIdProjectOrIdUser(idUser, idProject);
     }
+
+    async getOneByIdProject(idProject: number) {
+        return projectDao.readOne(idProject);
+    }
+
+    async getOneWithIdUserTeam(idUser: number, idProject: number) {
+        return projectDao.readProjectByIdUserTeamAndIdProject(
+            idUser,
+            idProject
+        );
+    }
 }
 
 export default new ProjectService();

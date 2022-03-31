@@ -6,8 +6,18 @@ import { EncryptService } from '../../common/services/encrypt.service.config';
 import { EmailNodeMailer } from '../../common/email/email.config.service';
 import moment from 'moment';
 import userteamService from '../service/userteam.service';
+import projectService from '../../project/service/project.service';
 
-export class UserTeamController {
+class UserTeamController {
+    /**
+     * Needs
+     * - IdUserInvintation
+     * - idUser
+     * - idProject
+     * @param req
+     * @param res
+     * @returns
+     */
     async invite(req: Request, res: Response) {
         try {
             const findEmail = await userService.readById(
@@ -18,25 +28,41 @@ export class UserTeamController {
                 return HttpResponse.BadRequest(res);
             }
 
+            const inviterEmail = await userService.readById(req.body.id);
+            const inviterProject = await projectService.getOneByIdProject(
+                req.body.idProject
+            );
+
             const crypt = new EncryptService();
 
             const encrypt = crypt
-                .encrypt({ id: findEmail.id, email: findEmail.email })
+                .encrypt({
+                    inviter: {
+                        id: inviterEmail.id,
+                        email: inviterEmail.email,
+                        project: inviterProject.projectName,
+                        idProject: inviterProject.projectId,
+                    },
+                    userBeenInvited: {
+                        id: findEmail.id,
+                        email: findEmail.email,
+                    },
+                })
                 .toString();
 
-            const link = `http://${
-                process.env.IPWEB
-            }/login?q=${encodeURIComponent(encrypt)}`;
-
+            const link = `${process.env.IPWEB}?q=${encodeURIComponent(
+                encrypt
+            )}&l=verfiy`;
+            console.log(link);
             const saved = await userService.createLink(req.body.id, link);
-
+            console.log(saved);
             const transport = new EmailNodeMailer();
 
             transport.setOptionEmail({
                 from: saved.User.email,
                 to: findEmail.email,
                 subject: 'Invitation',
-                template: 'register',
+                template: 'invite',
                 context: {
                     link: link,
                     expired: moment(saved.expiredAt).format('LLLL'),
@@ -56,12 +82,19 @@ export class UserTeamController {
             return HttpResponse.InternalServerError(res);
         }
     }
-
+    /**
+     * Needs
+     * - idProject
+     * - idUserInvintation
+     * @param req
+     * @param res
+     * @returns
+     */
     async deleteUserFromTeam(req: Request, res: Response) {
         try {
             await userteamService.deleteuserTeam(
                 req.body.idProject,
-                req.body.idUserInv
+                req.body.idUserInvitation
             );
 
             return HttpResponse.NoContent(res);
@@ -69,4 +102,25 @@ export class UserTeamController {
             return HttpResponse.InternalServerError(res);
         }
     }
+
+    /**
+     * Needs
+     * - idProject
+     * - idUserInvitation
+     * @param req
+     * @param res
+     * @returns
+     */
+    async accept(req: Request, res: Response) {
+        try {
+            await userteamService.addUserTeam(req.body.idProject, req.body.id);
+
+            return HttpResponse.Created(res, {});
+        } catch (error) {
+            console.log(error);
+            return HttpResponse.InternalServerError(res);
+        }
+    }
 }
+
+export default new UserTeamController();

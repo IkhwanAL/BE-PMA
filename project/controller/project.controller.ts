@@ -80,10 +80,16 @@ class ProjectController {
 
     async getOneProject(req: Request, res: Response) {
         try {
-            const project = await projectService.getOne(
+            let project = await projectService.getOne(
                 req.body.id,
                 req.body.idProject
             );
+            if (!project) {
+                project = await projectService.getOneWithIdUserTeam(
+                    req.body.id,
+                    req.body.idProject
+                );
+            }
 
             return HttpResponse.Ok(res, project);
         } catch (error) {

@@ -1,5 +1,7 @@
 import express from 'express';
+import projectDao from '../../project/daos/project.dao';
 import usersDao from '../../users/daos/users.dao';
+import userteamDao from '../../userTeam/daos/userteam.dao';
 import { HttpResponse } from '../services/http.service.config';
 import { JwtService } from '../services/jwt.service.config';
 import { EncryptionTypes } from '../types/Encription.types';
@@ -36,6 +38,70 @@ export abstract class CommonMiddleware {
         } catch (error) {
             console.log(error);
             return HttpResponse.Unauthorized(res);
+        }
+    }
+
+    async checkProject(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        try {
+            const project = await projectDao.readProjectByIdProjectOrIdUser(
+                req.body.id,
+                req.body.idProject
+            );
+
+            if (!project) {
+                const projectTeam =
+                    projectDao.readProjectByIdUserTeamAndIdProject(
+                        req.body.id,
+                        req.body.idProject
+                    );
+                if (!projectTeam) {
+                    return HttpResponse.NotFound(res);
+                }
+            }
+
+            next();
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    }
+
+    async checkProjectIsExists(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        try {
+            const project = await projectDao.readOne(req.body.idProject);
+
+            if (!project) {
+                return HttpResponse.NotFound(res);
+            }
+
+            next();
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    }
+
+    async checkIsItLeader(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        try {
+            const leader = await userteamDao.getLeader(req.body.id);
+
+            if (!leader) {
+                return HttpResponse.Unauthorized(res);
+            }
+
+            next();
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
         }
     }
 }

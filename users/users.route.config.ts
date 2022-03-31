@@ -37,7 +37,7 @@ export class UserRoutes extends CommonRoutesConfig {
 
         //
         this.app
-            .route('/users/')
+            .route('/users')
             .all(
                 usersMiddleware.Authentication,
                 usersMiddleware.validateUserExists

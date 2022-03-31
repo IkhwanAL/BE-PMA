@@ -10,6 +10,14 @@ class ProjectDao {
                 userOwner: id,
                 createdAt: new Date(),
                 updatedAt: new Date(),
+                UserTeam: {
+                    create: [
+                        {
+                            role: 'Proyek_Manager',
+                            userId: id,
+                        },
+                    ],
+                },
             },
         });
     }
@@ -20,13 +28,50 @@ class ProjectDao {
                 userOwner: idUser,
                 projectId: idProject,
             },
+            include: {
+                UserTeam: {
+                    include: {
+                        User: {
+                            select: {
+                                id: true,
+                                username: true,
+                                email: true,
+                                firstName: true,
+                                lastName: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
     }
 
     async readProjectByIdUserTeamAndIdProject(
         idUserTeam: number,
         idProject: number
-    ) {}
+    ) {
+        return MysqlPrisma.project.findFirst({
+            include: {
+                UserTeam: {
+                    where: {
+                        userId: idUserTeam,
+                        projectId: idProject,
+                    },
+                    include: {
+                        User: {
+                            select: {
+                                id: true,
+                                username: true,
+                                email: true,
+                                firstName: true,
+                                lastName: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    }
 
     async readAll(idUser: number) {
         return MysqlPrisma.project.findMany({
@@ -59,6 +104,14 @@ class ProjectDao {
                 ...resource,
                 userOwner: idUser,
                 updatedAt: new Date(),
+            },
+        });
+    }
+
+    async readOne(idProject: number) {
+        return MysqlPrisma.project.findFirst({
+            where: {
+                projectId: idProject,
             },
         });
     }

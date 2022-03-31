@@ -24,8 +24,14 @@ export class ProjectRoute extends CommonRoutesConfig {
                 projectMiddleware.checkProject
             )
             .get(projectController.getOneProject)
-            .delete(projectController.deleteProject)
-            .patch(projectController.patchProject);
+            .delete(
+                projectMiddleware.checkIsItLeader,
+                projectController.deleteProject
+            )
+            .patch(
+                projectMiddleware.checkIsItLeader,
+                projectController.patchProject
+            );
 
         return this.app;
     }
