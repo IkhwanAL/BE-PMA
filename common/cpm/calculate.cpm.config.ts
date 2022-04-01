@@ -54,14 +54,11 @@ export class CPM {
             return 0;
         }
         this.convert();
-        // this.loopProjectActivity();
-        // console.log(this.convertResult);
         this.Start();
     }
 
     private convert() {
         const ProjectActivityTemp = this.project.ProjectActivity;
-        // const temp = {};
 
         for (const iterator of ProjectActivityTemp) {
             // this.convertResult[].
