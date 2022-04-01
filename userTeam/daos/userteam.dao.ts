@@ -30,6 +30,15 @@ class UserTeamDao {
             },
         });
     }
+
+    async getTeamOfProject(idUserTeam: number, idProject: number) {
+        return MysqlPrisma.userTeam.findFirst({
+            where: {
+                userId: idUserTeam,
+                projectId: idProject,
+            },
+        });
+    }
 }
 
 export default new UserTeamDao();

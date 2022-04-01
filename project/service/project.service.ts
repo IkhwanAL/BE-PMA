@@ -38,6 +38,8 @@ class ProjectService {
             idProject
         );
     }
+
+    async saveDeadline(idProject: number, deadline: number) {}
 }
 
 export default new ProjectService();

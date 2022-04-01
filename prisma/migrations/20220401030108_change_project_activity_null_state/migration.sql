@@ -1,0 +1,11 @@
+-- AlterTable
+ALTER TABLE `link` MODIFY `expiredAt` DATETIME(3) NOT NULL DEFAULT DATE_ADD(NOW(), INTERVAL 1 DAY);
+
+-- AlterTable
+ALTER TABLE `projectactivity` MODIFY `critical` BOOLEAN NULL,
+    MODIFY `progress` DOUBLE NOT NULL DEFAULT 0,
+    MODIFY `parent` VARCHAR(191) NULL,
+    MODIFY `child` VARCHAR(191) NULL;
+
+-- AlterTable
+ALTER TABLE `session` MODIFY `expiresAt` DATETIME(3) NOT NULL DEFAULT DATE_ADD(NOW(), INTERVAL 1 DAY);

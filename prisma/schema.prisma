@@ -80,6 +80,8 @@ model Project {
 
   Activity Activity[]
 
+  ProjectActivity ProjectActivity[]
+
 }
 
 model UserTeam {
@@ -105,9 +107,9 @@ model ProjectActivity {
 
   name String
 
-  critical Boolean
+  critical Boolean?
 
-  progress Float
+  progress Float @default(0)
 
   position Position @default(To_Do)
 
@@ -117,9 +119,9 @@ model ProjectActivity {
 
   description String
 
-  parent String
+  parent String?
 
-  child String
+  child String?
 
   createdAt DateTime?
 
@@ -130,6 +132,8 @@ model ProjectActivity {
   SubDetailProjectActivity SubDetailProjectActivity[]
 
   Activity Activity[]
+
+  Project Project @relation(fields: [projectId], references: [projectId], onDelete: Cascade, onUpdate: Cascade)
 
 }
 

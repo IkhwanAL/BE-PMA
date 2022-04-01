@@ -12,6 +12,7 @@ import { UserRoutes } from './users/users.route.config';
 import debug from 'debug';
 import { ProjectRoute } from './project/project.route.config';
 import { UserTeamRoutes } from './userTeam/userTeam.route.config';
+import { ProjectActivityRoute } from './projectActivity/projectActivity.route.config';
 
 const app = express();
 
@@ -63,6 +64,7 @@ app.use(expressWinston.logger(loggerOptions));
 Routes.push(new UserRoutes(app));
 Routes.push(new ProjectRoute(app));
 Routes.push(new UserTeamRoutes(app));
+Routes.push(new ProjectActivityRoute(app));
 
 const runningMessage = `Server running at http://localhost:${port}`;
 

@@ -1,3 +1,4 @@
+import moment from 'moment';
 import MysqlPrisma from '../../common/services/mysql.service.config';
 import { CreateProjectDto } from '../dto/create.project.dto';
 import { PatchProjectDto } from '../dto/patch.project.dto';
@@ -42,6 +43,7 @@ class ProjectDao {
                         },
                     },
                 },
+                ProjectActivity: true,
             },
         });
     }
@@ -69,6 +71,7 @@ class ProjectDao {
                         },
                     },
                 },
+                ProjectActivity: true,
             },
         });
     }
@@ -112,6 +115,21 @@ class ProjectDao {
         return MysqlPrisma.project.findFirst({
             where: {
                 projectId: idProject,
+            },
+            include: {
+                ProjectActivity: true,
+            },
+        });
+    }
+
+    async patchDeadline(idProject: number, deadline: number) {
+        return MysqlPrisma.project.update({
+            where: {
+                projectId: idProject,
+            },
+            data: {
+                deadline: moment().add(deadline, 'days').toDate(),
+                deadlineInString: deadline.toString(),
             },
         });
     }

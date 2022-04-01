@@ -1,0 +1,44 @@
+import { CommonRoutesConfig } from '../common/common.route.config';
+import { Application } from 'express';
+import projectActivityMiddleware from './middleware/projectActivity.middleware';
+import projectActivityController from './controller/projectActivity.controller';
+import projectController from '../project/controller/project.controller';
+
+export class ProjectActivityRoute extends CommonRoutesConfig {
+    constructor(app: Application) {
+        super(app, 'ProjectActivity');
+    }
+
+    configureRoutes(): Application {
+        this.app.param('idProject', projectActivityMiddleware.extractidProject);
+
+        this.app
+            .route('/projectactivity/:idProject')
+            .all(projectActivityMiddleware.Authentication)
+            .post(
+                projectActivityMiddleware.checkIsItLeader,
+                projectActivityMiddleware.checkFieldProjectActivity,
+                projectActivityController.createProjectActivity
+            )
+            .get(
+                projectActivityMiddleware.checkProject,
+                projectActivityController.getProjectActivityBaseOfIdProject
+            );
+
+        this.app.param(
+            'idProjectActivity',
+            projectActivityMiddleware.extractIdProjectActivity
+        );
+
+        this.app
+            .route('/projectactivity/:idProjectActivity')
+            .all(
+                projectActivityMiddleware.Authentication,
+                projectActivityMiddleware.checkIsItLeader
+            )
+            .patch(projectActivityController.patchProjectActivity)
+            .delete(projectActivityController.deleteProjectActivity);
+
+        return this.app;
+    }
+}

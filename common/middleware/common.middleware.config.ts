@@ -104,4 +104,36 @@ export abstract class CommonMiddleware {
             return HttpResponse.InternalServerError(res);
         }
     }
+
+    async extractIdProjectActivity(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        req.body.idProjectActivity = parseInt(req.params.idProjectActivity);
+        next();
+    }
+    async extractidProject(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        req.body.idProject = parseInt(req.params.idProject);
+        next();
+    }
+
+    async isIsOnTheTeam(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        try {
+            const team = userteamDao.getTeamOfProject(
+                req.body.id,
+                req.body.idProject
+            );
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    }
 }
