@@ -146,4 +146,6 @@ export class CPM {
     public getDeadLine(): number {
         return this.LongestTime;
     }
+
+    private End() {}
 }

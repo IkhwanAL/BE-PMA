@@ -58,6 +58,11 @@ export class UserRoutes extends CommonRoutesConfig {
             usersController.patchUser,
         ]);
 
+        this.app.get('/refreshToken', [
+            usersMiddleware.AuthRefreshToken,
+            usersController.refreshToken,
+        ]);
+
         return this.app;
     }
 }

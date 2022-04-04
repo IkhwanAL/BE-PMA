@@ -12,6 +12,10 @@ import { CommonMiddleware } from '../../common/middleware/common.middleware.conf
 const log: debug.IDebugger = debug('app:users-controller');
 
 class UsersMiddleware extends CommonMiddleware {
+    constructor() {
+        super();
+        // this.AuthRefreshToken.bind(this.jwt);
+    }
     async validateRequiredUserBodyFields(
         req: express.Request,
         res: express.Response,
@@ -133,6 +137,40 @@ class UsersMiddleware extends CommonMiddleware {
 
             next();
         } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    }
+
+    async AuthRefreshToken(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        try {
+            const bearerToken = req.headers.authorization;
+
+            if (!bearerToken) {
+                return HttpResponse.Unauthorized(res);
+            }
+
+            const token = bearerToken.split(' ')[1];
+            const jwt = new JwtService();
+
+            const decode = jwt.decryptToken(token);
+
+            const { email } = decode as EncryptionTypes;
+
+            const user = await usersDao.getUserByEmail(email, true);
+
+            if (user) {
+                req.body.id = user.id;
+                req.body.email = user.email;
+                next();
+            } else {
+                return HttpResponse.Unauthorized(res);
+            }
+        } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }

@@ -67,6 +67,12 @@ class ProjectActivityDao {
             },
         });
     }
+
+    async vertexConnectedProjectActivity(idProjectActivity: number) {
+        return MysqlPrisma.$queryRaw<ProjectActivity[]>`
+            SELECT * FROM projectactivity pa WHERE parent LIKE %${idProjectActivity.toString()}%
+        `;
+    }
 }
 
 export default new ProjectActivityDao();

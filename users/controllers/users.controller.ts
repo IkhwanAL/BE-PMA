@@ -25,6 +25,14 @@ import { JwtService } from '../../common/services/jwt.service.config';
 const log: debug.IDebugger = debug('app:users-controller');
 
 class UsersController {
+    private readonly accessTokenExhaustedTime = 1 * 60 * 60;
+    private readonly refreshTokenExhaustedTime = 5 * 60 * 60;
+
+    constructor() {
+        // this.login.bind(this);
+        // this.refreshToken.bind(this);
+    }
+
     async getUserById(req: express.Request, res: express.Response) {
         const user = await usersService.readById(parseInt(req.body.id));
         return res.status(200).send(user);
@@ -155,7 +163,7 @@ class UsersController {
         }
     }
 
-    async login(req: express.Request, res: express.Response) {
+    public login = async (req: express.Request, res: express.Response) => {
         const { password, ...rest } = await usersService.readByEmail(
             req.body.email,
             true
@@ -165,11 +173,14 @@ class UsersController {
 
         const token = new JwtService();
 
-        const accessToken = token.encryptToken({ id: rest.id }, 1 * 60 * 60);
+        const accessToken = token.encryptToken(
+            { id: rest.id },
+            this.accessTokenExhaustedTime
+        );
 
         const refreshToken = token.encryptToken(
             { id: rest.id, email: rest.email },
-            5 * 60 * 60
+            this.refreshTokenExhaustedTime
         );
 
         if (verify) {
@@ -199,7 +210,7 @@ class UsersController {
                 sukses: false,
             } as FailedTypes);
         }
-    }
+    };
 
     async verify(req: express.Request, res: express.Response) {
         const query = req.query;
@@ -246,6 +257,45 @@ class UsersController {
 
         return HttpResponse.NoContent(res);
     }
+
+    public refreshToken = async (
+        req: express.Request,
+        res: express.Response
+    ) => {
+        delete req.session['user'];
+        try {
+            const { id, email } = req.body;
+
+            const token = new JwtService();
+
+            const accessToken = token.encryptToken(
+                { id: id },
+                this.accessTokenExhaustedTime
+            );
+
+            const refreshToken = token.encryptToken(
+                { id: id, email: email },
+                this.refreshTokenExhaustedTime
+            );
+
+            const now = new Date();
+
+            now.setTime(now.getTime() + 5 * 3600 * 1000);
+
+            res.cookie('asd', refreshToken, {
+                httpOnly: true,
+                expires: now,
+            });
+            if (!req.session['user']) {
+                req.session['user'] = { id: id, email: email };
+            }
+
+            return HttpResponse.Ok(res, { token: accessToken });
+        } catch (error) {
+            console.log(error);
+            return HttpResponse.InternalServerError(res);
+        }
+    };
 }
 
 export default new UsersController();

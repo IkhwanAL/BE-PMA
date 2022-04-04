@@ -53,9 +53,9 @@ class UserTeamController {
             const link = `${process.env.IPWEB}?q=${encodeURIComponent(
                 encrypt
             )}&l=verfiy`;
-            console.log(link);
+
             const saved = await userService.createLink(req.body.id, link);
-            console.log(saved);
+
             const transport = new EmailNodeMailer();
 
             transport.setOptionEmail({
