@@ -158,11 +158,11 @@ model SubDetailProjectActivity {
 
   description String
 
-  isComplete Boolean
+  isComplete Boolean @default(false)
 
-  createdAt DateTime?
+  createdAt DateTime? @default(now())
 
-  updatedAt DateTime?
+  updatedAt DateTime? @default(now())
 
   ProjectActivity ProjectActivity @relation(fields: [detailProyekId], references: [projectActivityId], onDelete: Cascade, onUpdate: Cascade)
 

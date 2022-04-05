@@ -117,7 +117,6 @@ class UserTeamController {
 
             return HttpResponse.Created(res, {});
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }

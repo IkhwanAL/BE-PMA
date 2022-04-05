@@ -18,7 +18,6 @@ export class EncryptService {
     }
 
     public decrypt(data: string) {
-        console.log(data);
         return JSON.parse(
             CryptoJs.enc.Utf8.stringify(
                 CryptoJs.AES.decrypt(data, process.env.SECRET_KEY, {

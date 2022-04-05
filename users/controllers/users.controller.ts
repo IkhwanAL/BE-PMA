@@ -292,7 +292,6 @@ class UsersController {
 
             return HttpResponse.Ok(res, { token: accessToken });
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };

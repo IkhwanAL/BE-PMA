@@ -41,7 +41,6 @@ export abstract class CommonMiddleware {
                 return HttpResponse.Unauthorized(res);
             }
         } catch (error) {
-            console.log(error);
             return HttpResponse.Unauthorized(res);
         }
     }
@@ -98,9 +97,8 @@ export abstract class CommonMiddleware {
         next: express.NextFunction
     ) {
         try {
-            console.log(req.body);
             const leader = await userteamDao.getLeader(req.body.id);
-            console.log(leader);
+
             if (!leader) {
                 return HttpResponse.Unauthorized(res);
             }

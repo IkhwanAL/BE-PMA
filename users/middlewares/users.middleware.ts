@@ -170,7 +170,6 @@ class UsersMiddleware extends CommonMiddleware {
                 return HttpResponse.Unauthorized(res);
             }
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }

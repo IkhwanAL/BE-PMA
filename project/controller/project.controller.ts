@@ -95,7 +95,6 @@ class ProjectController {
 
             return HttpResponse.Ok(res, project);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
@@ -144,7 +143,6 @@ class ProjectController {
 
             return HttpResponse.Ok(res, project);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }

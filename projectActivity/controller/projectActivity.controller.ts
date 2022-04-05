@@ -6,6 +6,7 @@ import { HttpResponse } from '../../common/services/http.service.config';
 import { ProjectCpm } from '../../common/types/cpm.types';
 import projectDao from '../../project/daos/project.dao';
 import projectService from '../../project/service/project.service';
+import subProjectActivityService from '../../subProjectActivity/service/subProjectActivity.service';
 import { CreateProjectActivityDto } from '../dto/create.projectActivity.dto';
 import { PatchProjectActivityDto } from '../dto/patch.projectActivity.dto';
 import projectActivityService from '../service/projectActivity.service';
@@ -39,7 +40,7 @@ class ProjectACtivityController {
         }
     }
 
-    async createProjectActivity(req: Request, res: Response) {
+    public createProjectActivity = async (req: Request, res: Response) => {
         try {
             const payload = {
                 projectId: req.body.idProject,
@@ -52,6 +53,8 @@ class ProjectACtivityController {
                 position: req.body.position ?? Position.To_Do,
                 progress: req.body.progress ?? 0,
                 status: req.body.status ?? false,
+                SubDetailProjectActivity:
+                    req.body.SubDetailProjectActivity ?? [],
             } as CreateProjectActivityDto;
 
             await projectActivityService.createNewProject(payload);
@@ -67,49 +70,50 @@ class ProjectACtivityController {
                 );
             }
 
-            const NewProject = this.calc(project, req.body.idProject);
+            const NewProject = await this.calc(project, req.body.idProject);
 
             return HttpResponse.Created(res, NewProject);
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }
-    }
+    };
 
-    async patchProjectActivity(req: Request, res: Response) {
+    public patchProjectActivity = async (req: Request, res: Response) => {
         try {
             const { idProjectActivity, idProject, id, email, ...rest } =
                 req.body;
-            const patchProjectActivity = {
-                ...req.body,
-            } as PatchProjectActivityDto;
 
-            await projectActivityService.patchProjectActivity(
+            if(rest.SubDetailProjectActivity){
+                await subProjectActivityService.
+            }
+            
+            const get = await projectActivityService.patchProjectActivity(
                 idProjectActivity,
                 rest
             );
-
+            
             let project = await projectService.getOne(
                 req.body.id,
-                req.body.idProject
+                get.projectId
             );
 
             if (!project) {
                 project = await projectService.getOneWithIdUserTeam(
                     req.body.id,
-                    req.body.idProject
+                    get.projectId
                 );
             }
 
-            const NewProject = this.calc(project, req.body.idProject);
+            const NewProject = await this.calc(project, get.projectId);
 
             return HttpResponse.Created(res, NewProject);
         } catch (error) {
             console.log(error);
             return HttpResponse.InternalServerError(res);
         }
-    }
+    };
 
-    async deleteProjectActivity(req: Request, res: Response) {
+    public deleteProjectActivity = async (req: Request, res: Response) => {
         try {
             const getProjectActivity =
                 await projectActivityService.getProjectACtivityVertex(
@@ -120,8 +124,9 @@ class ProjectACtivityController {
                 const parentSplit = iterator.parent.split(',');
 
                 const parentResource = parentSplit.filter(
-                    (x) => x !== req.body.idProjectActivity
+                    (x) => x != req.body.idProjectActivity
                 );
+
                 const joinSplitParent = parentResource.join(',');
 
                 await projectActivityService.patchProjectActivity(
@@ -146,14 +151,14 @@ class ProjectACtivityController {
                 );
             }
 
-            const NewProject = this.calc(project, get.projectId);
+            const NewProject = await this.calc(project, get.projectId);
 
             return HttpResponse.Ok(res, NewProject);
         } catch (error) {
             console.log(error);
             return HttpResponse.InternalServerError(res);
         }
-    }
+    };
 
     private async calc(
         project: Project & {

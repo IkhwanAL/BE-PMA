@@ -11,4 +11,10 @@ export interface CreateProjectActivityDto {
     description: string;
     parent?: string;
     child?: string;
+    SubDetailProjectActivity?: Array<{
+        subDetailProjectActivityId?: number;
+        detailProyekId: number;
+        description: string;
+        isComplete?: boolean;
+    }>;
 }

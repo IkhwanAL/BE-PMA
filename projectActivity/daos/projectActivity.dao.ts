@@ -1,4 +1,4 @@
-import { ProjectActivity } from '@prisma/client';
+import { Prisma, ProjectActivity } from '@prisma/client';
 import MysqlPrisma from '../../common/services/mysql.service.config';
 import { CreateProjectActivityDto } from '../dto/create.projectActivity.dto';
 import { PatchProjectActivityDto } from '../dto/patch.projectActivity.dto';
@@ -41,6 +41,11 @@ class ProjectActivityDao {
                 ...resource,
                 createdAt: new Date(),
                 updatedAt: new Date(),
+                SubDetailProjectActivity: {
+                    createMany: {
+                        data: resource.SubDetailProjectActivity,
+                    },
+                },
             },
         });
     }
@@ -49,12 +54,13 @@ class ProjectActivityDao {
         idProjectActivity: number,
         resource: PatchProjectActivityDto
     ) {
+        const { SubDetailProjectActivity, ...rest } = resource;
         return MysqlPrisma.projectActivity.update({
             where: {
                 projectActivityId: idProjectActivity,
             },
             data: {
-                ...resource,
+                ...rest,
                 updatedAt: new Date(),
             },
         });
@@ -69,9 +75,12 @@ class ProjectActivityDao {
     }
 
     async vertexConnectedProjectActivity(idProjectActivity: number) {
-        return MysqlPrisma.$queryRaw<ProjectActivity[]>`
-            SELECT * FROM projectactivity pa WHERE parent LIKE %${idProjectActivity.toString()}%
-        `;
+        console.log(
+            `SELECT * FROM projectactivity WHERE parent LIKE '%${idProjectActivity}%'`
+        );
+        return MysqlPrisma.$queryRaw<
+            ProjectActivity[]
+        >`SELECT * FROM projectactivity pa WHERE pa.parent LIKE ${`%${idProjectActivity}%`}`;
     }
 }
 

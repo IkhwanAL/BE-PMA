@@ -60,7 +60,6 @@ export class CPM {
         this.Start();
 
         console.log(this.memoize);
-        // console.log(this.convertResult);
     }
 
     private convert() {
