@@ -83,15 +83,13 @@ class ProjectACtivityController {
             const { idProjectActivity, idProject, id, email, ...rest } =
                 req.body;
 
-            if(rest.SubDetailProjectActivity){
-                await subProjectActivityService.
-            }
-            
             const get = await projectActivityService.patchProjectActivity(
                 idProjectActivity,
                 rest
             );
-            
+
+            // if(rest.SubDetai
+
             let project = await projectService.getOne(
                 req.body.id,
                 get.projectId
