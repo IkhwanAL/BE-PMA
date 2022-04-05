@@ -3,6 +3,7 @@ import { Application } from 'express';
 import projectActivityMiddleware from './middleware/projectActivity.middleware';
 import projectActivityController from './controller/projectActivity.controller';
 import projectController from '../project/controller/project.controller';
+import projectMiddleware from '../project/middleware/project.middleware';
 
 export class ProjectActivityRoute extends CommonRoutesConfig {
     constructor(app: Application) {

@@ -33,6 +33,12 @@ export class ProjectRoute extends CommonRoutesConfig {
                 projectController.patchProject
             );
 
+        this.app.get(
+            '/calculate/:idProject',
+            projectMiddleware.Authentication,
+            projectMiddleware.checkProject,
+            projectController.calculate
+        );
         return this.app;
     }
 }

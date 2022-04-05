@@ -130,6 +130,7 @@ class ProjectDao {
             data: {
                 deadline: moment().add(deadline, 'days').toDate(),
                 deadlineInString: deadline.toString(),
+                updatedAt: new Date(),
             },
         });
     }

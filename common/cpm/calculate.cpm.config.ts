@@ -1,5 +1,4 @@
 import { Project, ProjectActivity, UserTeam } from '@prisma/client';
-import { ProjectCpm } from '../types/cpm.types';
 
 export interface CPM {
     es: number;
@@ -7,10 +6,11 @@ export interface CPM {
     ls: number;
     lf: number;
     f: number;
+    critical: boolean;
 }
 
 export class CPM {
-    private project: Project & {
+    private readonly project: Project & {
         ProjectActivity: ProjectActivity[];
         UserTeam: (UserTeam & {
             User: {
@@ -26,9 +26,12 @@ export class CPM {
 
     private convertResult: {
         [key: string]: ProjectActivity & {
-            DataActivity: { [key: string]: ProjectActivity };
+            ParentActivity: { [key: string]: ProjectActivity };
+            ChildActivity: { [key: string]: ProjectActivity };
         };
     } = {};
+
+    private backwardParent: { [key: string]: Array<number | null> } = {};
 
     private LongestTime = 0;
 
@@ -55,6 +58,9 @@ export class CPM {
         }
         this.convert();
         this.Start();
+
+        console.log(this.memoize);
+        // console.log(this.convertResult);
     }
 
     private convert() {
@@ -64,15 +70,52 @@ export class CPM {
             // this.convertResult[].
             this.convertResult[iterator.projectActivityId] = {
                 ...iterator,
-                DataActivity: {},
+                ParentActivity: {},
+                ChildActivity: {},
             };
+            if (!this.backwardParent[iterator.projectActivityId.toString()]) {
+                this.backwardParent[iterator.projectActivityId.toString()] = [];
+            }
         }
-
+        /**
+         * * Mencari Parent Node
+         * * Dan Mencari Vertex Child
+         */
         for (const key in this.convertResult) {
             if (!this.convertResult[key].parent) {
                 continue;
             }
+
             const split = this.convertResult[key].parent.split(',');
+
+            const temp = {};
+
+            for (const iterator of split) {
+                const find = this.convertResult[iterator];
+
+                temp[iterator] = find;
+
+                if (this.backwardParent[iterator]) {
+                    this.backwardParent[iterator].push(parseInt(key));
+                }
+            }
+
+            this.convertResult[key].ParentActivity = temp;
+        }
+
+        for (const iterator in this.backwardParent) {
+            this.convertResult[iterator].child =
+                this.backwardParent[iterator].join(',');
+        }
+        /**
+         * * Mencari Child Node
+         */
+        for (const key in this.convertResult) {
+            if (!this.convertResult[key].child) {
+                continue;
+            }
+
+            const split = this.convertResult[key].child.split(',');
 
             const temp = {};
 
@@ -82,16 +125,99 @@ export class CPM {
                 temp[iterator] = find;
             }
 
-            this.convertResult[key].DataActivity = temp;
+            this.convertResult[key].ChildActivity = temp;
         }
     }
 
     private Start() {
         const Act = this.convertResult;
 
-        /**
-         * Key Current
-         */
+        this.forwardPass(Act);
+
+        const tempNumValue = [];
+
+        for (const key in this.memoize) {
+            tempNumValue.push(this.memoize[key].ef);
+        }
+
+        const highestKeyID = Math.max(...tempNumValue);
+
+        this.LongestTime = highestKeyID;
+
+        this.backwardPass(Act);
+
+        this.calculateFloatPointActivity();
+    }
+
+    private backwardPass(Act: {
+        [key: string]: ProjectActivity & {
+            ParentActivity: {
+                [key: string]: ProjectActivity;
+            };
+            ChildActivity: {
+                [key: string]: ProjectActivity;
+            };
+        };
+    }) {
+        const tempReverseObj = Act;
+
+        const arrReverse = this.reverseObjAct(tempReverseObj) as Array<
+            ProjectActivity & {
+                ParentActivity: { [key: string]: ProjectActivity };
+                ChildActivity: { [key: string]: ProjectActivity };
+                key: string;
+            }
+        >;
+
+        for (const currentId of arrReverse) {
+            if (!Act[currentId.key].child) {
+                this.memoize[currentId.key].lf = this.LongestTime;
+                this.memoize[currentId.key].ls =
+                    this.LongestTime - Act[currentId.key].timeToComplete;
+            }
+
+            if (this.convertResult[currentId.key].child) {
+                const PreviousId = Act[currentId.key].ChildActivity;
+
+                if (Object.keys(PreviousId).length <= 1) {
+                    this.memoize[currentId.key].lf =
+                        this.memoize[
+                            PreviousId[
+                                Object.keys(PreviousId)[0]
+                            ].projectActivityId
+                        ].ls;
+                    this.memoize[currentId.key].ls =
+                        this.memoize[currentId.key].lf -
+                        Act[currentId.key].timeToComplete;
+                }
+
+                if (Object.keys(PreviousId).length >= 2) {
+                    const GetLSValue: Array<number> = [];
+
+                    for (const key in PreviousId) {
+                        const num = this.memoize[key].ls;
+                        GetLSValue.push(num);
+                    }
+
+                    this.memoize[currentId.key].lf = Math.min(...GetLSValue);
+                    this.memoize[currentId.key].ls =
+                        this.memoize[currentId.key].lf -
+                        Act[currentId.key].timeToComplete;
+                }
+            }
+        }
+    }
+
+    private forwardPass(Act: {
+        [key: string]: ProjectActivity & {
+            ParentActivity: {
+                [key: string]: ProjectActivity;
+            };
+            ChildActivity: {
+                [key: string]: ProjectActivity;
+            };
+        };
+    }) {
         for (const currentId in Act) {
             if (!this.memoize[currentId]) {
                 this.memoize[currentId] = {} as CPM;
@@ -102,10 +228,9 @@ export class CPM {
             }
 
             if (Act[currentId].parent) {
-                const PreviousId = Act[currentId].DataActivity; // Yang Terhubung
+                const PreviousId = Act[currentId].ParentActivity; // Yang Terhubung
 
                 if (Object.keys(PreviousId).length <= 1) {
-                    console.log(PreviousId, 'Preview');
                     this.memoize[currentId].es =
                         this.memoize[
                             PreviousId[
@@ -132,18 +257,41 @@ export class CPM {
                 }
             }
         }
-        const tempNumValue = [];
+    }
 
-        for (const key in this.memoize) {
-            tempNumValue.push(parseInt(key));
+    private calculateFloatPointActivity() {
+        for (const iterator in this.memoize) {
+            const ef = this.memoize[iterator].ef;
+            const es = this.memoize[iterator].es;
+            const ls = this.memoize[iterator].ls;
+            const lf = this.memoize[iterator].lf;
+
+            if (lf - ef === 0) {
+                this.memoize[iterator].f = lf - ef;
+                this.memoize[iterator].critical = true;
+            } else if (ls - es === 0) {
+                this.memoize[iterator].f = ls - es;
+                this.memoize[iterator].critical = true;
+            } else if (lf - ef < 0) {
+                this.memoize[iterator].f = ls - es;
+                this.memoize[iterator].critical = false;
+            } else {
+                this.memoize[iterator].f = lf - ef;
+                this.memoize[iterator].critical = false;
+            }
         }
-
-        const highestKeyID = Math.max(...tempNumValue);
-
-        this.LongestTime = this.memoize[highestKeyID].ef;
     }
 
     public getDeadLine(): number {
         return this.LongestTime;
     }
+
+    public getCalculate() {
+        return this.memoize;
+    }
+
+    private reverseObjAct: any = (obj: any) =>
+        Object.keys(obj)
+            .reverse()
+            .map((key) => ({ ...obj[key], key: key }));
 }

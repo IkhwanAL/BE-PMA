@@ -1,4 +1,6 @@
+import { ProjectActivity } from '@prisma/client';
 import { Request, Response } from 'express';
+import { CPM } from '../../common/cpm/calculate.cpm.config';
 import { HttpResponse } from '../../common/services/http.service.config';
 import projectDao from '../daos/project.dao';
 import { CreateProjectDto } from '../dto/create.project.dto';
@@ -90,6 +92,55 @@ class ProjectController {
                     req.body.idProject
                 );
             }
+
+            return HttpResponse.Ok(res, project);
+        } catch (error) {
+            console.log(error);
+            return HttpResponse.InternalServerError(res);
+        }
+    }
+
+    async calculate(req: Request, res: Response) {
+        try {
+            let project = await projectService.getOne(
+                req.body.id,
+                req.body.idProject
+            );
+            if (!project) {
+                project = await projectService.getOneWithIdUserTeam(
+                    req.body.id,
+                    req.body.idProject
+                );
+            }
+
+            const cpm = new CPM(project);
+
+            cpm.calculate();
+
+            const saveDeadLineProject = await projectDao.patchDeadline(
+                req.body.idProject,
+                cpm.getDeadLine()
+            );
+
+            const getFloat = cpm.getCalculate();
+
+            project.deadline = saveDeadLineProject.deadline;
+            project.deadlineInString = saveDeadLineProject.deadlineInString;
+
+            const temp: Array<
+                ProjectActivity & {
+                    f: number;
+                    critical: boolean;
+                }
+            > = [];
+
+            for (const iterator of project.ProjectActivity) {
+                const calc = getFloat[iterator.projectActivityId];
+
+                temp.push({ ...iterator, f: calc.f, critical: calc.critical });
+            }
+
+            project.ProjectActivity = temp;
 
             return HttpResponse.Ok(res, project);
         } catch (error) {

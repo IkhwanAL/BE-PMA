@@ -1,4 +1,4 @@
-import { Position } from '@prisma/client';
+import { Position, Project, ProjectActivity, UserTeam } from '@prisma/client';
 import { Request, Response } from 'express';
 import { bodyBlacklist } from 'express-winston';
 import { CPM } from '../../common/cpm/calculate.cpm.config';
@@ -54,9 +54,7 @@ class ProjectACtivityController {
                 status: req.body.status ?? false,
             } as CreateProjectActivityDto;
 
-            const projectAct = await projectActivityService.createNewProject(
-                payload
-            );
+            await projectActivityService.createNewProject(payload);
 
             let project = await projectService.getOne(
                 req.body.id,
@@ -69,21 +67,10 @@ class ProjectACtivityController {
                 );
             }
 
-            const cpm = new CPM(project);
+            const NewProject = this.calc(project, req.body.idProject);
 
-            cpm.calculate();
-
-            const saveDeadLineProject = await projectDao.patchDeadline(
-                req.body.idProject,
-                cpm.getDeadLine()
-            );
-
-            project.deadline = saveDeadLineProject.deadline;
-            project.deadlineInString = saveDeadLineProject.deadlineInString;
-
-            return HttpResponse.Created(res, project);
+            return HttpResponse.Created(res, NewProject);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
@@ -96,14 +83,26 @@ class ProjectACtivityController {
                 ...req.body,
             } as PatchProjectActivityDto;
 
-            // console.log(patchProjectActivity);
-            const projectActivity =
-                await projectActivityService.patchProjectActivity(
-                    idProjectActivity,
-                    rest
-                );
+            await projectActivityService.patchProjectActivity(
+                idProjectActivity,
+                rest
+            );
 
-            return HttpResponse.Created(res, projectActivity);
+            let project = await projectService.getOne(
+                req.body.id,
+                req.body.idProject
+            );
+
+            if (!project) {
+                project = await projectService.getOneWithIdUserTeam(
+                    req.body.id,
+                    req.body.idProject
+                );
+            }
+
+            const NewProject = this.calc(project, req.body.idProject);
+
+            return HttpResponse.Created(res, NewProject);
         } catch (error) {
             console.log(error);
             return HttpResponse.InternalServerError(res);
@@ -112,14 +111,76 @@ class ProjectACtivityController {
 
     async deleteProjectActivity(req: Request, res: Response) {
         try {
-            await projectActivityService.deleteProjectActivity(
+            const get = await projectActivityService.deleteProjectActivity(
                 req.body.idProjectActivity
             );
 
-            return HttpResponse.NoContent(res);
+            let project = await projectService.getOne(
+                req.body.id,
+                get.projectId
+            );
+
+            if (!project) {
+                project = await projectService.getOneWithIdUserTeam(
+                    req.body.id,
+                    get.projectId
+                );
+            }
+
+            const NewProject = this.calc(project, get.projectId);
+
+            return HttpResponse.Ok(res, NewProject);
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
+    }
+
+    private async calc(
+        project: Project & {
+            UserTeam: (UserTeam & {
+                User: {
+                    id: number;
+                    firstName: string;
+                    lastName: string;
+                    email: string;
+                    username: string;
+                };
+            })[];
+            ProjectActivity: ProjectActivity[];
+        },
+        idProject: number
+    ) {
+        const cpm = new CPM(project);
+
+        cpm.calculate();
+
+        const saveDeadLineProject = await projectDao.patchDeadline(
+            idProject,
+            cpm.getDeadLine()
+        );
+
+        const getFloat = cpm.getCalculate();
+
+        project.deadline = saveDeadLineProject.deadline;
+        project.deadlineInString = saveDeadLineProject.deadlineInString;
+
+        const temp: Array<
+            ProjectActivity & {
+                f: number;
+                critical: boolean;
+            }
+        > = [];
+
+        for (const iterator of project.ProjectActivity) {
+            const calc = getFloat[iterator.projectActivityId];
+
+            temp.push({ ...iterator, f: calc.f, critical: calc.critical });
+        }
+
+        project.ProjectActivity = temp;
+
+        return project;
     }
 }
 
