@@ -111,6 +111,25 @@ class ProjectACtivityController {
 
     async deleteProjectActivity(req: Request, res: Response) {
         try {
+            const getProjectActivity =
+                await projectActivityService.getProjectACtivityVertex(
+                    req.body.idProjectActivity
+                );
+
+            for (const iterator of getProjectActivity) {
+                const parentSplit = iterator.parent.split(',');
+
+                const parentResource = parentSplit.filter(
+                    (x) => x !== req.body.idProjectActivity
+                );
+                const joinSplitParent = parentResource.join(',');
+
+                await projectActivityService.patchProjectActivity(
+                    iterator.projectActivityId,
+                    { parent: joinSplitParent }
+                );
+            }
+
             const get = await projectActivityService.deleteProjectActivity(
                 req.body.idProjectActivity
             );

@@ -6,13 +6,17 @@ import { HttpResponse } from '../services/http.service.config';
 import { JwtService } from '../services/jwt.service.config';
 import { EncryptionTypes } from '../types/Encription.types';
 export abstract class CommonMiddleware {
+    // protected jwt = new JwtService();
+    // constructor() {
+    //     this.Authentication.bind(this);
+    // }
     async Authentication(
         req: express.Request,
         res: express.Response,
         next: express.NextFunction
     ) {
         const bearerToken = req.headers.authorization;
-        const jwt = new JwtService();
+        // const jwt = new JwtService();
 
         if (!bearerToken) {
             return HttpResponse.Unauthorized(res);
@@ -21,6 +25,7 @@ export abstract class CommonMiddleware {
         const token = bearerToken.split(' ')[1];
 
         try {
+            const jwt = new JwtService();
             const decode = jwt.decryptToken(token);
 
             const { id } = decode as EncryptionTypes;
@@ -93,12 +98,12 @@ export abstract class CommonMiddleware {
         next: express.NextFunction
     ) {
         try {
+            console.log(req.body);
             const leader = await userteamDao.getLeader(req.body.id);
-
+            console.log(leader);
             if (!leader) {
                 return HttpResponse.Unauthorized(res);
             }
-
             next();
         } catch (error) {
             return HttpResponse.InternalServerError(res);

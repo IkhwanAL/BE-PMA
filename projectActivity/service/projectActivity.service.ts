@@ -34,6 +34,12 @@ class ProjectActivityService {
     async deleteProjectActivity(idProjectActivity: number) {
         return projectActivityDao.deleteProjectActivity(idProjectActivity);
     }
+
+    async getProjectACtivityVertex(idProjectActivity: number) {
+        return projectActivityDao.vertexConnectedProjectActivity(
+            idProjectActivity
+        );
+    }
 }
 
 export default new ProjectActivityService();
