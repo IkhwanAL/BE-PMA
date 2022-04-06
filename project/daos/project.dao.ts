@@ -43,7 +43,11 @@ class ProjectDao {
                         },
                     },
                 },
-                ProjectActivity: true,
+                ProjectActivity: {
+                    include: {
+                        SubDetailProjectActivity: true,
+                    },
+                },
             },
         });
     }
@@ -71,7 +75,11 @@ class ProjectDao {
                         },
                     },
                 },
-                ProjectActivity: true,
+                ProjectActivity: {
+                    include: {
+                        SubDetailProjectActivity: true,
+                    },
+                },
             },
         });
     }

@@ -6,7 +6,7 @@ class SubProjectActivityService {
     public async addDetailActivityProject(
         resource: CreateSubProjectActivityDto
     ) {
-        return;
+        return subProjectActivityDao.add(resource);
     }
 
     public async patchDetailActivityProject(
@@ -14,6 +14,20 @@ class SubProjectActivityService {
         resource: PatchSubProjectActivity
     ) {
         return subProjectActivityDao.patchById(idSubProjectActivity, resource);
+    }
+
+    public async deleteDetailProjectActivity(idSubProjectActivity: number) {
+        return subProjectActivityDao.deleteById(idSubProjectActivity);
+    }
+
+    public async patchisComplete(
+        idSubProjectActivity: number,
+        isComplete: boolean
+    ) {
+        return subProjectActivityDao.changeIsComplete(
+            idSubProjectActivity,
+            isComplete
+        );
     }
 }
 

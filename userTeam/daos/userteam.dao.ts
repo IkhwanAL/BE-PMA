@@ -39,6 +39,38 @@ class UserTeamDao {
             },
         });
     }
+
+    async changePM(idUser: number, idChoosenUser: number, idProject: number) {
+        return MysqlPrisma.$transaction([
+            MysqlPrisma.userTeam.update({
+                where: {
+                    userId: idChoosenUser,
+                    projectId: idProject,
+                },
+                data: {
+                    role: 'Proyek_Manager',
+                },
+            }),
+            MysqlPrisma.userTeam.update({
+                where: {
+                    userId: idUser,
+                    projectId: idProject,
+                },
+                data: {
+                    role: 'Tim',
+                },
+            }),
+            MysqlPrisma.project.update({
+                where: {
+                    projectId: idProject,
+                },
+                data: {
+                    userOwner: idChoosenUser,
+                    updatedAt: new Date(),
+                },
+            }),
+        ]);
+    }
 }
 
 export default new UserTeamDao();

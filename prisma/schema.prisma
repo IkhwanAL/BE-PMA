@@ -87,7 +87,7 @@ model Project {
 model UserTeam {
   teamId Int @id @default(autoincrement())
 
-  userId Int @unique
+  userId Int
 
   projectId Int
 

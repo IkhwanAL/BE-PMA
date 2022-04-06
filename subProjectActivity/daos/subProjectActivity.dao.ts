@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import MysqlPrisma from '../../common/services/mysql.service.config';
 import { PatchProjectActivityDto } from '../../projectActivity/dto/patch.projectActivity.dto';
 import { CreateSubProjectActivityDto } from '../dto/create.subDetail.dto';
@@ -44,6 +45,36 @@ class SubProjectActivtyDao {
             },
             data: {
                 isComplete: isComplete,
+            },
+        });
+    }
+
+    public async getBasedOnIdProjectActivity(idProjectActivity: number) {
+        return MysqlPrisma.subDetailProjectActivity.findMany({
+            where: {
+                detailProyekId: idProjectActivity,
+            },
+        });
+    }
+
+    public countProgressPerProjectActivity(
+        idProjectActivity: number,
+        isComplete?: boolean
+    ) {
+        let where: Prisma.SubDetailProjectActivityWhereInput = {
+            detailProyekId: idProjectActivity,
+        };
+
+        if (isComplete) {
+            where = {
+                ...where,
+                isComplete: isComplete,
+            };
+        }
+
+        return MysqlPrisma.subDetailProjectActivity.count({
+            where: {
+                ...where,
             },
         });
     }

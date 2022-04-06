@@ -8,6 +8,14 @@ class UserTeamService {
     async addUserTeam(idProject: number, idUser: number) {
         return userteamDao.add(idProject, idUser);
     }
+
+    async changeOwner(
+        idUser: number,
+        idChoosenUser: number,
+        idProject: number
+    ) {
+        return userteamDao.changePM(idUser, idChoosenUser, idProject);
+    }
 }
 
 export default new UserTeamService();

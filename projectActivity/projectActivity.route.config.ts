@@ -33,12 +33,12 @@ export class ProjectActivityRoute extends CommonRoutesConfig {
 
         this.app
             .route('/projectactivity/:idProjectActivity')
-            .all(
-                projectActivityMiddleware.Authentication,
-                projectActivityMiddleware.checkIsItLeader
-            )
+            .all(projectActivityMiddleware.Authentication)
             .patch(projectActivityController.patchProjectActivity)
-            .delete(projectActivityController.deleteProjectActivity);
+            .delete(
+                projectActivityMiddleware.checkIsItLeader,
+                projectActivityController.deleteProjectActivity
+            );
 
         return this.app;
     }

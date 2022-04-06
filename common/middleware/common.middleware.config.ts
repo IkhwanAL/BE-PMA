@@ -125,6 +125,16 @@ export abstract class CommonMiddleware {
         next();
     }
 
+    async extractIdSubProjectActivity(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        req.body.idSubProjectActivity = parseInt(
+            req.params.idSubProjectActivity
+        );
+    }
+
     async isIsOnTheTeam(
         req: express.Request,
         res: express.Response,

@@ -25,7 +25,14 @@ export class UserTeamRoutes extends CommonRoutesConfig {
             userteamController.accept
         );
 
-        this.app.delete('userteam/delete', userTeamMiddleware.Authentication);
+        this.app.delete('/userteam/delete', userTeamMiddleware.Authentication);
+
+        this.app.patch(
+            '/changeowner',
+            userTeamMiddleware.Authentication,
+            userTeamMiddleware.checkUserTeam,
+            userteamController.changeOwner
+        );
 
         return this.app;
     }

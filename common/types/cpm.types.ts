@@ -1,3 +1,10 @@
+import {
+    Project,
+    ProjectActivity,
+    SubDetailProjectActivity,
+    UserTeam,
+} from '@prisma/client';
+
 export interface ProjectCpm {
     projectId: number;
     projectName: string;
@@ -10,36 +17,19 @@ export interface ProjectCpm {
     UserTeam: UserTeam[];
     ProjectActivity: ProjectActivity[];
 }
-
-export interface ProjectActivity {
-    projectActivityId: number;
-    projectId: number;
-    name: string;
-    critical?: any;
-    progress: number;
-    position: string;
-    timeToComplete: number;
-    status: boolean;
-    description: string;
-    parent?: any;
-    child?: any;
-    createdAt: string;
-    updatedAt: string;
-}
-
-export interface UserTeam {
-    teamId: number;
-    userId: number;
-    projectId: number;
-    role: string;
-    addedAt: string;
-    User: User;
-}
-
-export interface User {
-    id: number;
-    username: string;
-    email: string;
-    firstName?: any;
-    lastName?: any;
-}
+export type ProjecType = Project & {
+    UserTeam: (UserTeam & {
+        User: {
+            id: number;
+            firstName: string;
+            lastName: string;
+            email: string;
+            username: string;
+        };
+    })[];
+    ProjectActivity: (ProjectActivity & {
+        f?: number;
+        critical?: boolean;
+        SubDetailProjectActivity: SubDetailProjectActivity[];
+    })[];
+};

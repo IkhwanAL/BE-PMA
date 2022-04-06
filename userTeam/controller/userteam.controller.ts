@@ -7,6 +7,7 @@ import { EmailNodeMailer } from '../../common/email/email.config.service';
 import moment from 'moment';
 import userteamService from '../service/userteam.service';
 import projectService from '../../project/service/project.service';
+import userteamDao from '../daos/userteam.dao';
 
 class UserTeamController {
     /**
@@ -116,6 +117,18 @@ class UserTeamController {
             await userteamService.addUserTeam(req.body.idProject, req.body.id);
 
             return HttpResponse.Created(res, {});
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    }
+
+    async changeOwner(req: Request, res: Response) {
+        try {
+            const { id, idUserInvitation, idProject } = req.body;
+
+            await userteamDao.changePM(id, idUserInvitation, idProject);
+
+            return HttpResponse.NoContent(res);
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }

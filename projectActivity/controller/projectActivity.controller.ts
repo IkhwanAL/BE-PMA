@@ -1,17 +1,14 @@
-import { Position, Project, ProjectActivity, UserTeam } from '@prisma/client';
+import { Position } from '@prisma/client';
 import { Request, Response } from 'express';
-import { bodyBlacklist } from 'express-winston';
-import { CPM } from '../../common/cpm/calculate.cpm.config';
+import { CommonController } from '../../common/controller/controller.config';
 import { HttpResponse } from '../../common/services/http.service.config';
-import { ProjectCpm } from '../../common/types/cpm.types';
-import projectDao from '../../project/daos/project.dao';
 import projectService from '../../project/service/project.service';
-import subProjectActivityService from '../../subProjectActivity/service/subProjectActivity.service';
+import subProjectActivityDao from '../../subProjectActivity/daos/subProjectActivity.dao';
+import { CreateSubProjectActivityDto } from '../../subProjectActivity/dto/create.subDetail.dto';
 import { CreateProjectActivityDto } from '../dto/create.projectActivity.dto';
-import { PatchProjectActivityDto } from '../dto/patch.projectActivity.dto';
 import projectActivityService from '../service/projectActivity.service';
 
-class ProjectACtivityController {
+class ProjectACtivityController extends CommonController {
     async getProjectActivityBaseOfIdProject(req: Request, res: Response) {
         try {
             const projectActivity =
@@ -74,6 +71,7 @@ class ProjectACtivityController {
 
             return HttpResponse.Created(res, NewProject);
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
@@ -88,7 +86,21 @@ class ProjectACtivityController {
                 rest
             );
 
-            // if(rest.SubDetai
+            const SubDetail =
+                rest.SubDetailProjectActivity as CreateSubProjectActivityDto[];
+
+            for (const key in SubDetail) {
+                const payload = {
+                    description: SubDetail[key].description,
+                    detailProyekId: idProjectActivity,
+                    isComplete: SubDetail[key].isComplete ?? false,
+                } as CreateSubProjectActivityDto;
+
+                await subProjectActivityDao.patchById(
+                    SubDetail[key].subDetailProjectActivityId,
+                    payload
+                );
+            }
 
             let project = await projectService.getOne(
                 req.body.id,
@@ -157,53 +169,6 @@ class ProjectACtivityController {
             return HttpResponse.InternalServerError(res);
         }
     };
-
-    private async calc(
-        project: Project & {
-            UserTeam: (UserTeam & {
-                User: {
-                    id: number;
-                    firstName: string;
-                    lastName: string;
-                    email: string;
-                    username: string;
-                };
-            })[];
-            ProjectActivity: ProjectActivity[];
-        },
-        idProject: number
-    ) {
-        const cpm = new CPM(project);
-
-        cpm.calculate();
-
-        const saveDeadLineProject = await projectDao.patchDeadline(
-            idProject,
-            cpm.getDeadLine()
-        );
-
-        const getFloat = cpm.getCalculate();
-
-        project.deadline = saveDeadLineProject.deadline;
-        project.deadlineInString = saveDeadLineProject.deadlineInString;
-
-        const temp: Array<
-            ProjectActivity & {
-                f: number;
-                critical: boolean;
-            }
-        > = [];
-
-        for (const iterator of project.ProjectActivity) {
-            const calc = getFloat[iterator.projectActivityId];
-
-            temp.push({ ...iterator, f: calc.f, critical: calc.critical });
-        }
-
-        project.ProjectActivity = temp;
-
-        return project;
-    }
 }
 
 export default new ProjectACtivityController();

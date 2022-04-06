@@ -1,12 +1,19 @@
-import { ProjectActivity } from '@prisma/client';
+import {
+    Project,
+    ProjectActivity,
+    SubDetailProjectActivity,
+    UserTeam,
+} from '@prisma/client';
 import { Request, Response } from 'express';
+import { CommonController } from '../../common/controller/controller.config';
 import { CPM } from '../../common/cpm/calculate.cpm.config';
 import { HttpResponse } from '../../common/services/http.service.config';
+import subProjectActivityDao from '../../subProjectActivity/daos/subProjectActivity.dao';
 import projectDao from '../daos/project.dao';
 import { CreateProjectDto } from '../dto/create.project.dto';
 import projectService from '../service/project.service';
 
-class ProjectController {
+class ProjectController extends CommonController {
     async createProject(req: Request, res: Response) {
         try {
             const payload = {
@@ -21,6 +28,7 @@ class ProjectController {
                 description: project.projectDescription,
             });
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
@@ -80,7 +88,7 @@ class ProjectController {
         }
     }
 
-    async getOneProject(req: Request, res: Response) {
+    public getOneProject = async (req: Request, res: Response) => {
         try {
             let project = await projectService.getOne(
                 req.body.id,
@@ -93,7 +101,54 @@ class ProjectController {
                 );
             }
 
-            return HttpResponse.Ok(res, project);
+            const NewProject = await this.calc(project, req.body.idProject);
+            const NewNewProject = this.countProjectActivityProgress(
+                NewProject,
+                res
+            );
+
+            return HttpResponse.Ok(res, NewNewProject);
+        } catch (error) {
+            console.log(error);
+            return HttpResponse.InternalServerError(res);
+        }
+    };
+
+    async countProjectActivityProgress(
+        _project: Project & {
+            UserTeam: (UserTeam & {
+                User: {
+                    id: number;
+                    username: string;
+                    email: string;
+                    firstName: string;
+                    lastName: string;
+                };
+            })[];
+            ProjectActivity: (ProjectActivity & {
+                SubDetailProjectActivity: SubDetailProjectActivity[];
+            })[];
+        },
+        res: Response
+    ) {
+        const TemporaryProject = _project;
+        try {
+            for (const iterator in _project.ProjectActivity) {
+                const ProjectAct = _project.ProjectActivity[iterator];
+                const total =
+                    await subProjectActivityDao.countProgressPerProjectActivity(
+                        ProjectAct.projectActivityId
+                    );
+                const done =
+                    await subProjectActivityDao.countProgressPerProjectActivity(
+                        ProjectAct.projectActivityId,
+                        true
+                    );
+
+                TemporaryProject.ProjectActivity[iterator].progress =
+                    (100 * done) / total;
+            }
+            return TemporaryProject;
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }
@@ -130,6 +185,7 @@ class ProjectController {
                 ProjectActivity & {
                     f: number;
                     critical: boolean;
+                    SubDetailProjectActivity: SubDetailProjectActivity[];
                 }
             > = [];
 

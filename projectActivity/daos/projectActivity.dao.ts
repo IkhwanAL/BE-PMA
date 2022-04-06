@@ -36,14 +36,15 @@ class ProjectActivityDao {
     }
 
     async createProjectActivity(resource: CreateProjectActivityDto) {
+        const { SubDetailProjectActivity, ...restOfResource } = resource;
         return MysqlPrisma.projectActivity.create({
             data: {
-                ...resource,
+                ...restOfResource,
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 SubDetailProjectActivity: {
                     createMany: {
-                        data: resource.SubDetailProjectActivity,
+                        data: SubDetailProjectActivity,
                     },
                 },
             },
