@@ -20,6 +20,20 @@ class UserTeamMiddleware extends CommonMiddleware {
             return HttpResponse.InternalServerError(res);
         }
     }
+
+    async validateBody(req: Request, res: Response, next: NextFunction) {
+        if (!req.body.idUserInvitation) {
+            return HttpResponse.BadRequest(res);
+        }
+
+        next();
+    }
+
+    async extractIdTeam(req: Request, res: Response, next: NextFunction) {
+        req.body.idTeam = parseInt(req.params.idTeam);
+
+        next();
+    }
 }
 
 export default new UserTeamMiddleware();

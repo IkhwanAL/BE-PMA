@@ -133,6 +133,17 @@ export abstract class CommonMiddleware {
         req.body.idSubProjectActivity = parseInt(
             req.params.idSubProjectActivity
         );
+        next();
+    }
+
+    async extractidUserInvitation(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        req.body.idUserInvitation = parseInt(req.params.idUserInvitation);
+
+        next();
     }
 
     async isIsOnTheTeam(
@@ -145,8 +156,20 @@ export abstract class CommonMiddleware {
                 req.body.id,
                 req.body.idProject
             );
+
+            if (team) {
+                next();
+            }
+
+            return HttpResponse.Forbidden(res);
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }
     }
+
+    async checkTeam(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {}
 }

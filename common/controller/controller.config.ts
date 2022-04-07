@@ -6,7 +6,7 @@ import {
 } from '@prisma/client';
 import projectDao from '../../project/daos/project.dao';
 import { CPM } from '../cpm/calculate.cpm.config';
-import { ProjecType } from '../types/cpm.types';
+import { ProjecType } from '../types/project.types';
 
 export class CommonController {
     protected async calc(

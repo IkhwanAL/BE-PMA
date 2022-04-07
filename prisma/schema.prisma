@@ -87,7 +87,7 @@ model Project {
 model UserTeam {
   teamId Int @id @default(autoincrement())
 
-  userId Int
+  userId Int @unique
 
   projectId Int
 
@@ -176,11 +176,13 @@ model Activity {
 
   userId Int
 
-  projectId Int
+  projectId Int?
 
-  projectActivityId Int
+  projectActivityId Int?
 
-  subDetailProjectActivityId Int
+  subDetailProjectActivityId Int?
+
+  createdAt DateTime?
 
   User User @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 

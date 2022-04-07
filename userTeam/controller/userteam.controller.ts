@@ -133,6 +133,18 @@ class UserTeamController {
             return HttpResponse.InternalServerError(res);
         }
     }
+
+    public deleteTeam = async (req: Request, res: Response) => {
+        try {
+            const { idTeam } = req.body;
+
+            await userteamService.deleteTeam(idTeam);
+
+            return HttpResponse.NoContent(res);
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    };
 }
 
 export default new UserTeamController();

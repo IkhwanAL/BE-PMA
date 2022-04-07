@@ -2,14 +2,19 @@ import { Position } from '@prisma/client';
 import { Request, Response } from 'express';
 import { CommonController } from '../../common/controller/controller.config';
 import { HttpResponse } from '../../common/services/http.service.config';
+import { ProjectActivityType } from '../../common/types/project.types';
 import projectService from '../../project/service/project.service';
 import subProjectActivityDao from '../../subProjectActivity/daos/subProjectActivity.dao';
 import { CreateSubProjectActivityDto } from '../../subProjectActivity/dto/create.subDetail.dto';
+import subProjectActivityService from '../../subProjectActivity/service/subProjectActivity.service';
 import { CreateProjectActivityDto } from '../dto/create.projectActivity.dto';
 import projectActivityService from '../service/projectActivity.service';
 
 class ProjectACtivityController extends CommonController {
-    async getProjectActivityBaseOfIdProject(req: Request, res: Response) {
+    public getProjectActivityBaseOfIdProject = async (
+        req: Request,
+        res: Response
+    ) => {
         try {
             const projectActivity =
                 await projectActivityService.getAllProjectActivity(
@@ -17,7 +22,6 @@ class ProjectACtivityController extends CommonController {
                     req.body.idProject
                 );
             if (projectActivity.length !== 0) {
-                // projectActivity[0].
                 return HttpResponse.Ok(res, projectActivity);
             }
 
@@ -35,7 +39,7 @@ class ProjectACtivityController extends CommonController {
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }
-    }
+    };
 
     public createProjectActivity = async (req: Request, res: Response) => {
         try {
@@ -71,7 +75,6 @@ class ProjectACtivityController extends CommonController {
 
             return HttpResponse.Created(res, NewProject);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
@@ -89,6 +92,9 @@ class ProjectACtivityController extends CommonController {
             const SubDetail =
                 rest.SubDetailProjectActivity as CreateSubProjectActivityDto[];
 
+            await subProjectActivityService.deleteSubDetailWithIdProjectAct(
+                idProjectActivity
+            );
             for (const key in SubDetail) {
                 const payload = {
                     description: SubDetail[key].description,
@@ -96,7 +102,7 @@ class ProjectACtivityController extends CommonController {
                     isComplete: SubDetail[key].isComplete ?? false,
                 } as CreateSubProjectActivityDto;
 
-                await subProjectActivityDao.patchById(
+                await subProjectActivityService.patchDetailActivityProject(
                     SubDetail[key].subDetailProjectActivityId,
                     payload
                 );
@@ -118,7 +124,6 @@ class ProjectACtivityController extends CommonController {
 
             return HttpResponse.Created(res, NewProject);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
@@ -165,10 +170,39 @@ class ProjectACtivityController extends CommonController {
 
             return HttpResponse.Ok(res, NewProject);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
+
+    public getOne = async (req: Request, res: Response) => {
+        try {
+            const { idProjectActivity } = req.body;
+
+            const projectActivity =
+                await projectActivityService.getOneProjectActivity(
+                    idProjectActivity
+                );
+
+            const NewProjectActivity = this.caclProgress(projectActivity);
+
+            return HttpResponse.Ok(res, NewProjectActivity);
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    };
+
+    public caclProgress(_project: ProjectActivityType) {
+        const TemporaryProjectActivity = _project;
+        const filterIsCompleteTrue = _project.SubDetailProjectActivity.filter(
+            (x) => x.isComplete === true
+        ).length;
+        const totalIsComplete = _project.SubDetailProjectActivity.length;
+
+        TemporaryProjectActivity.progress =
+            (100 * filterIsCompleteTrue) / totalIsComplete;
+
+        return TemporaryProjectActivity;
+    }
 }
 
 export default new ProjectACtivityController();

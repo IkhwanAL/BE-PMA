@@ -30,6 +30,20 @@ class SubProjectActivtyDao {
         });
     }
 
+    // public async patchSubDetailById(idSubProjectActivity: number, resource: PatchSubProjectActivity){
+    //     return MysqlPrisma.$transaction([
+    //         MysqlPrisma.subDetailProjectActivity.delete()
+    //     ])
+    // }
+
+    public async deleteSubByDetailProyekId(idProjectActivity: number) {
+        return MysqlPrisma.subDetailProjectActivity.deleteMany({
+            where: {
+                detailProyekId: idProjectActivity,
+            },
+        });
+    }
+
     public async deleteById(idSubProjectActivity: number) {
         return MysqlPrisma.subDetailProjectActivity.delete({
             where: {

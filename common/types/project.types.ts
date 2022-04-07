@@ -33,3 +33,7 @@ export type ProjecType = Project & {
         SubDetailProjectActivity: SubDetailProjectActivity[];
     })[];
 };
+
+export type ProjectActivityType = ProjectActivity & {
+    SubDetailProjectActivity: SubDetailProjectActivity[];
+};

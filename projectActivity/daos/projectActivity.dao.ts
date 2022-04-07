@@ -1,5 +1,6 @@
-import { Prisma, ProjectActivity } from '@prisma/client';
+import { ProjectActivity } from '@prisma/client';
 import MysqlPrisma from '../../common/services/mysql.service.config';
+import { ProjectActivityType } from '../../common/types/project.types';
 import { CreateProjectActivityDto } from '../dto/create.projectActivity.dto';
 import { PatchProjectActivityDto } from '../dto/patch.projectActivity.dto';
 
@@ -15,6 +16,9 @@ class ProjectActivityDao {
                     userOwner: idUser,
                 },
             },
+            include: {
+                SubDetailProjectActivity: true,
+            },
         });
     }
     /**
@@ -28,10 +32,11 @@ class ProjectActivityDao {
         idProject
     ) {
         return MysqlPrisma.$queryRaw<
-            ProjectActivity[]
-        >`SELECT pa.* FROM projectactivity pa
+            ProjectActivityType[]
+        >`SELECT pa.*, sd.* FROM projectactivity pa
         INNER JOIN project p On (pa.projectId = p.projectId)
         INNER JOIN userteam ut On (ut.projectId = p.projectId)
+        INNER JOIN subdetailprojectactivity sd On (sd.detailProyekId = pa.projectActivityId)
         WHERE pa.projectId = ${idProject} AND ut.userId = ${idUserTeam}`;
     }
 
@@ -76,12 +81,20 @@ class ProjectActivityDao {
     }
 
     async vertexConnectedProjectActivity(idProjectActivity: number) {
-        console.log(
-            `SELECT * FROM projectactivity WHERE parent LIKE '%${idProjectActivity}%'`
-        );
         return MysqlPrisma.$queryRaw<
             ProjectActivity[]
         >`SELECT * FROM projectactivity pa WHERE pa.parent LIKE ${`%${idProjectActivity}%`}`;
+    }
+
+    async getOne(idProjectActivity: number) {
+        return MysqlPrisma.projectActivity.findFirst({
+            where: {
+                projectActivityId: idProjectActivity,
+            },
+            include: {
+                SubDetailProjectActivity: true,
+            },
+        });
     }
 }
 

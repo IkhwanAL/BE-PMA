@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import MysqlPrisma from '../../common/services/mysql.service.config';
 
 class UserTeamDao {
@@ -42,19 +43,17 @@ class UserTeamDao {
 
     async changePM(idUser: number, idChoosenUser: number, idProject: number) {
         return MysqlPrisma.$transaction([
-            MysqlPrisma.userTeam.update({
+            MysqlPrisma.userTeam.updateMany({
                 where: {
-                    userId: idChoosenUser,
-                    projectId: idProject,
+                    AND: { projectId: idProject, userId: idChoosenUser },
                 },
                 data: {
                     role: 'Proyek_Manager',
                 },
             }),
-            MysqlPrisma.userTeam.update({
+            MysqlPrisma.userTeam.updateMany({
                 where: {
-                    userId: idUser,
-                    projectId: idProject,
+                    AND: { projectId: idProject, userId: idUser },
                 },
                 data: {
                     role: 'Tim',
@@ -70,6 +69,32 @@ class UserTeamDao {
                 },
             }),
         ]);
+    }
+
+    async getTeamPerIdTeam(idTeam: number, idProject?: number) {
+        let where: Prisma.UserTeamWhereUniqueInput = {
+            teamId: idTeam,
+        };
+        if (idProject) {
+            where = {
+                ...where,
+                projectId: idProject,
+            };
+        }
+
+        return MysqlPrisma.userTeam.findFirst({
+            where: {
+                ...where,
+            },
+        });
+    }
+
+    async deleteWithIdTeam(idTeam: number) {
+        return MysqlPrisma.userTeam.delete({
+            where: {
+                teamId: idTeam,
+            },
+        });
     }
 }
 

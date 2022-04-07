@@ -29,6 +29,12 @@ class SubProjectActivityService {
             isComplete
         );
     }
+
+    public async deleteSubDetailWithIdProjectAct(idProjectActivity: number) {
+        return subProjectActivityDao.deleteSubByDetailProyekId(
+            idProjectActivity
+        );
+    }
 }
 
 export default new SubProjectActivityService();
