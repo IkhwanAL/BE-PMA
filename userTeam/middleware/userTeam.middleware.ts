@@ -6,13 +6,26 @@ import { HttpResponse } from '../../common/services/http.service.config';
 class UserTeamMiddleware extends CommonMiddleware {
     async checkUserTeam(req: Request, res: Response, next: NextFunction) {
         try {
-            const userTeam = await usersDao.getUsersById(
-                req.body.idUserInvitation,
-                true
-            );
+            if (req.body.idUserInvitation) {
+                const userTeam = await usersDao.getUsersById(
+                    req.body.idUserInvitation,
+                    true
+                );
 
-            if (!userTeam) {
-                return HttpResponse.NotFound(res);
+                if (!userTeam) {
+                    return HttpResponse.NotFound(res);
+                }
+            }
+
+            if (req.body.idLeaderParam) {
+                const userTeam = await usersDao.getUsersById(
+                    req.body.idLeaderParam,
+                    true
+                );
+
+                if (!userTeam) {
+                    return HttpResponse.NotFound(res);
+                }
             }
 
             next();
@@ -29,7 +42,7 @@ class UserTeamMiddleware extends CommonMiddleware {
         next();
     }
 
-    async extractIdTeam(req: Request, res: Response, next: NextFunction) {
+    async extractIdTeam(req: Request, _res: Response, next: NextFunction) {
         req.body.idTeam = parseInt(req.params.idTeam);
 
         next();

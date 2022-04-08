@@ -3,7 +3,7 @@ import MysqlPrisma from '../../common/services/mysql.service.config';
 
 class UserTeamDao {
     async delete(idProject: number, idUser: number) {
-        return MysqlPrisma.userTeam.delete({
+        return MysqlPrisma.userTeam.deleteMany({
             where: {
                 projectId: idProject,
                 userId: idUser,
@@ -41,6 +41,13 @@ class UserTeamDao {
         });
     }
 
+    /**
+     *
+     * @param idUser User That Want To Downgrade Position
+     * @param idChoosenUser User That Been Choosen To Promote To Proyek Manager
+     * @param idProject What Project THat WIll CHange The Leader
+     * @returns
+     */
     async changePM(idUser: number, idChoosenUser: number, idProject: number) {
         return MysqlPrisma.$transaction([
             MysqlPrisma.userTeam.updateMany({
@@ -72,7 +79,7 @@ class UserTeamDao {
     }
 
     async getTeamPerIdTeam(idTeam: number, idProject?: number) {
-        let where: Prisma.UserTeamWhereUniqueInput = {
+        let where: Prisma.UserTeamWhereInput = {
             teamId: idTeam,
         };
         if (idProject) {

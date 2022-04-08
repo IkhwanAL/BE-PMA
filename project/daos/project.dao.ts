@@ -86,8 +86,16 @@ class ProjectDao {
 
     async readAll(idUser: number) {
         return MysqlPrisma.project.findMany({
+            take: 4,
             where: {
-                userOwner: idUser,
+                OR: {
+                    userOwner: idUser,
+                    UserTeam: {
+                        every: {
+                            userId: idUser,
+                        },
+                    },
+                },
             },
             select: {
                 projectName: true,
@@ -139,6 +147,44 @@ class ProjectDao {
                 deadline: moment().add(deadline, 'days').toDate(),
                 deadlineInString: deadline.toString(),
                 updatedAt: new Date(),
+            },
+        });
+    }
+
+    async getRecentProject(idUser: number) {
+        return MysqlPrisma.project.findMany({
+            take: 4,
+            where: {
+                OR: {
+                    userOwner: idUser,
+                    UserTeam: {
+                        every: {
+                            userId: idUser,
+                        },
+                    },
+                },
+            },
+            orderBy: {
+                updatedAt: 'asc',
+            },
+            select: {
+                projectName: true,
+                projectId: true,
+                deadline: true,
+                deadlineInString: true,
+            },
+        });
+    }
+
+    async getRecentProjectWithUserTeam(idUserTeam: number) {
+        return MysqlPrisma.project.findMany({
+            take: 4,
+            where: {
+                UserTeam: {
+                    every: {
+                        userId: idUserTeam,
+                    },
+                },
             },
         });
     }

@@ -16,7 +16,6 @@ export abstract class CommonMiddleware {
         next: express.NextFunction
     ) {
         const bearerToken = req.headers.authorization;
-        // const jwt = new JwtService();
 
         if (!bearerToken) {
             return HttpResponse.Unauthorized(res);
@@ -110,7 +109,7 @@ export abstract class CommonMiddleware {
 
     async extractIdProjectActivity(
         req: express.Request,
-        res: express.Response,
+        _res: express.Response,
         next: express.NextFunction
     ) {
         req.body.idProjectActivity = parseInt(req.params.idProjectActivity);
@@ -118,7 +117,7 @@ export abstract class CommonMiddleware {
     }
     async extractidProject(
         req: express.Request,
-        res: express.Response,
+        _res: express.Response,
         next: express.NextFunction
     ) {
         req.body.idProject = parseInt(req.params.idProject);
@@ -127,7 +126,7 @@ export abstract class CommonMiddleware {
 
     async extractIdSubProjectActivity(
         req: express.Request,
-        res: express.Response,
+        _res: express.Response,
         next: express.NextFunction
     ) {
         req.body.idSubProjectActivity = parseInt(
@@ -138,10 +137,20 @@ export abstract class CommonMiddleware {
 
     async extractidUserInvitation(
         req: express.Request,
-        res: express.Response,
+        _res: express.Response,
         next: express.NextFunction
     ) {
         req.body.idUserInvitation = parseInt(req.params.idUserInvitation);
+
+        next();
+    }
+
+    async extractIdLeaderParam(
+        req: express.Request,
+        _res: express.Response,
+        next: express.NextFunction
+    ) {
+        req.body.idLeaderParam = parseInt(req.params.idLeaderParam);
 
         next();
     }
@@ -166,10 +175,4 @@ export abstract class CommonMiddleware {
             return HttpResponse.InternalServerError(res);
         }
     }
-
-    async checkTeam(
-        req: express.Request,
-        res: express.Response,
-        next: express.NextFunction
-    ) {}
 }

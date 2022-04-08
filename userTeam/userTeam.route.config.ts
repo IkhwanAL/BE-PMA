@@ -15,6 +15,11 @@ export class UserTeamRoutes extends CommonRoutesConfig {
             userTeamMiddleware.extractidUserInvitation
         );
 
+        this.app.param(
+            'idLeaderParam',
+            userTeamMiddleware.extractIdLeaderParam
+        );
+
         this.app.param('idProject', userTeamMiddleware.extractidProject);
 
         this.app.param('idTeam', userTeamMiddleware.extractIdTeam);
@@ -41,12 +46,19 @@ export class UserTeamRoutes extends CommonRoutesConfig {
             usersMiddleware.checkTeam
         );
 
-        this.app.patch(
+        this.app.post(
             '/changeowner/:idProject/:idUserInvitation',
             userTeamMiddleware.Authentication,
-            // userTeamMiddleware.validateBody,
+            userTeamMiddleware.checkIsItLeader,
             userTeamMiddleware.checkUserTeam,
             userteamController.changeOwner
+        );
+
+        this.app.patch(
+            'ownerchange/:idProject/:idLeaderParam',
+            userTeamMiddleware.Authentication,
+            userTeamMiddleware.checkUserTeam,
+            userteamController.ownerChange
         );
 
         return this.app;

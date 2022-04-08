@@ -8,6 +8,8 @@ import moment from 'moment';
 import userteamService from '../service/userteam.service';
 import projectService from '../../project/service/project.service';
 import userteamDao from '../daos/userteam.dao';
+import usersDao from '../../users/daos/users.dao';
+import projectDao from '../../project/daos/project.dao';
 
 class UserTeamController {
     /**
@@ -126,13 +128,67 @@ class UserTeamController {
         try {
             const { id, idUserInvitation, idProject } = req.body;
 
-            await userteamDao.changePM(id, idUserInvitation, idProject);
+            const crypt = new EncryptService();
 
-            return HttpResponse.NoContent(res);
+            const encryptIdProject = encodeURIComponent(
+                crypt.encrypt(idProject).toString()
+            );
+            const encryptIdUserInv = encodeURIComponent(
+                crypt.encrypt(id).toString()
+            );
+
+            const trasporter = new EmailNodeMailer();
+            const emailReceiver = await usersDao.getUsersById(idUserInvitation);
+            const getProject = await projectDao.readOne(idProject);
+            const getOwner = await usersDao.getUsersById(id);
+
+            const link = `http://${req.headers.host}/changeowner/${encryptIdProject}/${encryptIdUserInv}`;
+
+            const Link = await userService.createLink(id, link);
+
+            trasporter.setOptionEmail({
+                from: 'ikhwanal235@gmail.com',
+                to: emailReceiver.email,
+                subject: `Selected As Proyek Manager For ${getProject.projectName} Project`,
+                template: 'changeowner',
+                context: {
+                    owner: getOwner.username,
+                    link: Link.description,
+                    choosen: emailReceiver.username,
+                },
+            });
+
+            const { response } = await trasporter.send();
+
+            if (response.includes('OK')) {
+                return HttpResponse.Ok(res, {});
+            }
+
+            return HttpResponse.BadRequest(res);
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }
     }
+
+    public ownerChange = async (req: Request, res: Response) => {
+        try {
+            /**
+             * Id => Id Login User
+             * idProject => Id Project That Want To Change Leader
+             * idLeaderParam => Id Leader Of Project
+             */
+            const { id, idProject, idLeaderParam } = req.body;
+
+            const idLeader = decodeURIComponent(idLeaderParam);
+            const idPro = decodeURIComponent(idProject);
+
+            await userteamDao.changePM(parseInt(idLeader), id, parseInt(idPro));
+
+            return HttpResponse.Ok(res, {});
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    };
 
     public deleteTeam = async (req: Request, res: Response) => {
         try {

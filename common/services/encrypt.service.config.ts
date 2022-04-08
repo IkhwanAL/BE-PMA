@@ -4,7 +4,7 @@ import CryptoJs, { mode, pad } from 'crypto-js';
 export class EncryptService {
     private iv = CryptoJs.enc.Utf8.parse(process.env.SECRET_KEY);
 
-    public encrypt(data: {}) {
+    public encrypt(data: any) {
         return CryptoJs.AES.encrypt(
             JSON.stringify(data),
             process.env.SECRET_KEY,

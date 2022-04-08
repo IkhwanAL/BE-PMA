@@ -2,7 +2,6 @@
 import express from 'express';
 
 // we import our newly created user services
-import usersService from '../services/user.service';
 import { EmailNodeMailer } from '../../common/email/email.config.service';
 import { EncryptService } from '../../common/services/encrypt.service.config';
 
@@ -19,7 +18,7 @@ import { FailedTypes } from '../../common/types/failed.types';
 
 import moment from 'moment';
 import { HttpResponse } from '../../common/services/http.service.config';
-import userService from '../services/user.service';
+import usersService from '../services/user.service';
 import { JwtService } from '../../common/services/jwt.service.config';
 
 const log: debug.IDebugger = debug('app:users-controller');
@@ -27,11 +26,6 @@ const log: debug.IDebugger = debug('app:users-controller');
 class UsersController {
     private readonly accessTokenExhaustedTime = 1 * 60 * 60;
     private readonly refreshTokenExhaustedTime = 5 * 60 * 60;
-
-    constructor() {
-        // this.login.bind(this);
-        // this.refreshToken.bind(this);
-    }
 
     async getUserById(req: express.Request, res: express.Response) {
         const user = await usersService.readById(parseInt(req.body.id));
@@ -94,7 +88,7 @@ class UsersController {
                 }
             }
 
-            await userService.patchById(id, restOfBody);
+            await usersService.patchById(id, restOfBody);
 
             return HttpResponse.Created(res, {});
         } catch (error) {
@@ -111,7 +105,7 @@ class UsersController {
             const link = `http://${
                 req.headers.host
             }/verify?q=${encodeURIComponent(encrypt)}`;
-            const Link = await userService.createLink(req.body.id, link);
+            const Link = await usersService.createLink(req.body.id, link);
 
             if (!Link) {
                 return HttpResponse.Confilct(res);
@@ -145,7 +139,7 @@ class UsersController {
         try {
             const password = await argon2.hash(req.body.password);
 
-            await userService.changePassword(req.body.id, password);
+            await usersService.changePassword(req.body.id, password);
 
             return HttpResponse.NoContent(res);
         } catch (error) {
@@ -155,7 +149,7 @@ class UsersController {
 
     async removeUser(req: express.Request, res: express.Response) {
         try {
-            await userService.deleteById(req.body.id);
+            await usersService.deleteById(req.body.id);
 
             return HttpResponse.NoContent(res);
         } catch (error) {

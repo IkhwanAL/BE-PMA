@@ -1,8 +1,6 @@
-import shortid from 'shortid';
 import debug from 'debug';
 import { CreateUserDto } from '../dto/create.user.dto';
 import { PatchUserDto } from '../dto/patch.user.dto';
-import { PutUserDto } from '../dto/put.user.dto';
 import MysqlPrisma from '../../common/services/mysql.service.config';
 
 const log: debug.IDebugger = debug('app:in-memory-dao');
