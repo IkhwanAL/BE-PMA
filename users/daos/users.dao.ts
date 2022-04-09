@@ -30,12 +30,12 @@ class UserDao {
                 ...user,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-                Links: {
+                link: {
                     create: [{ description: link }],
                 },
             },
             include: {
-                Links: true,
+                link: true,
             },
         });
     }
@@ -100,7 +100,7 @@ class UserDao {
                 createdAt: new Date(),
             },
             include: {
-                User: {
+                user: {
                     select: {
                         username: true,
                         email: true,

@@ -1,20 +1,17 @@
 import { Position } from '@prisma/client';
 import { Request, Response } from 'express';
-import { CommonController } from '../../common/controller/controller.config';
+import { bodyBlacklist } from 'express-winston';
+import { CPM } from '../../common/cpm/calculate.cpm.config';
 import { HttpResponse } from '../../common/services/http.service.config';
-import { ProjectActivityType } from '../../common/types/project.types';
+
+import projectDao from '../../project/daos/project.dao';
 import projectService from '../../project/service/project.service';
-import subProjectActivityDao from '../../subProjectActivity/daos/subProjectActivity.dao';
-import { CreateSubProjectActivityDto } from '../../subProjectActivity/dto/create.subDetail.dto';
-import subProjectActivityService from '../../subProjectActivity/service/subProjectActivity.service';
 import { CreateProjectActivityDto } from '../dto/create.projectActivity.dto';
+import { PatchProjectActivityDto } from '../dto/patch.projectActivity.dto';
 import projectActivityService from '../service/projectActivity.service';
 
-class ProjectACtivityController extends CommonController {
-    public getProjectActivityBaseOfIdProject = async (
-        req: Request,
-        res: Response
-    ) => {
+class ProjectACtivityController {
+    async getProjectActivityBaseOfIdProject(req: Request, res: Response) {
         try {
             const projectActivity =
                 await projectActivityService.getAllProjectActivity(
@@ -22,6 +19,7 @@ class ProjectACtivityController extends CommonController {
                     req.body.idProject
                 );
             if (projectActivity.length !== 0) {
+                // projectActivity[0].
                 return HttpResponse.Ok(res, projectActivity);
             }
 
@@ -39,9 +37,9 @@ class ProjectACtivityController extends CommonController {
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }
-    };
+    }
 
-    public createProjectActivity = async (req: Request, res: Response) => {
+    async createProjectActivity(req: Request, res: Response) {
         try {
             const payload = {
                 projectId: req.body.idProject,
@@ -54,11 +52,11 @@ class ProjectACtivityController extends CommonController {
                 position: req.body.position ?? Position.To_Do,
                 progress: req.body.progress ?? 0,
                 status: req.body.status ?? false,
-                SubDetailProjectActivity:
-                    req.body.SubDetailProjectActivity ?? [],
             } as CreateProjectActivityDto;
 
-            await projectActivityService.createNewProject(payload);
+            const projectAct = await projectActivityService.createNewProject(
+                payload
+            );
 
             let project = await projectService.getOne(
                 req.body.id,
@@ -71,64 +69,47 @@ class ProjectACtivityController extends CommonController {
                 );
             }
 
-            const NewProject = await this.calc(project, req.body.idProject);
+            const cpm = new CPM(project);
 
-            return HttpResponse.Created(res, NewProject);
+            cpm.calculate();
+
+            const saveDeadLineProject = await projectDao.patchDeadline(
+                req.body.idProject,
+                cpm.getDeadLine()
+            );
+
+            project.deadline = saveDeadLineProject.deadline;
+            project.deadlineInString = saveDeadLineProject.deadlineInString;
+
+            return HttpResponse.Created(res, project);
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
-    };
+    }
 
-    public patchProjectActivity = async (req: Request, res: Response) => {
+    async patchProjectActivity(req: Request, res: Response) {
         try {
             const { idProjectActivity, idProject, id, email, ...rest } =
                 req.body;
+            const patchProjectActivity = {
+                ...req.body,
+            } as PatchProjectActivityDto;
 
-            const get = await projectActivityService.patchProjectActivity(
-                idProjectActivity,
-                rest
-            );
-
-            const SubDetail =
-                rest.SubDetailProjectActivity as CreateSubProjectActivityDto[];
-
-            await subProjectActivityService.deleteSubDetailWithIdProjectAct(
-                idProjectActivity
-            );
-            for (const key in SubDetail) {
-                const payload = {
-                    description: SubDetail[key].description,
-                    detailProyekId: idProjectActivity,
-                    isComplete: SubDetail[key].isComplete ?? false,
-                } as CreateSubProjectActivityDto;
-
-                await subProjectActivityService.patchDetailActivityProject(
-                    SubDetail[key].subDetailProjectActivityId,
-                    payload
+            const projectActivity =
+                await projectActivityService.patchProjectActivity(
+                    idProjectActivity,
+                    rest
                 );
-            }
 
-            let project = await projectService.getOne(
-                req.body.id,
-                get.projectId
-            );
-
-            if (!project) {
-                project = await projectService.getOneWithIdUserTeam(
-                    req.body.id,
-                    get.projectId
-                );
-            }
-
-            const NewProject = await this.calc(project, get.projectId);
-
-            return HttpResponse.Created(res, NewProject);
+            return HttpResponse.Created(res, projectActivity);
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
-    };
+    }
 
-    public deleteProjectActivity = async (req: Request, res: Response) => {
+    async deleteProjectActivity(req: Request, res: Response) {
         try {
             const getProjectActivity =
                 await projectActivityService.getProjectACtivityVertex(
@@ -139,9 +120,8 @@ class ProjectACtivityController extends CommonController {
                 const parentSplit = iterator.parent.split(',');
 
                 const parentResource = parentSplit.filter(
-                    (x) => x != req.body.idProjectActivity
+                    (x) => x !== req.body.idProjectActivity
                 );
-
                 const joinSplitParent = parentResource.join(',');
 
                 await projectActivityService.patchProjectActivity(
@@ -150,58 +130,14 @@ class ProjectACtivityController extends CommonController {
                 );
             }
 
-            const get = await projectActivityService.deleteProjectActivity(
+            await projectActivityService.deleteProjectActivity(
                 req.body.idProjectActivity
             );
 
-            let project = await projectService.getOne(
-                req.body.id,
-                get.projectId
-            );
-
-            if (!project) {
-                project = await projectService.getOneWithIdUserTeam(
-                    req.body.id,
-                    get.projectId
-                );
-            }
-
-            const NewProject = await this.calc(project, get.projectId);
-
-            return HttpResponse.Ok(res, NewProject);
+            return HttpResponse.NoContent(res);
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }
-    };
-
-    public getOne = async (req: Request, res: Response) => {
-        try {
-            const { idProjectActivity } = req.body;
-
-            const projectActivity =
-                await projectActivityService.getOneProjectActivity(
-                    idProjectActivity
-                );
-
-            const NewProjectActivity = this.caclProgress(projectActivity);
-
-            return HttpResponse.Ok(res, NewProjectActivity);
-        } catch (error) {
-            return HttpResponse.InternalServerError(res);
-        }
-    };
-
-    public caclProgress(_project: ProjectActivityType) {
-        const TemporaryProjectActivity = _project;
-        const filterIsCompleteTrue = _project.SubDetailProjectActivity.filter(
-            (x) => x.isComplete === true
-        ).length;
-        const totalIsComplete = _project.SubDetailProjectActivity.length;
-
-        TemporaryProjectActivity.progress =
-            (100 * filterIsCompleteTrue) / totalIsComplete;
-
-        return TemporaryProjectActivity;
     }
 }
 

@@ -6,7 +6,7 @@ import { PatchSubProjectActivity } from '../dto/patch.subDetail.dto';
 
 class SubProjectActivtyDao {
     public async add(resource: CreateSubProjectActivityDto) {
-        return MysqlPrisma.subDetailProjectActivity.create({
+        return MysqlPrisma.subdetailprojectactivity.create({
             data: {
                 ...resource,
                 createdAt: new Date(),
@@ -19,7 +19,7 @@ class SubProjectActivtyDao {
         idSubProjectActivity: number,
         resource: PatchSubProjectActivity
     ) {
-        return MysqlPrisma.subDetailProjectActivity.update({
+        return MysqlPrisma.subdetailprojectactivity.update({
             where: {
                 subDetailProjectActivityId: idSubProjectActivity,
             },
@@ -37,7 +37,7 @@ class SubProjectActivtyDao {
     // }
 
     public async deleteSubByDetailProyekId(idProjectActivity: number) {
-        return MysqlPrisma.subDetailProjectActivity.deleteMany({
+        return MysqlPrisma.subdetailprojectactivity.deleteMany({
             where: {
                 detailProyekId: idProjectActivity,
             },
@@ -45,7 +45,7 @@ class SubProjectActivtyDao {
     }
 
     public async deleteById(idSubProjectActivity: number) {
-        return MysqlPrisma.subDetailProjectActivity.delete({
+        return MysqlPrisma.subdetailprojectactivity.delete({
             where: {
                 subDetailProjectActivityId: idSubProjectActivity,
             },
@@ -53,7 +53,7 @@ class SubProjectActivtyDao {
     }
 
     public changeIsComplete(idSubProjectActivity: number, isComplete: boolean) {
-        return MysqlPrisma.subDetailProjectActivity.update({
+        return MysqlPrisma.subdetailprojectactivity.update({
             where: {
                 subDetailProjectActivityId: idSubProjectActivity,
             },
@@ -64,7 +64,7 @@ class SubProjectActivtyDao {
     }
 
     public async getBasedOnIdProjectActivity(idProjectActivity: number) {
-        return MysqlPrisma.subDetailProjectActivity.findMany({
+        return MysqlPrisma.subdetailprojectactivity.findMany({
             where: {
                 detailProyekId: idProjectActivity,
             },
@@ -75,7 +75,7 @@ class SubProjectActivtyDao {
         idProjectActivity: number,
         isComplete?: boolean
     ) {
-        let where: Prisma.SubDetailProjectActivityWhereInput = {
+        let where: Prisma.subdetailprojectactivityWhereInput = {
             detailProyekId: idProjectActivity,
         };
 
@@ -86,7 +86,7 @@ class SubProjectActivtyDao {
             };
         }
 
-        return MysqlPrisma.subDetailProjectActivity.count({
+        return MysqlPrisma.subdetailprojectactivity.count({
             where: {
                 ...where,
             },

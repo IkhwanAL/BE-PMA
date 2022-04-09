@@ -11,7 +11,7 @@ class ProjectDao {
                 userOwner: id,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-                UserTeam: {
+                userteam: {
                     create: [
                         {
                             role: 'Proyek_Manager',
@@ -30,9 +30,9 @@ class ProjectDao {
                 projectId: idProject,
             },
             include: {
-                UserTeam: {
+                userteam: {
                     include: {
-                        User: {
+                        user: {
                             select: {
                                 id: true,
                                 username: true,
@@ -43,9 +43,9 @@ class ProjectDao {
                         },
                     },
                 },
-                ProjectActivity: {
+                projectactivity: {
                     include: {
-                        SubDetailProjectActivity: true,
+                        subdetailprojectactivity: true,
                     },
                 },
             },
@@ -58,13 +58,13 @@ class ProjectDao {
     ) {
         return MysqlPrisma.project.findFirst({
             include: {
-                UserTeam: {
+                userteam: {
                     where: {
                         userId: idUserTeam,
                         projectId: idProject,
                     },
                     include: {
-                        User: {
+                        user: {
                             select: {
                                 id: true,
                                 username: true,
@@ -75,9 +75,9 @@ class ProjectDao {
                         },
                     },
                 },
-                ProjectActivity: {
+                projectactivity: {
                     include: {
-                        SubDetailProjectActivity: true,
+                        subdetailprojectactivity: true,
                     },
                 },
             },
@@ -90,7 +90,7 @@ class ProjectDao {
             where: {
                 OR: {
                     userOwner: idUser,
-                    UserTeam: {
+                    userteam: {
                         every: {
                             userId: idUser,
                         },
@@ -133,7 +133,7 @@ class ProjectDao {
                 projectId: idProject,
             },
             include: {
-                ProjectActivity: true,
+                projectactivity: true,
             },
         });
     }
@@ -157,7 +157,7 @@ class ProjectDao {
             where: {
                 OR: {
                     userOwner: idUser,
-                    UserTeam: {
+                    userteam: {
                         every: {
                             userId: idUser,
                         },
@@ -180,7 +180,7 @@ class ProjectDao {
         return MysqlPrisma.project.findMany({
             take: 4,
             where: {
-                UserTeam: {
+                userteam: {
                     every: {
                         userId: idUserTeam,
                     },

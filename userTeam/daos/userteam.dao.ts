@@ -3,7 +3,7 @@ import MysqlPrisma from '../../common/services/mysql.service.config';
 
 class UserTeamDao {
     async delete(idProject: number, idUser: number) {
-        return MysqlPrisma.userTeam.deleteMany({
+        return MysqlPrisma.userteam.deleteMany({
             where: {
                 projectId: idProject,
                 userId: idUser,
@@ -12,7 +12,7 @@ class UserTeamDao {
     }
 
     async add(idProject: number, idUser: number) {
-        return MysqlPrisma.userTeam.create({
+        return MysqlPrisma.userteam.create({
             data: {
                 projectId: idProject,
                 userId: idUser,
@@ -21,11 +21,11 @@ class UserTeamDao {
     }
 
     async getLeader(idUser: number) {
-        return MysqlPrisma.userTeam.findFirst({
+        return MysqlPrisma.userteam.findFirst({
             where: {
                 userId: idUser,
                 role: 'Proyek_Manager',
-                Project: {
+                project: {
                     userOwner: idUser,
                 },
             },
@@ -33,7 +33,7 @@ class UserTeamDao {
     }
 
     async getTeamOfProject(idUserTeam: number, idProject: number) {
-        return MysqlPrisma.userTeam.findFirst({
+        return MysqlPrisma.userteam.findFirst({
             where: {
                 userId: idUserTeam,
                 projectId: idProject,
@@ -50,7 +50,7 @@ class UserTeamDao {
      */
     async changePM(idUser: number, idChoosenUser: number, idProject: number) {
         return MysqlPrisma.$transaction([
-            MysqlPrisma.userTeam.updateMany({
+            MysqlPrisma.userteam.updateMany({
                 where: {
                     AND: { projectId: idProject, userId: idChoosenUser },
                 },
@@ -58,7 +58,7 @@ class UserTeamDao {
                     role: 'Proyek_Manager',
                 },
             }),
-            MysqlPrisma.userTeam.updateMany({
+            MysqlPrisma.userteam.updateMany({
                 where: {
                     AND: { projectId: idProject, userId: idUser },
                 },
@@ -79,7 +79,7 @@ class UserTeamDao {
     }
 
     async getTeamPerIdTeam(idTeam: number, idProject?: number) {
-        let where: Prisma.UserTeamWhereInput = {
+        let where: Prisma.userteamWhereInput = {
             teamId: idTeam,
         };
         if (idProject) {
@@ -89,7 +89,7 @@ class UserTeamDao {
             };
         }
 
-        return MysqlPrisma.userTeam.findFirst({
+        return MysqlPrisma.userteam.findFirst({
             where: {
                 ...where,
             },
@@ -97,7 +97,7 @@ class UserTeamDao {
     }
 
     async deleteWithIdTeam(idTeam: number) {
-        return MysqlPrisma.userTeam.delete({
+        return MysqlPrisma.userteam.delete({
             where: {
                 teamId: idTeam,
             },
