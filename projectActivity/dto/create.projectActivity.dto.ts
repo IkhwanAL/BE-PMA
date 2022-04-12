@@ -1,17 +1,17 @@
-import { Position } from '@prisma/client';
+import { projectactivity_position } from '@prisma/client';
 
 export interface CreateProjectActivityDto {
     projectId: number;
     name: string;
     critical?: boolean;
     progress?: number;
-    position?: Position;
+    position?: projectactivity_position;
     timeToComplete: number;
     status?: boolean;
     description: string;
     parent?: string;
     child?: string;
-    SubDetailProjectActivity?: Array<{
+    subdetailprojectactivity?: Array<{
         subDetailProjectActivityId?: number;
         detailProyekId: number;
         description: string;

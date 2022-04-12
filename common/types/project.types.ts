@@ -1,8 +1,8 @@
 import {
-    Project,
-    ProjectActivity,
-    SubDetailProjectActivity,
-    UserTeam,
+    project,
+    projectactivity,
+    subdetailprojectactivity,
+    userteam,
 } from '@prisma/client';
 
 export interface ProjectCpm {
@@ -14,11 +14,12 @@ export interface ProjectCpm {
     userOwner: number;
     createdAt: string;
     updatedAt: string;
-    UserTeam: UserTeam[];
-    ProjectActivity: ProjectActivity[];
+    UserTeam: userteam[];
+    ProjectActivity: projectactivity[];
 }
-export type ProjecType = Project & {
-    UserTeam: (UserTeam & {
+
+export type ProjecType = project & {
+    UserTeam: (userteam & {
         User: {
             id: number;
             firstName: string;
@@ -27,13 +28,13 @@ export type ProjecType = Project & {
             username: string;
         };
     })[];
-    ProjectActivity: (ProjectActivity & {
+    ProjectActivity: (projectactivity & {
         f?: number;
         critical?: boolean;
-        SubDetailProjectActivity: SubDetailProjectActivity[];
+        SubDetailProjectActivity: subdetailprojectactivity[];
     })[];
 };
 
-export type ProjectActivityType = ProjectActivity & {
-    SubDetailProjectActivity: SubDetailProjectActivity[];
+export type ProjectActivityType = projectactivity & {
+    SubDetailProjectActivity: subdetailprojectactivity[];
 };

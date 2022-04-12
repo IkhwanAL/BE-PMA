@@ -1,4 +1,4 @@
-import { ProjectActivity } from '@prisma/client';
+import { projectactivity, subdetailprojectactivity } from '@prisma/client';
 import MysqlPrisma from '../../common/services/mysql.service.config';
 import { ProjectActivityType } from '../../common/types/project.types';
 import { CreateProjectActivityDto } from '../dto/create.projectActivity.dto';
@@ -9,15 +9,15 @@ class ProjectActivityDao {
         idUser: number,
         idProject: number
     ) {
-        return MysqlPrisma.projectActivity.findMany({
+        return MysqlPrisma.projectactivity.findMany({
             where: {
                 projectId: idProject,
-                Project: {
+                project: {
                     userOwner: idUser,
                 },
             },
             include: {
-                SubDetailProjectActivity: true,
+                subdetailprojectactivity: true,
             },
         });
     }
@@ -41,15 +41,15 @@ class ProjectActivityDao {
     }
 
     async createProjectActivity(resource: CreateProjectActivityDto) {
-        const { SubDetailProjectActivity, ...restOfResource } = resource;
-        return MysqlPrisma.projectActivity.create({
+        const { subdetailprojectactivity, ...restOfResource } = resource;
+        return MysqlPrisma.projectactivity.create({
             data: {
                 ...restOfResource,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-                SubDetailProjectActivity: {
+                subdetailprojectactivity: {
                     createMany: {
-                        data: SubDetailProjectActivity,
+                        data: subdetailprojectactivity as subdetailprojectactivity[],
                     },
                 },
             },
@@ -60,8 +60,8 @@ class ProjectActivityDao {
         idProjectActivity: number,
         resource: PatchProjectActivityDto
     ) {
-        const { SubDetailProjectActivity, ...rest } = resource;
-        return MysqlPrisma.projectActivity.update({
+        const { subdetailprojectactivity, ...rest } = resource;
+        return MysqlPrisma.projectactivity.update({
             where: {
                 projectActivityId: idProjectActivity,
             },
@@ -73,7 +73,7 @@ class ProjectActivityDao {
     }
 
     async deleteProjectActivity(idProjectActivity: number) {
-        return MysqlPrisma.projectActivity.delete({
+        return MysqlPrisma.projectactivity.delete({
             where: {
                 projectActivityId: idProjectActivity,
             },
@@ -82,17 +82,17 @@ class ProjectActivityDao {
 
     async vertexConnectedProjectActivity(idProjectActivity: number) {
         return MysqlPrisma.$queryRaw<
-            ProjectActivity[]
+            projectactivity[]
         >`SELECT * FROM projectactivity pa WHERE pa.parent LIKE ${`%${idProjectActivity}%`}`;
     }
 
     async getOne(idProjectActivity: number) {
-        return MysqlPrisma.projectActivity.findFirst({
+        return MysqlPrisma.projectactivity.findFirst({
             where: {
                 projectActivityId: idProjectActivity,
             },
             include: {
-                SubDetailProjectActivity: true,
+                subdetailprojectactivity: true,
             },
         });
     }
