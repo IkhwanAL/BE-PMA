@@ -42,8 +42,7 @@ export class UserTeamRoutes extends CommonRoutesConfig {
 
         this.app.delete(
             '/userteam/delete/:idTeam',
-            userTeamMiddleware.Authentication,
-            usersMiddleware.checkTeam
+            userTeamMiddleware.Authentication
         );
 
         this.app.post(
