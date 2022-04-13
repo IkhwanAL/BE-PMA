@@ -1,4 +1,4 @@
-import { Project, ProjectActivity, UserTeam } from '@prisma/client';
+import { project, projectactivity, user, userteam } from '@prisma/client';
 
 export interface CPM {
     es: number;
@@ -10,10 +10,10 @@ export interface CPM {
 }
 
 export class CPM {
-    private readonly project: Project & {
-        ProjectActivity: ProjectActivity[];
-        UserTeam: (UserTeam & {
-            User: {
+    private readonly project: project & {
+        projectactivity: projectactivity[];
+        userteam: (userteam & {
+            user: {
                 id: number;
                 firstName: string;
                 lastName: string;
@@ -25,9 +25,9 @@ export class CPM {
     private memoize: { [key: string]: CPM } = {};
 
     private convertResult: {
-        [key: string]: ProjectActivity & {
-            ParentActivity: { [key: string]: ProjectActivity };
-            ChildActivity: { [key: string]: ProjectActivity };
+        [key: string]: projectactivity & {
+            ParentActivity: { [key: string]: projectactivity };
+            ChildActivity: { [key: string]: projectactivity };
         };
     } = {};
 
@@ -36,10 +36,10 @@ export class CPM {
     private LongestTime = 0;
 
     constructor(
-        data: Project & {
-            ProjectActivity: ProjectActivity[];
-            UserTeam: (UserTeam & {
-                User: {
+        data: project & {
+            projectactivity: projectactivity[];
+            userteam: (userteam & {
+                user: {
                     id: number;
                     firstName: string;
                     lastName: string;
@@ -53,7 +53,7 @@ export class CPM {
     }
 
     public calculate() {
-        if (this.project.ProjectActivity.length <= 2) {
+        if (this.project.projectactivity.length <= 2) {
             this.LongestTime = 0;
         } else {
             this.convert();
@@ -63,7 +63,7 @@ export class CPM {
     }
 
     private convert() {
-        const ProjectActivityTemp = this.project.ProjectActivity;
+        const ProjectActivityTemp = this.project.projectactivity;
 
         for (const iterator of ProjectActivityTemp) {
             // this.convertResult[].
@@ -149,21 +149,21 @@ export class CPM {
     }
 
     private backwardPass(Act: {
-        [key: string]: ProjectActivity & {
+        [key: string]: projectactivity & {
             ParentActivity: {
-                [key: string]: ProjectActivity;
+                [key: string]: projectactivity;
             };
             ChildActivity: {
-                [key: string]: ProjectActivity;
+                [key: string]: projectactivity;
             };
         };
     }) {
         const tempReverseObj = Act;
 
         const arrReverse = this.reverseObjAct(tempReverseObj) as Array<
-            ProjectActivity & {
-                ParentActivity: { [key: string]: ProjectActivity };
-                ChildActivity: { [key: string]: ProjectActivity };
+            projectactivity & {
+                ParentActivity: { [key: string]: projectactivity };
+                ChildActivity: { [key: string]: projectactivity };
                 key: string;
             }
         >;
@@ -208,12 +208,12 @@ export class CPM {
     }
 
     private forwardPass(Act: {
-        [key: string]: ProjectActivity & {
+        [key: string]: projectactivity & {
             ParentActivity: {
-                [key: string]: ProjectActivity;
+                [key: string]: projectactivity;
             };
             ChildActivity: {
-                [key: string]: ProjectActivity;
+                [key: string]: projectactivity;
             };
         };
     }) {

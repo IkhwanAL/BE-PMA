@@ -1,8 +1,8 @@
 import {
-    Project,
-    ProjectActivity,
-    SubDetailProjectActivity,
-    UserTeam,
+    project,
+    projectactivity,
+    subdetailprojectactivity,
+    userteam,
 } from '@prisma/client';
 import projectDao from '../../project/daos/project.dao';
 import { CPM } from '../cpm/calculate.cpm.config';
@@ -10,9 +10,9 @@ import { ProjecType } from '../@types/project.types';
 
 export class CommonController {
     protected async calc(
-        project: Project & {
-            UserTeam: (UserTeam & {
-                User: {
+        _project: project & {
+            userteam: (userteam & {
+                user: {
                     id: number;
                     firstName: string;
                     lastName: string;
@@ -20,13 +20,13 @@ export class CommonController {
                     username: string;
                 };
             })[];
-            ProjectActivity: (ProjectActivity & {
-                SubDetailProjectActivity: SubDetailProjectActivity[];
+            projectactivity: (projectactivity & {
+                subdetailprojectactivity: subdetailprojectactivity[];
             })[];
         },
         idProject: number
     ): Promise<ProjecType> {
-        const cpm = new CPM(project);
+        const cpm = new CPM(_project);
 
         cpm.calculate();
 
@@ -38,26 +38,26 @@ export class CommonController {
         const getFloat = cpm.getCalculate();
 
         if (Object.keys(getFloat).length !== 0) {
-            project.deadline = saveDeadLineProject.deadline;
-            project.deadlineInString = saveDeadLineProject.deadlineInString;
+            _project.deadline = saveDeadLineProject.deadline;
+            _project.deadlineInString = saveDeadLineProject.deadlineInString;
 
             const temp: Array<
-                ProjectActivity & {
+                projectactivity & {
                     f: number;
                     critical: boolean;
-                    SubDetailProjectActivity: SubDetailProjectActivity[];
+                    subdetailprojectactivity: subdetailprojectactivity[];
                 }
             > = [];
 
-            for (const iterator of project.ProjectActivity) {
+            for (const iterator of _project.projectactivity) {
                 const calc = getFloat[iterator.projectActivityId];
 
                 temp.push({ ...iterator, f: calc.f, critical: calc.critical });
             }
 
-            project.ProjectActivity = temp;
+            _project.projectactivity = temp;
         }
 
-        return project as ProjecType;
+        return _project as ProjecType;
     }
 }
