@@ -4,7 +4,7 @@ import usersDao from '../../users/daos/users.dao';
 import userteamDao from '../../userTeam/daos/userteam.dao';
 import { HttpResponse } from '../services/http.service.config';
 import { JwtService } from '../services/jwt.service.config';
-import { EncryptionTypes } from '../types/Encription.types';
+import { EncryptionTypes } from '../@types/Encription.types';
 export abstract class CommonMiddleware {
     // protected jwt = new JwtService();
     // constructor() {

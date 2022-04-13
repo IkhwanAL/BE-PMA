@@ -1,4 +1,4 @@
-import { Position } from '@prisma/client';
+import { projectactivity_position } from '@prisma/client';
 import { Request, Response } from 'express';
 import { bodyBlacklist } from 'express-winston';
 import { CPM } from '../../common/cpm/calculate.cpm.config';
@@ -49,7 +49,7 @@ class ProjectACtivityController {
                 child: req.body.child ?? '',
                 critical: req.body.critical ?? false,
                 parent: req.body.parent ?? '',
-                position: req.body.position ?? Position.To_Do,
+                position: req.body.position ?? projectactivity_position.To_Do,
                 progress: req.body.progress ?? 0,
                 status: req.body.status ?? false,
             } as CreateProjectActivityDto;
@@ -83,7 +83,6 @@ class ProjectACtivityController {
 
             return HttpResponse.Created(res, project);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
@@ -104,7 +103,6 @@ class ProjectACtivityController {
 
             return HttpResponse.Created(res, projectActivity);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }

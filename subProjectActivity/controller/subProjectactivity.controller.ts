@@ -30,10 +30,12 @@ class SubProjectActivity {
         try {
             const { idSubProjectActivity, isComplete, ...rest } = req.body;
 
-            const patch = await subProjectActivityService.patchisComplete(
+            await subProjectActivityService.patchisComplete(
                 idSubProjectActivity,
                 isComplete
             );
+
+            return HttpResponse.Created(res, {});
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }

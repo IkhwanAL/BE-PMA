@@ -19,8 +19,8 @@ export interface ProjectCpm {
 }
 
 export type ProjecType = project & {
-    UserTeam: (userteam & {
-        User: {
+    userteam: (userteam & {
+        user: {
             id: number;
             firstName: string;
             lastName: string;
@@ -28,13 +28,15 @@ export type ProjecType = project & {
             username: string;
         };
     })[];
-    ProjectActivity: (projectactivity & {
+    projectactivity: (projectactivity & {
         f?: number;
         critical?: boolean;
-        SubDetailProjectActivity: subdetailprojectactivity[];
+        subdetailprojectactivity: subdetailprojectactivity[];
     })[];
 };
 
 export type ProjectActivityType = projectactivity & {
-    SubDetailProjectActivity: subdetailprojectactivity[];
+    subdetailprojectactivity: subdetailprojectactivity[];
 };
+
+// export type

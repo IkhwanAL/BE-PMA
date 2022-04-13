@@ -1,10 +1,11 @@
 import {
-    Project,
-    ProjectActivity,
-    SubDetailProjectActivity,
-    UserTeam,
+    project,
+    projectactivity,
+    subdetailprojectactivity,
+    userteam,
 } from '@prisma/client';
 import { Request, Response } from 'express';
+import { ProjecType } from '../../common/@types/project.types';
 import { CommonController } from '../../common/controller/controller.config';
 import { CPM } from '../../common/cpm/calculate.cpm.config';
 import { HttpResponse } from '../../common/services/http.service.config';
@@ -112,27 +113,11 @@ class ProjectController extends CommonController {
         }
     };
 
-    async countProjectActivityProgress(
-        _project: Project & {
-            UserTeam: (UserTeam & {
-                User: {
-                    id: number;
-                    username: string;
-                    email: string;
-                    firstName: string;
-                    lastName: string;
-                };
-            })[];
-            ProjectActivity: (ProjectActivity & {
-                SubDetailProjectActivity: SubDetailProjectActivity[];
-            })[];
-        },
-        res: Response
-    ) {
+    async countProjectActivityProgress(_project: ProjecType, res: Response) {
         const TemporaryProject = _project;
         try {
-            for (const iterator in _project.ProjectActivity) {
-                const ProjectAct = _project.ProjectActivity[iterator];
+            for (const iterator in _project.projectactivity) {
+                const ProjectAct = _project.projectactivity[iterator];
                 const total =
                     await subProjectActivityDao.countProgressPerProjectActivity(
                         ProjectAct.projectActivityId
@@ -143,7 +128,7 @@ class ProjectController extends CommonController {
                         true
                     );
 
-                TemporaryProject.ProjectActivity[iterator].progress =
+                TemporaryProject.projectactivity[iterator].progress =
                     (100 * done) / total;
             }
             return TemporaryProject;
@@ -154,15 +139,15 @@ class ProjectController extends CommonController {
 
     async calculate(req: Request, res: Response) {
         try {
-            let project = await projectService.getOne(
+            let project = (await projectService.getOne(
                 req.body.id,
                 req.body.idProject
-            );
+            )) as ProjecType;
             if (!project) {
-                project = await projectService.getOneWithIdUserTeam(
+                project = (await projectService.getOneWithIdUserTeam(
                     req.body.id,
                     req.body.idProject
-                );
+                )) as ProjecType;
             }
 
             const cpm = new CPM(project);
@@ -180,20 +165,25 @@ class ProjectController extends CommonController {
             project.deadlineInString = saveDeadLineProject.deadlineInString;
 
             const temp: Array<
-                ProjectActivity & {
+                projectactivity & {
                     f: number;
                     critical: boolean;
-                    SubDetailProjectActivity: SubDetailProjectActivity[];
+                    subdetailprojectactivity: subdetailprojectactivity[];
                 }
             > = [];
 
-            for (const iterator of project.ProjectActivity) {
+            for (const iterator of project.projectactivity) {
                 const calc = getFloat[iterator.projectActivityId];
 
-                temp.push({ ...iterator, f: calc.f, critical: calc.critical });
+                temp.push({
+                    ...iterator,
+                    f: calc.f,
+                    critical: calc.critical,
+                    subdetailprojectactivity: iterator.subdetailprojectactivity,
+                });
             }
 
-            project.ProjectActivity = temp;
+            project.projectactivity = temp;
 
             return HttpResponse.Ok(res, project);
         } catch (error) {

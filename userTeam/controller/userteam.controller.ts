@@ -62,7 +62,7 @@ class UserTeamController {
             const transport = new EmailNodeMailer();
 
             transport.setOptionEmail({
-                from: saved.User.email,
+                from: saved.user.email,
                 to: findEmail.email,
                 subject: 'Invitation',
                 template: 'invite',
@@ -70,7 +70,7 @@ class UserTeamController {
                     link: link,
                     expired: moment(saved.expiredAt).format('LLLL'),
                     username: findEmail.username,
-                    invited: saved.User.username,
+                    invited: saved.user.username,
                 },
             });
 

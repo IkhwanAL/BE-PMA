@@ -1,11 +1,11 @@
 import express from 'express';
 import userService from '../services/user.service';
 import debug from 'debug';
-import { FailedTypes } from '../../common/types/failed.types';
+import { FailedTypes } from '../../common/@types/failed.types';
 import { Http } from 'winston/lib/winston/transports';
 import { HttpResponse } from '../../common/services/http.service.config';
 import { JwtService } from '../../common/services/jwt.service.config';
-import { EncryptionTypes } from '../../common/types/Encription.types';
+import { EncryptionTypes } from '../../common/@types/Encription.types';
 import usersDao from '../daos/users.dao';
 import { CommonMiddleware } from '../../common/middleware/common.middleware.config';
 

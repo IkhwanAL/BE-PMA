@@ -1,6 +1,6 @@
 import { Response } from 'express';
-import { FailedTypes } from '../types/failed.types';
-import { SuccessType } from '../types/success.types';
+import { FailedTypes } from '../@types/failed.types';
+import { SuccessType } from '../@types/success.types';
 
 export class HttpResponse {
     /**

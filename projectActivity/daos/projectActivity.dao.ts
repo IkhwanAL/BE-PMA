@@ -1,6 +1,6 @@
 import { projectactivity, subdetailprojectactivity } from '@prisma/client';
 import MysqlPrisma from '../../common/services/mysql.service.config';
-import { ProjectActivityType } from '../../common/types/project.types';
+import { ProjectActivityType } from '../../common/@types/project.types';
 import { CreateProjectActivityDto } from '../dto/create.projectActivity.dto';
 import { PatchProjectActivityDto } from '../dto/patch.projectActivity.dto';
 

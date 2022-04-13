@@ -12,9 +12,9 @@ import argon2 from 'argon2';
 import debug from 'debug';
 import 'dotenv/config';
 
-import { EncryptionTypes } from '../../common/types/Encription.types';
-import { SuccessType } from '../../common/types/success.types';
-import { FailedTypes } from '../../common/types/failed.types';
+import { EncryptionTypes } from '../../common/@types/Encription.types';
+import { SuccessType } from '../../common/@types/success.types';
+import { FailedTypes } from '../../common/@types/failed.types';
 
 import moment from 'moment';
 import { HttpResponse } from '../../common/services/http.service.config';
@@ -42,7 +42,7 @@ class UsersController {
         req.body.link = `http://${
             req.headers.host
         }/verify?q=${encodeURIComponent(encrypt)}`;
-        const { id, email, username, Links } = await usersService.create(
+        const { id, email, username, link } = await usersService.create(
             req.body
         );
 
@@ -56,7 +56,7 @@ class UsersController {
             context: {
                 username: username,
                 link: req.body.link,
-                expired: moment(Links[0].expiredAt).format('LLLL'),
+                expired: moment(link[0].expiredAt).format('LLLL'),
             },
         });
 
@@ -121,7 +121,7 @@ class UsersController {
                 context: {
                     link: link,
                     expired: moment(Link.expiredAt).format('LLLL'),
-                    username: Link.User.username,
+                    username: Link.user.username,
                 },
             });
 
