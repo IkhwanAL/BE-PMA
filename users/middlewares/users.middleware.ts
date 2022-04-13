@@ -109,6 +109,7 @@ class UsersMiddleware extends CommonMiddleware {
         res: express.Response,
         next: express.NextFunction
     ) {
+        console.log(req.body);
         if (req.body && req.body.email && req.body.password) {
             next();
         } else {

@@ -158,51 +158,61 @@ class UsersController {
     }
 
     public login = async (req: express.Request, res: express.Response) => {
-        const { password, ...rest } = await usersService.readByEmail(
-            req.body.email,
-            true
-        );
+        try {
+            const data = await usersService.readByEmail(req.body.email, true);
 
-        const verify = await argon2.verify(password, req.body.password);
-
-        const token = new JwtService();
-
-        const accessToken = token.encryptToken(
-            { id: rest.id },
-            this.accessTokenExhaustedTime
-        );
-
-        const refreshToken = token.encryptToken(
-            { id: rest.id, email: rest.email },
-            this.refreshTokenExhaustedTime
-        );
-
-        if (verify) {
-            const now = new Date();
-            now.setTime(now.getTime() + 5 * 3600 * 1000);
-
-            res.cookie('asd', refreshToken, {
-                expires: now,
-                httpOnly: true,
-            });
-
-            if (!req.session['user']) {
-                req.session['user'] = { id: rest.id, email: rest.email };
+            if (!data) {
+                return HttpResponse.NotFound(res);
             }
 
-            return res.status(200).send({
-                sukses: true,
-                message: 'Sukses Login',
-                status: 200,
-                data: { token: accessToken },
-            } as SuccessType);
-        } else {
-            return res.status(401).send({
-                error: 'User Or Password is Invalid Or User is Not Verifying',
-                message: 'User Or Password Not Found',
-                status: 401,
-                sukses: false,
-            } as FailedTypes);
+            const { password, ...rest } = data;
+
+            const crypt = new EncryptService();
+
+            const verify = await argon2.verify(password, req.body.password);
+
+            const token = new JwtService();
+
+            const accessToken = token.encryptToken(
+                { id: rest.id },
+                this.accessTokenExhaustedTime
+            );
+
+            const refreshToken = token.encryptToken(
+                { id: rest.id, email: rest.email },
+                this.refreshTokenExhaustedTime
+            );
+
+            if (verify) {
+                const now = new Date();
+                now.setTime(now.getTime() + 5 * 3600 * 1000);
+
+                res.cookie('cookie', crypt.encrypt(refreshToken).toString(), {
+                    expires: now,
+                    httpOnly: true,
+                });
+
+                if (!req.session['user']) {
+                    req.session['user'] = { id: rest.id, email: rest.email };
+                }
+
+                return res.status(200).send({
+                    sukses: true,
+                    message: 'Sukses Login',
+                    status: 200,
+                    data: { token: accessToken },
+                } as SuccessType);
+            } else {
+                return res.status(401).send({
+                    error: 'User Or Password is Invalid Or User is Not Verifying',
+                    message: 'User Or Password Not Found',
+                    status: 401,
+                    sukses: false,
+                } as FailedTypes);
+            }
+        } catch (error) {
+            console.log(error);
+            return HttpResponse.InternalServerError(res);
         }
     };
 

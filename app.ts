@@ -5,6 +5,7 @@ import MysqlPrisma from './common/services/mysql.service.config';
 import * as http from 'http';
 import cluster from 'cluster';
 import os from 'os';
+import cookieParser from 'cookie-parser';
 
 import * as winston from 'winston';
 import * as expressWinston from 'express-winston';
@@ -61,6 +62,8 @@ if (cluster.isPrimary) {
             }),
         })
     );
+
+    app.use(cookieParser());
 
     app.use(express.json());
 
