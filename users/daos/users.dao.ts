@@ -2,6 +2,7 @@ import debug from 'debug';
 import { CreateUserDto } from '../dto/create.user.dto';
 import { PatchUserDto } from '../dto/patch.user.dto';
 import MysqlPrisma from '../../common/services/mysql.service.config';
+import { Prisma } from '@prisma/client';
 
 const log: debug.IDebugger = debug('app:in-memory-dao');
 
@@ -52,11 +53,17 @@ class UserDao {
         });
     }
 
-    async getUserByEmail(email: string, isActive: boolean) {
+    async getUserByEmail(email: string, isActive: boolean = null) {
+        let where: Prisma.userWhereInput = {
+            email: email,
+        };
+
+        if (isActive != null) {
+            where = { ...where, isActive: isActive };
+        }
         return MysqlPrisma.user.findFirst({
             where: {
-                email: email,
-                isActive: isActive,
+                ...where,
             },
         });
     }

@@ -89,11 +89,12 @@ export class HttpResponse {
      * @param res
      * @returns
      */
-    public static NotFound(res: Response, message?: string) {
+    public static NotFound(res: Response, data?: any, message?: string) {
         return res.status(404).send({
             message: message ? message : 'Gagal, Tidak Di Temukan',
             status: 404,
             sukses: false,
+            data: data,
         } as FailedTypes);
     }
 

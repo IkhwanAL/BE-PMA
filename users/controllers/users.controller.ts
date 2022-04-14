@@ -39,9 +39,9 @@ class UsersController {
 
         const encrypt = crypt.encrypt({ email: req.body.email }).toString();
 
-        req.body.link = `http://${
-            req.headers.host
-        }/?Url=verify&q=${encodeURIComponent(encrypt)}`;
+        req.body.link = `${
+            process.env.IPWEB
+        }/verify/?Url=verify&_q=${encodeURIComponent(encrypt)}`;
         const { id, email, username, link } = await usersService.create(
             req.body
         );
@@ -102,9 +102,9 @@ class UsersController {
 
             const encrypt = crypt.encrypt({ email: req.body.email }).toString();
 
-            const link = `http://${
-                req.headers.host
-            }/verify?q=${encodeURIComponent(encrypt)}`;
+            const link = `${
+                process.env.IPWEB
+            }/verify/?Url=verify&_q=${encodeURIComponent(encrypt)}`;
             const Link = await usersService.createLink(req.body.id, link);
 
             if (!Link) {
@@ -159,10 +159,15 @@ class UsersController {
 
     public login = async (req: express.Request, res: express.Response) => {
         try {
-            const data = await usersService.readByEmail(req.body.email, true);
+            const data = await usersService.readByEmail(req.body.email);
 
-            if (!data) {
-                return HttpResponse.NotFound(res);
+            // Jika IsActive False
+            if (!data.isActive) {
+                return HttpResponse.NotFound(
+                    res,
+                    { isActive: data.isActive },
+                    'User is Not Verify Account Yet'
+                );
             }
 
             const { password, ...rest } = data;
@@ -208,6 +213,7 @@ class UsersController {
                     message: 'User Or Password Not Found',
                     status: 401,
                     sukses: false,
+                    data: { isActive: data.isActive },
                 } as FailedTypes);
             }
         } catch (error) {
@@ -215,44 +221,80 @@ class UsersController {
         }
     };
 
-    async verify(req: express.Request, res: express.Response) {
-        const query = req.query;
+    public verify = async (req: express.Request, res: express.Response) => {
+        try {
+            const token = new JwtService();
 
-        const crypt = new EncryptService();
+            const q = req.body.q as string;
 
-        const decrypt = crypt.decrypt(
-            decodeURIComponent(query.q.toString())
-        ) as EncryptionTypes;
+            const crypt = new EncryptService();
 
-        const user = await usersService.readByEmail(decrypt.email);
+            const decrypt = crypt.decrypt(
+                decodeURIComponent(q.toString())
+            ) as EncryptionTypes;
 
-        if (user) {
-            const result = await usersService.activating(decrypt.email);
+            const user = await usersService.readByEmail(decrypt.email);
 
-            if (result) {
-                return res.status(200).send({
-                    data: {},
-                    message: 'Sukses Memverifikasi User',
-                    sukses: true,
-                    status: 200,
-                } as SuccessType);
+            if (user) {
+                const result = await usersService.activating(decrypt.email);
+
+                if (result) {
+                    const accessToken = token.encryptToken(
+                        { id: user.id },
+                        this.accessTokenExhaustedTime
+                    );
+
+                    const refreshToken = token.encryptToken(
+                        { id: user.id, email: user.email },
+                        this.refreshTokenExhaustedTime
+                    );
+
+                    const now = new Date();
+                    now.setTime(now.getTime() + 5 * 3600 * 1000);
+
+                    res.cookie(
+                        'cookie',
+                        crypt.encrypt(refreshToken).toString(),
+                        {
+                            expires: now,
+                            httpOnly: true,
+                        }
+                    );
+
+                    if (!req.session['user']) {
+                        req.session['user'] = {
+                            id: user.id,
+                            email: user.email,
+                        };
+                    }
+
+                    return res.status(200).send({
+                        data: { token: accessToken },
+                        message: 'Sukses Memverifikasi User',
+                        sukses: true,
+                        status: 200,
+                    } as SuccessType);
+                }
+
+                return res.status(500).send({
+                    message: 'Mohon Untuk Di Coba untuk beberapa saat',
+                    error: 'Verification',
+                    status: 500,
+                    sukses: false,
+                } as FailedTypes);
+            } else {
+                return res.status(404).send({
+                    error: 'NotFound',
+                    message: `User Dengan Email ${decrypt.email} Tidak Ada`,
+                    status: 404,
+                    sukses: false,
+                } as FailedTypes);
             }
-
-            return res.status(500).send({
-                message: 'Mohon Untuk Di Coba untuk beberapa saat',
-                error: 'Verification',
-                status: 500,
-                sukses: false,
-            } as FailedTypes);
-        } else {
-            return res.status(404).send({
-                error: 'NotFound',
-                message: `User Dengan Email ${decrypt.email} Tidak Ada`,
-                status: 404,
-                sukses: false,
-            } as FailedTypes);
+        } catch (error) {
+            console.log(error);
+            return HttpResponse.InternalServerError(res);
         }
-    }
+    };
 
     async logout(req: express.Request, res: express.Response) {
         res.clearCookie('q');

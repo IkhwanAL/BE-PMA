@@ -16,7 +16,7 @@ export class UserRoutes extends CommonRoutesConfig {
                 usersController.login
             );
 
-        this.app.route('/verify').get(usersController.verify);
+        this.app.route('/verify').post(usersController.verify);
 
         // Register
         this.app

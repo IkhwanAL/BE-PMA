@@ -20,7 +20,7 @@ class UsersService implements CRUD {
         return UsersDao.getUsersById(id, isActive);
     }
 
-    async readByEmail(email: string, isActive: boolean = false) {
+    async readByEmail(email: string, isActive?: boolean) {
         return UsersDao.getUserByEmail(email, isActive);
     }
 
