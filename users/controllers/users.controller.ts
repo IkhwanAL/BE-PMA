@@ -41,7 +41,7 @@ class UsersController {
 
         req.body.link = `http://${
             req.headers.host
-        }/verify?q=${encodeURIComponent(encrypt)}`;
+        }/?Url=verify&q=${encodeURIComponent(encrypt)}`;
         const { id, email, username, link } = await usersService.create(
             req.body
         );
@@ -211,7 +211,6 @@ class UsersController {
                 } as FailedTypes);
             }
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
