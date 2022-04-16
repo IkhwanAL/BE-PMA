@@ -22,7 +22,7 @@ export abstract class CommonMiddleware {
         }
 
         const token = bearerToken.split(' ')[1];
-
+        console.log(req.cookies, 'COOKIE');
         try {
             const jwt = new JwtService();
             const decode = jwt.decryptToken(token);
@@ -40,6 +40,7 @@ export abstract class CommonMiddleware {
                 return HttpResponse.Unauthorized(res);
             }
         } catch (error) {
+            console.log(req.cookies);
             return HttpResponse.Unauthorized(res);
         }
     }

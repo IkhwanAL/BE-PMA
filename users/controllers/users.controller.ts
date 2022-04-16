@@ -24,10 +24,11 @@ import { JwtService } from '../../common/services/jwt.service.config';
 const log: debug.IDebugger = debug('app:users-controller');
 
 class UsersController {
-    private readonly accessTokenExhaustedTime = 1 * 60 * 60;
+    private readonly accessTokenExhaustedTime = 60;
     private readonly refreshTokenExhaustedTime = 5 * 60 * 60;
 
     async getUserById(req: express.Request, res: express.Response) {
+        console.log(req.body);
         const user = await usersService.readById(parseInt(req.body.id));
         return res.status(200).send(user);
     }
@@ -194,12 +195,15 @@ class UsersController {
 
                 res.cookie('cookie', crypt.encrypt(refreshToken).toString(), {
                     expires: now,
+                    secure: false,
                     httpOnly: true,
                 });
 
-                if (!req.session['user']) {
-                    req.session['user'] = { id: rest.id, email: rest.email };
-                }
+                res.header('Access-Control-Allow-Credentials', 'true');
+
+                // if (!req.session['user']) {
+                //     req.session['user'] = { id: rest.id, email: rest.email };
+                // }
 
                 return res.status(200).send({
                     sukses: true,
@@ -253,7 +257,7 @@ class UsersController {
                     now.setTime(now.getTime() + 5 * 3600 * 1000);
 
                     res.cookie(
-                        'cookie',
+                        'cookies',
                         crypt.encrypt(refreshToken).toString(),
                         {
                             expires: now,
@@ -261,12 +265,12 @@ class UsersController {
                         }
                     );
 
-                    if (!req.session['user']) {
-                        req.session['user'] = {
-                            id: user.id,
-                            email: user.email,
-                        };
-                    }
+                    // if (!req.session['user']) {
+                    //     req.session['user'] = {
+                    //         id: user.id,
+                    //         email: user.email,
+                    //     };
+                    // }
 
                     return res.status(200).send({
                         data: { token: accessToken },
@@ -327,13 +331,13 @@ class UsersController {
 
             now.setTime(now.getTime() + 5 * 3600 * 1000);
 
-            res.cookie('asd', refreshToken, {
+            res.cookie('cookies', refreshToken, {
                 httpOnly: true,
                 expires: now,
             });
-            if (!req.session['user']) {
-                req.session['user'] = { id: id, email: email };
-            }
+            // if (!req.session['user']) {
+            //     req.session['user'] = { id: id, email: email };
+            // }
 
             return HttpResponse.Ok(res, { token: accessToken });
         } catch (error) {
