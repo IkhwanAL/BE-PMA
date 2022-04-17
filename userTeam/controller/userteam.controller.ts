@@ -10,6 +10,7 @@ import projectService from '../../project/service/project.service';
 import userteamDao from '../daos/userteam.dao';
 import usersDao from '../../users/daos/users.dao';
 import projectDao from '../../project/daos/project.dao';
+import { RestApiGetUserById } from '../../common/interfaces/api.interface';
 
 class UserTeamController {
     /**
@@ -23,15 +24,17 @@ class UserTeamController {
      */
     async invite(req: Request, res: Response) {
         try {
-            const findEmail = await userService.readById(
+            const findEmail = (await userService.readById(
                 req.body.idUserInvitation
-            );
+            )) as RestApiGetUserById;
 
             if (!findEmail) {
                 return HttpResponse.BadRequest(res);
             }
 
-            const inviterEmail = await userService.readById(req.body.id);
+            const inviterEmail = (await userService.readById(
+                req.body.id
+            )) as RestApiGetUserById;
             const inviterProject = await projectService.getOneByIdProject(
                 req.body.idProject
             );
@@ -76,7 +79,7 @@ class UserTeamController {
 
             const { response } = await transport.send();
 
-            if (response) {
+            if (response.includes('OK')) {
                 return HttpResponse.Created(res, {});
             }
 
@@ -138,9 +141,13 @@ class UserTeamController {
             );
 
             const trasporter = new EmailNodeMailer();
-            const emailReceiver = await usersDao.getUsersById(idUserInvitation);
+            const emailReceiver = (await usersDao.getUsersById(
+                idUserInvitation
+            )) as RestApiGetUserById;
             const getProject = await projectDao.readOne(idProject);
-            const getOwner = await usersDao.getUsersById(id);
+            const getOwner = (await usersDao.getUsersById(
+                id
+            )) as RestApiGetUserById;
 
             const link = `http://${req.headers.host}/changeowner/${encryptIdProject}/${encryptIdUserInv}`;
 

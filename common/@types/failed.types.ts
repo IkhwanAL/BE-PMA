@@ -1,5 +1,5 @@
 export type FailedTypes = {
-    data?: never;
+    data?: unknown;
     sukses: boolean;
     message: string;
     error?: string;

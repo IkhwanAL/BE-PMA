@@ -8,6 +8,7 @@ import { JwtService } from '../../common/services/jwt.service.config';
 import { EncryptionTypes } from '../../common/@types/Encription.types';
 import usersDao from '../daos/users.dao';
 import { CommonMiddleware } from '../../common/middleware/common.middleware.config';
+import { EncryptService } from '../../common/services/encrypt.service.config';
 
 const log: debug.IDebugger = debug('app:users-controller');
 
@@ -109,7 +110,6 @@ class UsersMiddleware extends CommonMiddleware {
         res: express.Response,
         next: express.NextFunction
     ) {
-        console.log(req.body);
         if (req.body && req.body.email && req.body.password) {
             next();
         } else {
@@ -137,39 +137,6 @@ class UsersMiddleware extends CommonMiddleware {
             req.body.id = user.id;
 
             next();
-        } catch (error) {
-            return HttpResponse.InternalServerError(res);
-        }
-    }
-
-    async AuthRefreshToken(
-        req: express.Request,
-        res: express.Response,
-        next: express.NextFunction
-    ) {
-        try {
-            const bearerToken = req.headers.authorization;
-
-            if (!bearerToken) {
-                return HttpResponse.Unauthorized(res);
-            }
-
-            const token = bearerToken.split(' ')[1];
-            const jwt = new JwtService();
-
-            const decode = jwt.decryptToken(token);
-
-            const { email } = decode as EncryptionTypes;
-
-            const user = await usersDao.getUserByEmail(email, true);
-
-            if (user) {
-                req.body.id = user.id;
-                req.body.email = user.email;
-                next();
-            } else {
-                return HttpResponse.Unauthorized(res);
-            }
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }

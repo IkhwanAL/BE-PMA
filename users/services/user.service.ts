@@ -16,8 +16,8 @@ class UsersService implements CRUD {
         return UsersDao.patchUserById(id, resource);
     }
 
-    async readById(id: number, isActive = true) {
-        return UsersDao.getUsersById(id, isActive);
+    async readById(id: number, isActive = true, column = []) {
+        return UsersDao.getUsersById(id, isActive, column);
     }
 
     async readByEmail(email: string, isActive?: boolean) {
@@ -34,6 +34,15 @@ class UsersService implements CRUD {
 
     async createLink(id: number, link: string) {
         return UsersDao.addNewlink(id, link);
+    }
+
+    async getUserWithIdAndEmail(
+        id: number,
+        email: string,
+        isActive?: boolean,
+        column = []
+    ) {
+        return UsersDao.getUserByIdAndMail(id, email, isActive, column);
     }
 }
 

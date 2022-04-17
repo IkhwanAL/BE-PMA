@@ -5,6 +5,8 @@ import userteamDao from '../../userTeam/daos/userteam.dao';
 import { HttpResponse } from '../services/http.service.config';
 import { JwtService } from '../services/jwt.service.config';
 import { EncryptionTypes } from '../@types/Encription.types';
+import { SuccessReturnAuth } from '../@types/success.types';
+import { EncryptService } from '../services/encrypt.service.config';
 export abstract class CommonMiddleware {
     // protected jwt = new JwtService();
     // constructor() {
@@ -22,14 +24,16 @@ export abstract class CommonMiddleware {
         }
 
         const token = bearerToken.split(' ')[1];
-        console.log(req.cookies, 'COOKIE');
+        // console.log(req.session);
         try {
             const jwt = new JwtService();
             const decode = jwt.decryptToken(token);
 
             const { id } = decode as EncryptionTypes;
 
-            const user = await usersDao.getUsersById(id);
+            const user = (await usersDao.getUsersById(id, true, [
+                'email',
+            ])) as SuccessReturnAuth;
 
             if (user) {
                 req.body.id = user.id;
@@ -37,11 +41,50 @@ export abstract class CommonMiddleware {
 
                 next();
             } else {
-                return HttpResponse.Unauthorized(res);
+                return HttpResponse.NotFound(res);
             }
         } catch (error) {
-            console.log(req.cookies);
+            console.log(error);
+            if (error.name === 'TokenExpiredError') {
+                return HttpResponse.Unauthorized(res, 'TokenExpire', {
+                    name: 'TokenExpire',
+                });
+            }
+
             return HttpResponse.Unauthorized(res);
+        }
+    }
+
+    async AuthRefreshToken(
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) {
+        try {
+            const token = req.cookies.cookie;
+
+            const crypt = new EncryptService();
+            const jwt = new JwtService();
+
+            const refreshToken = crypt.decrypt(token);
+            const decode = jwt.decryptToken(refreshToken);
+
+            const { id, email } = decode as EncryptionTypes;
+
+            const user = (await usersDao.getUserByIdAndMail(id, email, true, [
+                'email',
+            ])) as SuccessReturnAuth;
+
+            if (user) {
+                req.body.id = user.id;
+                req.body.email = user.email;
+
+                next();
+            } else {
+                return HttpResponse.NotFound(res);
+            }
+        } catch (error) {
+            return HttpResponse.Unauthorized(res, 'Tidak Punya Akses');
         }
     }
 

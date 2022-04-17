@@ -4,3 +4,8 @@ export type SuccessType = {
     message: string;
     status: number;
 };
+
+export type SuccessReturnAuth = {
+    id: number;
+    email: string;
+};

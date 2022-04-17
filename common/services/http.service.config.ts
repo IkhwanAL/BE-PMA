@@ -63,11 +63,12 @@ export class HttpResponse {
      * @param res Response
      * @returns
      */
-    public static Unauthorized(res: Response, message?: string) {
+    public static Unauthorized(res: Response, message?: string, data?: any) {
         return res.status(401).send({
             message: message ? message : 'Gagal, Tidak memiliki Akses',
             status: 401,
             sukses: false,
+            data: data,
         } as FailedTypes);
     }
 

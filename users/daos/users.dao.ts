@@ -15,11 +15,52 @@ class UserDao {
         return MysqlPrisma.user.findMany();
     }
 
-    async getUsersById(id: number, isActive = true) {
+    /**
+     *
+     * @param id
+     * @param isActive
+     * @param column
+     * @default @param column will automaticaly add id fot the default column
+     */
+    async getUsersById(id: number, isActive = true, column = []) {
+        let select = {};
+
+        for (const iterator of column) {
+            select[iterator] = true;
+        }
+        console.log(select);
         return MysqlPrisma.user.findFirst({
             where: {
                 id: id,
                 isActive: isActive,
+            },
+            select: {
+                id: true,
+                ...select,
+            },
+        });
+    }
+
+    async getUserByIdAndMail(
+        id: number,
+        email: string,
+        isActive?: boolean,
+        column = []
+    ) {
+        let select = {};
+
+        for (const iterator of column) {
+            select[iterator] = true;
+        }
+        return MysqlPrisma.user.findFirst({
+            where: {
+                id: id,
+                email: email,
+                isActive: isActive,
+            },
+            select: {
+                id: true,
+                ...select,
             },
         });
     }

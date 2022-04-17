@@ -45,7 +45,7 @@ const totalCpus = os.cpus().length;
 // } else {
 const app = express();
 console.log(`Worker ${process.pid} started`);
-
+app.disable('x-powered-by');
 const port = 3001;
 
 const Routes: Array<CommonRoutesConfig> = [];
@@ -54,12 +54,13 @@ const Routes: Array<CommonRoutesConfig> = [];
 //     expressSession({
 //         cookie: {
 //             maxAge: 7 * 24 * 60 * 60 * 1000, // ms
-//             httpOnly: false,
+//             httpOnly: true,
 //             secure: false,
+//             sameSite: true,
 //         },
 //         secret: 'S3C43T_G3N50KYU',
 //         resave: false,
-//         saveUninitialized: true,
+//         saveUninitialized: false,
 //         // rolling: true,
 //         // name: 'sid',
 //         store: new PrismaSessionStore(MysqlPrisma, {

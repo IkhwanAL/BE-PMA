@@ -24,13 +24,32 @@ import { JwtService } from '../../common/services/jwt.service.config';
 const log: debug.IDebugger = debug('app:users-controller');
 
 class UsersController {
-    private readonly accessTokenExhaustedTime = 60;
+    private readonly accessTokenExhaustedTime = 1 * 60 * 60;
     private readonly refreshTokenExhaustedTime = 5 * 60 * 60;
 
     async getUserById(req: express.Request, res: express.Response) {
-        console.log(req.body);
-        const user = await usersService.readById(parseInt(req.body.id));
-        return res.status(200).send(user);
+        const column = [
+            'id',
+            'email',
+            'username',
+            'firstName',
+            'lastName',
+            'phoneNumber',
+            'createdAt',
+            'updatedAt',
+        ];
+        const user = await usersService.readById(
+            parseInt(req.body.id),
+            true,
+            column
+        );
+        console.log(user);
+        return res.status(200).send({
+            sukses: true,
+            message: 'Sukses Login',
+            status: 200,
+            data: user,
+        } as SuccessType);
     }
 
     async createUser(req: express.Request, res: express.Response) {
@@ -201,9 +220,13 @@ class UsersController {
 
                 res.header('Access-Control-Allow-Credentials', 'true');
 
-                // if (!req.session['user']) {
-                //     req.session['user'] = { id: rest.id, email: rest.email };
-                // }
+                // req.session.user = {
+                //     id: rest.id,
+                //     email: rest.email,
+                //     refreshToken: refreshToken,
+                // };
+
+                // req.session.save();
 
                 return res.status(200).send({
                     sukses: true,
@@ -221,6 +244,7 @@ class UsersController {
                 } as FailedTypes);
             }
         } catch (error) {
+            // console
             return HttpResponse.InternalServerError(res);
         }
     };
@@ -301,8 +325,7 @@ class UsersController {
     };
 
     async logout(req: express.Request, res: express.Response) {
-        res.clearCookie('q');
-        delete req.session['user'];
+        res.clearCookie('cookie');
 
         return HttpResponse.NoContent(res);
     }
@@ -311,7 +334,6 @@ class UsersController {
         req: express.Request,
         res: express.Response
     ) => {
-        delete req.session['user'];
         try {
             const { id, email } = req.body;
 
@@ -330,8 +352,9 @@ class UsersController {
             const now = new Date();
 
             now.setTime(now.getTime() + 5 * 3600 * 1000);
+            const crypt = new EncryptService();
 
-            res.cookie('cookies', refreshToken, {
+            res.cookie('cookie', crypt.encrypt(refreshToken).toString(), {
                 httpOnly: true,
                 expires: now,
             });
