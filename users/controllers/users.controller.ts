@@ -358,9 +358,6 @@ class UsersController {
                 httpOnly: true,
                 expires: now,
             });
-            // if (!req.session['user']) {
-            //     req.session['user'] = { id: id, email: email };
-            // }
 
             return HttpResponse.Ok(res, { token: accessToken });
         } catch (error) {
