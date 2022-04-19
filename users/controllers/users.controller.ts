@@ -327,7 +327,10 @@ class UsersController {
 
     async logout(req: express.Request, res: express.Response) {
         res.clearCookie('cookie');
-        res.cookie();
+        res.cookie('cookie', EncryptService.RandomChar(20), {
+            httpOnly: true,
+            expires: new Date(0),
+        });
         return HttpResponse.NoContent(res);
     }
 

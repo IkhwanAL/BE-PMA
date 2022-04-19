@@ -31,7 +31,7 @@ export class EncryptService {
         );
     }
 
-    public RandomChar(len: number) {
+    public static RandomChar(len: number) {
         return crypto.randomBytes(len).toString('hex');
     }
 }

@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import moment from 'moment';
 import MysqlPrisma from '../../common/services/mysql.service.config';
 import { CreateProjectDto } from '../dto/create.project.dto';
@@ -84,9 +85,17 @@ class ProjectDao {
         });
     }
 
-    async readAll(idUser: number) {
+    async readAll(idUser: number, take = null) {
+        let condition: Prisma.projectFindManyArgs = {};
+
+        if (take) {
+            condition = {
+                ...condition,
+                take: take,
+            };
+        }
         return MysqlPrisma.project.findMany({
-            take: 4,
+            ...condition,
             where: {
                 OR: {
                     userOwner: idUser,
@@ -101,7 +110,22 @@ class ProjectDao {
                 projectName: true,
                 projectId: true,
                 deadline: true,
+                projectDescription: true,
                 deadlineInString: true,
+                user: {
+                    select: {
+                        username: true,
+                    },
+                },
+                userteam: {
+                    select: {
+                        user: {
+                            select: {
+                                username: true,
+                            },
+                        },
+                    },
+                },
             },
         });
     }

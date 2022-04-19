@@ -25,8 +25,9 @@ class ProjectController extends CommonController {
             const project = await projectService.create(req.body.id, payload);
 
             return HttpResponse.Ok(res, {
-                name: project.projectName,
-                description: project.projectDescription,
+                projectId: project.projectId,
+                projectName: project.projectName,
+                projectDescription: project.projectDescription,
             });
         } catch (error) {
             return HttpResponse.InternalServerError(res);
@@ -80,6 +81,7 @@ class ProjectController extends CommonController {
             );
 
             return HttpResponse.Created(res, {
+                projectId: project.projectId,
                 projectName: project.projectName,
                 projectDescription: project.projectDescription,
             });
