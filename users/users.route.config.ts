@@ -48,6 +48,7 @@ export class UserRoutes extends CommonRoutesConfig {
         this.app.patch('/users/changeps', [
             usersMiddleware.Authentication,
             usersMiddleware.validateUserExists,
+            usersMiddleware.validatePassword,
             usersController.changePassword,
         ]);
 
@@ -62,6 +63,8 @@ export class UserRoutes extends CommonRoutesConfig {
             usersMiddleware.AuthRefreshToken,
             usersController.refreshToken,
         ]);
+
+        this.app.get('/logout', [usersController.logout]);
 
         return this.app;
     }

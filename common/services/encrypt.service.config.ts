@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import CryptoJs, { mode, pad } from 'crypto-js';
+import crypto from 'crypto';
 
 export class EncryptService {
     private iv = CryptoJs.enc.Utf8.parse(process.env.SECRET_KEY);
@@ -28,5 +29,9 @@ export class EncryptService {
                 })
             )
         );
+    }
+
+    public RandomChar(len: number) {
+        return crypto.randomBytes(len).toString('hex');
     }
 }

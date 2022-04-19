@@ -163,6 +163,7 @@ class UsersController {
 
             return HttpResponse.NoContent(res);
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
@@ -170,7 +171,7 @@ class UsersController {
     async removeUser(req: express.Request, res: express.Response) {
         try {
             await usersService.deleteById(req.body.id);
-
+            res.clearCookie('cookie');
             return HttpResponse.NoContent(res);
         } catch (error) {
             return HttpResponse.InternalServerError(res);
@@ -326,7 +327,7 @@ class UsersController {
 
     async logout(req: express.Request, res: express.Response) {
         res.clearCookie('cookie');
-
+        res.cookie();
         return HttpResponse.NoContent(res);
     }
 

@@ -44,7 +44,6 @@ export abstract class CommonMiddleware {
                 return HttpResponse.NotFound(res);
             }
         } catch (error) {
-            console.log(error);
             if (error.name === 'TokenExpiredError') {
                 return HttpResponse.Unauthorized(res, 'TokenExpire', {
                     name: 'TokenExpire',
@@ -84,6 +83,7 @@ export abstract class CommonMiddleware {
                 return HttpResponse.NotFound(res);
             }
         } catch (error) {
+            console.log(error);
             return HttpResponse.Unauthorized(res, 'Tidak Punya Akses');
         }
     }

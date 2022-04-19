@@ -2,13 +2,10 @@ import express from 'express';
 import userService from '../services/user.service';
 import debug from 'debug';
 import { FailedTypes } from '../../common/@types/failed.types';
-import { Http } from 'winston/lib/winston/transports';
 import { HttpResponse } from '../../common/services/http.service.config';
-import { JwtService } from '../../common/services/jwt.service.config';
-import { EncryptionTypes } from '../../common/@types/Encription.types';
-import usersDao from '../daos/users.dao';
 import { CommonMiddleware } from '../../common/middleware/common.middleware.config';
-import { EncryptService } from '../../common/services/encrypt.service.config';
+import argon2 from 'argon2';
+import { user } from '@prisma/client';
 
 const log: debug.IDebugger = debug('app:users-controller');
 
@@ -141,6 +138,32 @@ class UsersMiddleware extends CommonMiddleware {
             return HttpResponse.InternalServerError(res);
         }
     }
+
+    public validatePassword = async (
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) => {
+        try {
+            const user = (await userService.readById(req.body.id, true, [
+                'password',
+            ])) as user;
+
+            const validatePass = await argon2.verify(
+                user.password,
+                req.body.currentPassword
+            );
+            console.log(validatePass);
+
+            if (validatePass) {
+                next();
+            } else {
+                return HttpResponse.Forbidden(res, 'Password Tidak Ada');
+            }
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    };
 }
 
 export default new UsersMiddleware();
