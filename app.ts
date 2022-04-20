@@ -50,27 +50,6 @@ const port = 3001;
 
 const Routes: Array<CommonRoutesConfig> = [];
 
-// app.use(
-//     expressSession({
-//         cookie: {
-//             maxAge: 7 * 24 * 60 * 60 * 1000, // ms
-//             httpOnly: true,
-//             secure: false,
-//             sameSite: true,
-//         },
-//         secret: 'S3C43T_G3N50KYU',
-//         resave: false,
-//         saveUninitialized: false,
-//         // rolling: true,
-//         // name: 'sid',
-//         store: new PrismaSessionStore(MysqlPrisma, {
-//             checkPeriod: 2 * 60 * 1000, //ms
-//             dbRecordIdIsSessionId: true,
-//             dbRecordIdFunction: undefined,
-//         }),
-//     })
-// );
-
 app.use(cookieParser());
 
 app.use(express.json());
