@@ -17,6 +17,13 @@ export class ProjectRoute extends CommonRoutesConfig {
 
         this.app.param('idProject', projectMiddleware.extractidProject);
 
+        this.app.get(
+            '/project/get/:idProject',
+            projectMiddleware.Authentication,
+            projectMiddleware.checkProject,
+            projectController.getOneSmallProject
+        );
+
         this.app
             .route('/project/:idProject')
             .all(
@@ -24,6 +31,7 @@ export class ProjectRoute extends CommonRoutesConfig {
                 projectMiddleware.checkProject
             )
             .get(projectController.getOneProject)
+
             .delete(
                 projectMiddleware.checkIsItLeader,
                 projectController.deleteProject

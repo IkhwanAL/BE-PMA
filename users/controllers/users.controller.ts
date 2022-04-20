@@ -221,14 +221,6 @@ class UsersController {
 
                 res.header('Access-Control-Allow-Credentials', 'true');
 
-                // req.session.user = {
-                //     id: rest.id,
-                //     email: rest.email,
-                //     refreshToken: refreshToken,
-                // };
-
-                // req.session.save();
-
                 return res.status(200).send({
                     sukses: true,
                     message: 'Sukses Login',
@@ -289,13 +281,6 @@ class UsersController {
                             httpOnly: true,
                         }
                     );
-
-                    // if (!req.session['user']) {
-                    //     req.session['user'] = {
-                    //         id: user.id,
-                    //         email: user.email,
-                    //     };
-                    // }
 
                     return res.status(200).send({
                         data: { token: accessToken },

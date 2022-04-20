@@ -60,6 +60,20 @@ class ProjectController extends CommonController {
         }
     }
 
+    async getOneSmallProject(req: Request, res: Response) {
+        try {
+            console.log(req.body);
+            const project = await projectService.getOneSmallColumn(
+                req.body.id,
+                req.body.idProject
+            );
+
+            return HttpResponse.Ok(res, project);
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    }
+
     async patchProject(req: Request, res: Response) {
         try {
             const allowedPatch = ['projectName', 'projectDescription'];

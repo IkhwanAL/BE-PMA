@@ -85,6 +85,27 @@ class ProjectDao {
         });
     }
 
+    async getOneSmallColumn(idUser: number, idProject: number) {
+        return MysqlPrisma.project.findFirst({
+            where: {
+                OR: {
+                    userOwner: idUser,
+                    userteam: {
+                        every: {
+                            userId: idUser,
+                        },
+                    },
+                },
+                projectId: idProject,
+            },
+            select: {
+                projectId: true,
+                projectName: true,
+                projectDescription: true,
+            },
+        });
+    }
+
     async readAll(idUser: number, take = null) {
         let condition: Prisma.projectFindManyArgs = {};
 

@@ -12,6 +12,10 @@ class ProjectService {
         return projectDao.readAll(idUser);
     }
 
+    async getOneSmallColumn(idUser: number, idProject: number) {
+        return projectDao.getOneSmallColumn(idUser, idProject);
+    }
+
     async deleteProject(idProject: number) {
         return projectDao.delete(idProject);
     }
