@@ -14,7 +14,7 @@ export class ProjectActivityRoute extends CommonRoutesConfig {
         this.app.param('idProject', projectActivityMiddleware.extractidProject);
 
         this.app
-            .route('/projectactivity/:idProject')
+            .route('/projectactivity/project/:idProject')
             .all(projectActivityMiddleware.Authentication)
             .post(
                 projectActivityMiddleware.checkIsItLeader,
@@ -32,14 +32,19 @@ export class ProjectActivityRoute extends CommonRoutesConfig {
         );
 
         this.app
-            .route('/projectactivity/get/:idProjectActivity')
-            .all(projectActivityMiddleware.Authentication)
+            .route('/projectactivity/:idProjectActivity')
+            .all(
+                projectActivityMiddleware.Authentication,
+                projectActivityMiddleware.checkIsItLeader
+            )
             // .get(projectActivityController.getOne)
             .patch(projectActivityController.patchProjectActivity)
-            .delete(
-                projectActivityMiddleware.checkIsItLeader,
-                projectActivityController.deleteProjectActivity
-            );
+            .delete(projectActivityController.deleteProjectActivity);
+
+        this.app.patch('/projectactivity/move/:idProjectActivity', [
+            projectActivityMiddleware.Authentication,
+            projectActivityController.movingCardFromPosistionAToPositionB,
+        ]);
 
         return this.app;
     }

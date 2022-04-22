@@ -62,6 +62,7 @@ class ProjectController extends CommonController {
 
     async getOneSmallProject(req: Request, res: Response) {
         try {
+            console.log(req.body);
             const project = await projectService.getOneSmallColumn(
                 req.body.id,
                 req.body.idProject

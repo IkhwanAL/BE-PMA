@@ -18,7 +18,7 @@ export class ProjectRoute extends CommonRoutesConfig {
         this.app.param('idProject', projectMiddleware.extractidProject);
 
         this.app.get(
-            '/project/get/:idProject',
+            '/project/get/data/:idProject',
             projectMiddleware.Authentication,
             projectMiddleware.checkProject,
             projectController.getOneSmallProject

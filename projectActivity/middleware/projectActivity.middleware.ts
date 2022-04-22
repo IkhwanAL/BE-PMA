@@ -26,6 +26,12 @@ class ProjectActivityMiddleware extends CommonMiddleware {
 
         next();
     }
+
+    CheckAccessbilityPerUser = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {};
 }
 
 export default new ProjectActivityMiddleware();

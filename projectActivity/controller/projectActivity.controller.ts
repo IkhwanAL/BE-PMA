@@ -91,9 +91,6 @@ class ProjectACtivityController {
         try {
             const { idProjectActivity, idProject, id, email, ...rest } =
                 req.body;
-            const patchProjectActivity = {
-                ...req.body,
-            } as PatchProjectActivityDto;
 
             const projectActivity =
                 await projectActivityService.patchProjectActivity(
@@ -137,6 +134,30 @@ class ProjectACtivityController {
             return HttpResponse.InternalServerError(res);
         }
     }
+
+    public movingCardFromPosistionAToPositionB = async (
+        req: Request,
+        res: Response
+    ) => {
+        try {
+            const { idProjectActivity, idProject, id, email, ...rest } =
+                req.body;
+
+            const projectActivity =
+                await projectActivityService.patchProjectActivity(
+                    idProjectActivity,
+                    {
+                        position: rest.position,
+                    }
+                );
+            return HttpResponse.Ok(res, {
+                projectActivityId: projectActivity.projectActivityId,
+                position: projectActivity.position,
+            });
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    };
 }
 
 export default new ProjectACtivityController();
