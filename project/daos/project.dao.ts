@@ -233,6 +233,24 @@ class ProjectDao {
             },
         });
     }
+
+    async getAllUserTeamByIdProject(idProject: number) {
+        return MysqlPrisma.userteam.findMany({
+            where: {
+                projectId: idProject,
+            },
+            select: {
+                userId: true,
+                teamId: true,
+                role: true,
+                user: {
+                    select: {
+                        username: true,
+                    },
+                },
+            },
+        });
+    }
 }
 
 export default new ProjectDao();

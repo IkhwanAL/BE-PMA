@@ -206,6 +206,18 @@ class ProjectController extends CommonController {
             return HttpResponse.InternalServerError(res);
         }
     }
+
+    public GetUserTeam = async (req: Request, res: Response) => {
+        try {
+            const userteam = await projectService.getAllUserTeamWithIdProject(
+                req.body.idProject
+            );
+
+            return HttpResponse.Ok(res, userteam);
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    };
 }
 
 export default new ProjectController();

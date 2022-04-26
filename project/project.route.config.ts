@@ -47,6 +47,15 @@ export class ProjectRoute extends CommonRoutesConfig {
             projectMiddleware.checkProject,
             projectController.calculate
         );
+
+        // Get User Team
+
+        this.app.get(
+            '/project/userteam/:idProject',
+            projectMiddleware.Authentication,
+            projectMiddleware.checkProject,
+            projectController.GetUserTeam
+        );
         return this.app;
     }
 }
