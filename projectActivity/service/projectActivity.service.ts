@@ -44,6 +44,10 @@ class ProjectActivityService {
     async getOneProjectActivity(idProjectActivity: number) {
         return projectActivityDao.getOne(idProjectActivity);
     }
+
+    async getSimple(idProjectActivity: number) {
+        return projectActivityDao.getOneSimple(idProjectActivity);
+    }
 }
 
 export default new ProjectActivityService();

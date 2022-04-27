@@ -33,18 +33,32 @@ export class ProjectActivityRoute extends CommonRoutesConfig {
 
         this.app
             .route('/projectactivity/:idProjectActivity')
-            .all(
-                projectActivityMiddleware.Authentication,
-                projectActivityMiddleware.checkIsItLeader
-            )
+            .all(projectActivityMiddleware.Authentication)
             // .get(projectActivityController.getOne)
-            .patch(projectActivityController.patchProjectActivity)
-            .delete(projectActivityController.deleteProjectActivity);
+            .patch(
+                projectActivityMiddleware.checkIsItLeader,
+                projectActivityController.patchProjectActivity
+            )
+            .delete(
+                projectActivityMiddleware.checkIsItLeader,
+                projectActivityController.deleteProjectActivity
+            );
+
+        this.app.get(
+            '/ProjectActivity/GET/:idProjectActivity',
+            projectActivityMiddleware.Authentication,
+            projectActivityController.getProjectActivityByProjectActivityId
+        );
 
         this.app.patch('/projectactivity/move/:idProjectActivity', [
             projectActivityMiddleware.Authentication,
             projectActivityController.movingCardFromPosistionAToPositionB,
         ]);
+
+        this.app.get(
+            '/ProjectActivity/GETSIMPLE/:idProjectActivity',
+            projectActivityController.getOneSimple
+        );
 
         return this.app;
     }

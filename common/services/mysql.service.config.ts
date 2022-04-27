@@ -4,7 +4,9 @@ class MysqlPrisma {
     private static Prisma: PrismaClient;
 
     private constructor() {
-        MysqlPrisma.Prisma = new PrismaClient();
+        MysqlPrisma.Prisma = new PrismaClient({
+            log: ['query', 'info', 'warn', 'error'],
+        });
     }
 
     /**

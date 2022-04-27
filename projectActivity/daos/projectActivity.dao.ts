@@ -93,6 +93,24 @@ class ProjectActivityDao {
             },
             include: {
                 subdetailprojectactivity: true,
+                usertaskfromassignee: {
+                    include: {
+                        user: {
+                            select: { username: true },
+                        },
+                    },
+                },
+            },
+        });
+    }
+
+    async getOneSimple(idProjectActivity: number) {
+        return MysqlPrisma.projectactivity.findFirst({
+            where: {
+                projectActivityId: idProjectActivity,
+            },
+            select: {
+                name: true,
             },
         });
     }
