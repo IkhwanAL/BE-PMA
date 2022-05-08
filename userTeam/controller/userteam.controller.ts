@@ -217,6 +217,10 @@ class UserTeamController {
         try {
             const { Data } = req.body;
 
+            for (const iterator of Data as Array<number>) {
+                
+            }
+
             await userteamService.deleteTeam(Data as Array<number>);
 
             return HttpResponse.NoContent(res);
