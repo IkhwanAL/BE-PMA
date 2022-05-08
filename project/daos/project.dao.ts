@@ -88,14 +88,16 @@ class ProjectDao {
     async getOneSmallColumn(idUser: number, idProject: number) {
         return MysqlPrisma.project.findFirst({
             where: {
-                OR: {
-                    userOwner: idUser,
-                    userteam: {
-                        every: {
-                            userId: idUser,
+                OR: [
+                    { userOwner: idUser },
+                    {
+                        userteam: {
+                            some: {
+                                userId: idUser,
+                            },
                         },
                     },
-                },
+                ],
                 projectId: idProject,
             },
             select: {
@@ -118,14 +120,18 @@ class ProjectDao {
         return MysqlPrisma.project.findMany({
             ...condition,
             where: {
-                OR: {
-                    userOwner: idUser,
-                    userteam: {
-                        some: {
-                            userId: idUser,
+                OR: [
+                    {
+                        userOwner: idUser,
+                    },
+                    {
+                        userteam: {
+                            some: {
+                                userId: idUser,
+                            },
                         },
                     },
-                },
+                ],
             },
             select: {
                 projectName: true,
@@ -248,6 +254,18 @@ class ProjectDao {
                         username: true,
                     },
                 },
+            },
+        });
+    }
+
+    async getCurrentLeader(idProject: number) {
+        return MysqlPrisma.project.findFirst({
+            where: {
+                projectId: idProject,
+            },
+            select: {
+                user: true,
+                userOwner: true,
             },
         });
     }

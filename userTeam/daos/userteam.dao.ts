@@ -43,39 +43,60 @@ class UserTeamDao {
 
     /**
      *
-     * @param idUser User That Want To Downgrade Position
      * @param idChoosenUser User That Been Choosen To Promote To Proyek Manager
      * @param idProject What Project THat WIll CHange The Leader
      * @returns
      */
-    async changePM(idUser: number, idChoosenUser: number, idProject: number) {
-        return MysqlPrisma.$transaction([
-            MysqlPrisma.userteam.updateMany({
-                where: {
-                    AND: { projectId: idProject, userId: idChoosenUser },
-                },
-                data: {
-                    role: 'Proyek_Manager',
-                },
-            }),
-            MysqlPrisma.userteam.updateMany({
-                where: {
-                    AND: { projectId: idProject, userId: idUser },
-                },
-                data: {
-                    role: 'Tim',
-                },
-            }),
-            MysqlPrisma.project.update({
+    async changePM(idChoosenUser: number, idProject: number) {
+        return MysqlPrisma.$transaction(async (Prisma) => {
+            // 1. Ubah Semua Status Pada IdProject di table userteam menjadi tim
+            const ChangeIdProjectTeamUserRoleToTim =
+                await Prisma.userteam.updateMany({
+                    where: {
+                        projectId: idProject,
+                    },
+                    data: {
+                        role: 'Tim',
+                    },
+                });
+
+            // 2. Optional Jika Gk Ada Tim
+            if (ChangeIdProjectTeamUserRoleToTim.count === 0) {
+                throw new Error('User Tim Kosong');
+            }
+
+            const ChangeOwner = await Prisma.project.update({
                 where: {
                     projectId: idProject,
                 },
                 data: {
                     userOwner: idChoosenUser,
-                    updatedAt: new Date(),
                 },
-            }),
-        ]);
+            });
+
+            if (!ChangeOwner) {
+                throw new Error('Terjadi Kesalahan Pada Server');
+            }
+
+            const ChangeChoosenUserBecomeAProyekManager =
+                await Prisma.userteam.updateMany({
+                    where: {
+                        AND: [
+                            {
+                                projectId: idProject,
+                            },
+                            {
+                                userId: idChoosenUser,
+                            },
+                        ],
+                    },
+                    data: {
+                        role: 'Proyek_Manager',
+                    },
+                });
+
+            return ChangeChoosenUserBecomeAProyekManager;
+        });
     }
 
     async getTeamPerIdTeam(idTeam: number, idProject?: number) {
@@ -96,10 +117,24 @@ class UserTeamDao {
         });
     }
 
-    async deleteWithIdTeam(idTeam: number) {
-        return MysqlPrisma.userteam.delete({
+    async deleteWithIdTeam(idTeams: Array<number>) {
+        return MysqlPrisma.userteam.deleteMany({
+            where: {
+                teamId: {
+                    in: idTeams,
+                },
+            },
+        });
+    }
+
+    async getUserWithTeamIm(idTeam: number) {
+        return MysqlPrisma.userteam.findFirst({
             where: {
                 teamId: idTeam,
+            },
+            select: {
+                userId: true,
+                role: true,
             },
         });
     }

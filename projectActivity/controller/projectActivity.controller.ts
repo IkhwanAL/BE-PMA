@@ -182,7 +182,6 @@ class ProjectACtivityController {
             };
             return HttpResponse.Ok(res, NewProjectActivity);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };

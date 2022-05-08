@@ -137,4 +137,8 @@ export class HttpResponse {
             sukses: false,
         } as FailedTypes);
     }
+
+    public static RedirectPermanent(res: Response, link: string, arg?: any) {
+        return res.status(301).redirect(link);
+    }
 }

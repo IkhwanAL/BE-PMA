@@ -48,6 +48,10 @@ class ProjectService {
     async getAllUserTeamWithIdProject(idProject: number) {
         return projectDao.getAllUserTeamByIdProject(idProject);
     }
+
+    async getLeaderProject(idProject: number) {
+        return projectDao.getCurrentLeader(idProject);
+    }
 }
 
 export default new ProjectService();

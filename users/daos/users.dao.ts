@@ -28,7 +28,7 @@ class UserDao {
         for (const iterator of column) {
             select[iterator] = true;
         }
-        console.log(select);
+
         return MysqlPrisma.user.findFirst({
             where: {
                 id: id,
