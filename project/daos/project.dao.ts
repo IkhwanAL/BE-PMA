@@ -91,7 +91,7 @@ class ProjectDao {
                 OR: {
                     userOwner: idUser,
                     userteam: {
-                        every: {
+                        some: {
                             userId: idUser,
                         },
                     },
