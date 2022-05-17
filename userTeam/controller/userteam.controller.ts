@@ -215,15 +215,12 @@ class UserTeamController {
 
     public deleteTeam = async (req: Request, res: Response) => {
         try {
-            const { Data } = req.body;
+            const { Data, idProject } = req.body;
 
-            for (const iterator of Data as Array<number>) {
-                
-            }
+            // return;
+            await userteamService.deleteTeam(Data as Array<number>, idProject);
 
-            await userteamService.deleteTeam(Data as Array<number>);
-
-            return HttpResponse.NoContent(res);
+            return HttpResponse.Ok(res, {});
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }

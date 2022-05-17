@@ -58,12 +58,17 @@ class ProjectDao {
         idProject: number
     ) {
         return MysqlPrisma.project.findFirst({
-            include: {
+            where: {
                 userteam: {
-                    where: {
+                    some: {
                         userId: idUserTeam,
                         projectId: idProject,
                     },
+                },
+                projectId: idProject,
+            },
+            include: {
+                userteam: {
                     include: {
                         user: {
                             select: {
@@ -251,6 +256,7 @@ class ProjectDao {
                 role: true,
                 user: {
                     select: {
+                        email: true,
                         username: true,
                     },
                 },
