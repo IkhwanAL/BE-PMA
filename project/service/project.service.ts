@@ -44,6 +44,14 @@ class ProjectService {
     }
 
     async saveDeadline(idProject: number, deadline: number) {}
+
+    async getAllUserTeamWithIdProject(idProject: number) {
+        return projectDao.getAllUserTeamByIdProject(idProject);
+    }
+
+    async getLeaderProject(idProject: number) {
+        return projectDao.getCurrentLeader(idProject);
+    }
 }
 
 export default new ProjectService();

@@ -153,7 +153,6 @@ class UsersMiddleware extends CommonMiddleware {
                 user.password,
                 req.body.currentPassword
             );
-            console.log(validatePass);
 
             if (validatePass) {
                 next();

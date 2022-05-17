@@ -24,7 +24,7 @@ export abstract class CommonMiddleware {
         }
 
         const token = bearerToken.split(' ')[1];
-        // console.log(req.session);
+
         try {
             const jwt = new JwtService();
             const decode = jwt.decryptToken(token);
@@ -83,7 +83,6 @@ export abstract class CommonMiddleware {
                 return HttpResponse.NotFound(res);
             }
         } catch (error) {
-            console.log(error);
             return HttpResponse.Unauthorized(res, 'Tidak Punya Akses');
         }
     }

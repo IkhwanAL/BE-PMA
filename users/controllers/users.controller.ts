@@ -43,7 +43,7 @@ class UsersController {
             true,
             column
         );
-        console.log(user);
+
         return res.status(200).send({
             sukses: true,
             message: 'Sukses Login',
@@ -163,7 +163,6 @@ class UsersController {
 
             return HttpResponse.NoContent(res);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
@@ -305,7 +304,6 @@ class UsersController {
                 } as FailedTypes);
             }
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };

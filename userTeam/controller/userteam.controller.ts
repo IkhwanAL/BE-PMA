@@ -129,27 +129,44 @@ class UserTeamController {
 
     async changeOwner(req: Request, res: Response) {
         try {
+            console.log(req.body);
             const { id, idUserInvitation, idProject } = req.body;
 
             const crypt = new EncryptService();
 
+            // Encrypt Project
             const encryptIdProject = encodeURIComponent(
                 crypt.encrypt(idProject).toString()
             );
+
+            // Encrypt Login
             const encryptIdUserInv = encodeURIComponent(
                 crypt.encrypt(id).toString()
             );
 
             const trasporter = new EmailNodeMailer();
+
+            // Encrypt User Blah Blah Blah
             const emailReceiver = (await usersDao.getUsersById(
-                idUserInvitation
+                idUserInvitation,
+                true,
+                ['email', 'id']
             )) as RestApiGetUserById;
+
             const getProject = await projectDao.readOne(idProject);
             const getOwner = (await usersDao.getUsersById(
                 id
             )) as RestApiGetUserById;
 
-            const link = `http://${req.headers.host}/changeowner/${encryptIdProject}/${encryptIdUserInv}`;
+            const param = encodeURIComponent(
+                crypt
+                    .encrypt(`${encryptIdProject}+${emailReceiver.id}`)
+                    .toString()
+            );
+
+            // const link = `http://${req.headers.host}/ownerchange/${encryptIdProject}/${encryptIdUserInv}`;
+
+            const link = `http://${req.headers.host}/ownerchange/${param}`;
 
             const Link = await userService.createLink(id, link);
 
@@ -173,35 +190,38 @@ class UserTeamController {
 
             return HttpResponse.BadRequest(res);
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
 
     public ownerChange = async (req: Request, res: Response) => {
         try {
+            console.log(req.body, 'Body');
             /**
-             * Id => Id Login User
              * idProject => Id Project That Want To Change Leader
              * idLeaderParam => Id Leader Of Project
              */
-            const { id, idProject, idLeaderParam } = req.body;
+            const { idProject, idLeaderParam } = req.body;
 
-            const idLeader = decodeURIComponent(idLeaderParam);
-            const idPro = decodeURIComponent(idProject);
-
-            await userteamDao.changePM(parseInt(idLeader), id, parseInt(idPro));
-
-            return HttpResponse.Ok(res, {});
+            await userteamService.changeOwner(idLeaderParam, idProject);
+            const link = `${process.env.IPWEB}?Url=ChangeOwner&_q=true`;
+            return HttpResponse.RedirectPermanent(res, link);
         } catch (error) {
+            console.log(error, 'Fetch');
             return HttpResponse.InternalServerError(res);
         }
     };
 
     public deleteTeam = async (req: Request, res: Response) => {
         try {
-            const { idTeam } = req.body;
+            const { Data } = req.body;
 
-            await userteamService.deleteTeam(idTeam);
+            for (const iterator of Data as Array<number>) {
+                
+            }
+
+            await userteamService.deleteTeam(Data as Array<number>);
 
             return HttpResponse.NoContent(res);
         } catch (error) {

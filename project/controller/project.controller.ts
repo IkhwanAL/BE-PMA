@@ -53,7 +53,6 @@ class ProjectController extends CommonController {
     async getAllProject(req: Request, res: Response) {
         try {
             const project = await projectService.getAll(req.body.id);
-
             return HttpResponse.Ok(res, project);
         } catch (error) {
             return HttpResponse.InternalServerError(res);
@@ -62,12 +61,11 @@ class ProjectController extends CommonController {
 
     async getOneSmallProject(req: Request, res: Response) {
         try {
-            console.log(req.body);
             const project = await projectService.getOneSmallColumn(
                 req.body.id,
                 req.body.idProject
             );
-
+            console.log(project);
             return HttpResponse.Ok(res, project);
         } catch (error) {
             return HttpResponse.InternalServerError(res);
@@ -206,6 +204,30 @@ class ProjectController extends CommonController {
             return HttpResponse.InternalServerError(res);
         }
     }
+
+    public GetUserTeam = async (req: Request, res: Response) => {
+        try {
+            const userteam = await projectService.getAllUserTeamWithIdProject(
+                req.body.idProject
+            );
+
+            return HttpResponse.Ok(res, userteam);
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    };
+
+    public GetLeader = async (req: Request, res: Response) => {
+        try {
+            const user = await projectService.getLeaderProject(
+                req.body.idProject
+            );
+
+            return HttpResponse.Ok(res, user);
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    };
 }
 
 export default new ProjectController();

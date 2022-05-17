@@ -58,7 +58,6 @@ export class CPM {
         } else {
             this.convert();
             this.Start();
-            // console.log(this.memoize);
         }
     }
 
@@ -221,7 +220,7 @@ export class CPM {
             if (!this.memoize[currentId]) {
                 this.memoize[currentId] = {} as CPM;
             }
-            // console.log(this.memoize);
+
             if (!Act[currentId].parent) {
                 this.memoize[currentId].es = 0;
                 this.memoize[currentId].ef = Act[currentId].timeToComplete + 0;

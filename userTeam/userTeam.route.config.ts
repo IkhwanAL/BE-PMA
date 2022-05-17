@@ -29,6 +29,7 @@ export class UserTeamRoutes extends CommonRoutesConfig {
             userTeamMiddleware.Authentication,
             userTeamMiddleware.checkProject,
             userTeamMiddleware.checkUserTeam,
+            userTeamMiddleware.checkIsItLeader,
             userteamController.invite
         );
 
@@ -42,7 +43,8 @@ export class UserTeamRoutes extends CommonRoutesConfig {
 
         this.app.delete(
             '/userteam/delete/:idTeam',
-            userTeamMiddleware.Authentication
+            userTeamMiddleware.Authentication,
+            userTeamMiddleware.checkIsItLeader
         );
 
         this.app.post(
@@ -53,9 +55,17 @@ export class UserTeamRoutes extends CommonRoutesConfig {
             userteamController.changeOwner
         );
 
-        this.app.patch(
-            'ownerchange/:idProject/:idLeaderParam',
-            userTeamMiddleware.Authentication,
+        // this.app.get(
+        //     '/ownerchange/:idProject/:idLeaderParam',
+        //     // userTeamMiddleware.Authentication,
+        //     userTeamMiddleware.checkUserTeam,
+        //     userteamController.ownerChange
+        // );
+
+        this.app.param('Link', userTeamMiddleware.extractLink);
+        this.app.get(
+            '/ownerchange/:Link',
+            // userTeamMiddleware.Authentication,
             userTeamMiddleware.checkUserTeam,
             userteamController.ownerChange
         );

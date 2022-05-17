@@ -158,6 +158,45 @@ class ProjectACtivityController {
             return HttpResponse.InternalServerError(res);
         }
     };
+
+    public getProjectActivityByProjectActivityId = async (
+        req: Request,
+        res: Response
+    ) => {
+        try {
+            const projectActivity =
+                await projectActivityService.getOneProjectActivity(
+                    req.body.idProjectActivity
+                );
+            const ParentActivity: Array<any> = [];
+            const Split = projectActivity.parent.split(',') as Array<string>;
+            for (let index = 0; index < Split.length; index++) {
+                const element = parseInt(Split[index]);
+                const Parent = await projectActivityService.getSimple(element);
+                const Payload = [element, Parent.name];
+                ParentActivity.push(Payload);
+            }
+            const NewProjectActivity = {
+                ...projectActivity,
+                ['ParentActivityName']: ParentActivity,
+            };
+            return HttpResponse.Ok(res, NewProjectActivity);
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    };
+
+    public getOneSimple = async (req: Request, res: Response) => {
+        try {
+            const projectActivity = await projectActivityService.getSimple(
+                req.body.idProjectActivity
+            );
+
+            return HttpResponse.Ok(res, projectActivity);
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    };
 }
 
 export default new ProjectACtivityController();
