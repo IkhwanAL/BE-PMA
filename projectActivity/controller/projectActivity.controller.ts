@@ -41,6 +41,16 @@ class ProjectACtivityController {
 
     async createProjectActivity(req: Request, res: Response) {
         try {
+            const usertask = [];
+
+            for (const iterator of req.body.usertaskfromassignee) {
+                const payload = {
+                    idUser: iterator,
+                };
+
+                usertask.push(payload);
+            }
+
             const payload = {
                 projectId: req.body.idProject,
                 name: req.body.name,
@@ -52,6 +62,7 @@ class ProjectACtivityController {
                 position: req.body.position ?? projectactivity_position.To_Do,
                 progress: req.body.progress ?? 0,
                 status: req.body.status ?? false,
+                usertaskfromassignee: usertask ?? [],
             } as CreateProjectActivityDto;
 
             const projectAct = await projectActivityService.createNewProject(
@@ -144,7 +155,7 @@ class ProjectACtivityController {
                 req.body;
 
             const projectActivity =
-                await projectActivityService.patchProjectActivity(
+                await projectActivityService.MovingCardPosisition(
                     idProjectActivity,
                     {
                         position: rest.position,

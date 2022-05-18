@@ -1,4 +1,4 @@
-import { projectactivity_position } from '@prisma/client';
+import { projectactivity_position, usertaskfromassignee } from '@prisma/client';
 
 export interface CreateProjectActivityDto {
     projectId: number;
@@ -17,4 +17,12 @@ export interface CreateProjectActivityDto {
         description: string;
         isComplete?: boolean;
     }>;
+    usertaskfromassignee:
+        | Array<number>
+        | usertaskfromassignee[]
+        | CreateUserTaskFromAssigneeDto[];
+}
+
+export interface CreateUserTaskFromAssigneeDto {
+    idUser: number;
 }

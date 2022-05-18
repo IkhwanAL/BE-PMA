@@ -1,8 +1,19 @@
 import { projectactivity, subdetailprojectactivity } from '@prisma/client';
 import MysqlPrisma from '../../common/services/mysql.service.config';
 import { ProjectActivityType } from '../../common/@types/project.types';
-import { CreateProjectActivityDto } from '../dto/create.projectActivity.dto';
+import {
+    CreateProjectActivityDto,
+    CreateUserTaskFromAssigneeDto,
+} from '../dto/create.projectActivity.dto';
 import { PatchProjectActivityDto } from '../dto/patch.projectActivity.dto';
+import userteamDao from '../../userTeam/daos/userteam.dao';
+
+interface SubDetailProjectActivityPatch {
+    subDetailProjectActivityId?: number;
+    detailProyekId: number;
+    description: string;
+    isComplete?: boolean;
+}
 
 class ProjectActivityDao {
     async getAllActivityWithIdProjectAndIdUser(
@@ -41,7 +52,11 @@ class ProjectActivityDao {
     }
 
     async createProjectActivity(resource: CreateProjectActivityDto) {
-        const { subdetailprojectactivity, ...restOfResource } = resource;
+        const {
+            subdetailprojectactivity,
+            usertaskfromassignee,
+            ...restOfResource
+        } = resource;
         return MysqlPrisma.projectactivity.create({
             data: {
                 ...restOfResource,
@@ -52,23 +67,67 @@ class ProjectActivityDao {
                         data: subdetailprojectactivity as subdetailprojectactivity[],
                     },
                 },
+                usertaskfromassignee: {
+                    createMany: {
+                        data: usertaskfromassignee as CreateUserTaskFromAssigneeDto[],
+                    },
+                },
             },
         });
     }
 
     async patchProjectActivityById(
         idProjectActivity: number,
-        resource: PatchProjectActivityDto
+        resource: PatchProjectActivityDto,
+        idUser?: number
     ) {
-        const { subdetailprojectactivity, ...rest } = resource;
-        return MysqlPrisma.projectactivity.update({
-            where: {
-                projectActivityId: idProjectActivity,
-            },
-            data: {
-                ...rest,
-                updatedAt: new Date(),
-            },
+        const { subdetailprojectactivity, usertaskfromassignee, ...rest } =
+            resource;
+        return MysqlPrisma.$transaction(async (QueryPrisma) => {
+            const leader = userteamDao.getLeader(idUser);
+
+            const UpdateSubDetailProjectActivity = async (
+                data: SubDetailProjectActivityPatch[]
+            ) => {
+                const SavedId: number[] = [];
+                for (const iterator of data) {
+                    const update =
+                        await QueryPrisma.subdetailprojectactivity.update({
+                            where: {
+                                subDetailProjectActivityId:
+                                    iterator.subDetailProjectActivityId,
+                            },
+                            data: {
+                                ...rest,
+                                updatedAt: new Date(),
+                            },
+                        });
+                    SavedId.push(update.subDetailProjectActivityId);
+                }
+
+                const deleteData =
+                    await QueryPrisma.subdetailprojectactivity.deleteMany({
+                        where: {
+                            subDetailProjectActivityId: {
+                                notIn: SavedId,
+                            },
+                        },
+                    });
+
+                if (deleteData.count !== SavedId.length) {
+                    throw new Error('Terjadi Kesalahan Pada Server');
+                }
+            };
+
+            const UpdateUserTaskFromAssignee = async (
+                data: CreateUserTaskFromAssigneeDto[]
+            ) => {};
+
+            if (!leader) {
+                await UpdateSubDetailProjectActivity(subdetailprojectactivity);
+            } else {
+                await UpdateSubDetailProjectActivity(subdetailprojectactivity);
+            }
         });
     }
 
@@ -111,6 +170,23 @@ class ProjectActivityDao {
             },
             select: {
                 name: true,
+            },
+        });
+    }
+
+    async MoveCardPosition(
+        idProjectActivity: number,
+        resource: PatchProjectActivityDto
+    ) {
+        const { subdetailprojectactivity, usertaskfromassignee, ...rest } =
+            resource;
+        return MysqlPrisma.projectactivity.update({
+            where: {
+                projectActivityId: idProjectActivity,
+            },
+            data: {
+                ...rest,
+                updatedAt: new Date(),
             },
         });
     }
