@@ -42,9 +42,11 @@ export class UserTeamRoutes extends CommonRoutesConfig {
         );
 
         this.app.delete(
-            '/userteam/delete/:idTeam',
+            '/userteam/delete/:idProject',
             userTeamMiddleware.Authentication,
-            userTeamMiddleware.checkIsItLeader
+            userTeamMiddleware.checkIsItLeader,
+            userTeamMiddleware.checkProjectIsExists,
+            userteamController.deleteTeam
         );
 
         this.app.post(

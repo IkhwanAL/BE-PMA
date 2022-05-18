@@ -5,8 +5,8 @@ class UserTeamService {
         return userteamDao.delete(idProject, idUser);
     }
 
-    async deleteTeam(idTeams: Array<number>) {
-        return userteamDao.deleteWithIdTeam(idTeams);
+    async deleteTeam(idTeams: Array<number>, idProject?: number) {
+        return userteamDao.deleteWithIdTeam(idTeams, idProject);
     }
 
     async addUserTeam(idProject: number, idUser: number) {

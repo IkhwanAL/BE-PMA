@@ -116,14 +116,26 @@ class UserTeamDao {
         });
     }
 
-    async deleteWithIdTeam(idTeams: Array<number>) {
-        return MysqlPrisma.userteam.deleteMany({
-            where: {
-                teamId: {
-                    in: idTeams,
+    async deleteWithIdTeam(idTeams: Array<number>, idProject?: number) {
+        console.log(idTeams, idProject);
+        if (idProject) {
+            return MysqlPrisma.userteam.deleteMany({
+                where: {
+                    userId: {
+                        in: idTeams,
+                    },
+                    projectId: idProject,
                 },
-            },
-        });
+            });
+        } else {
+            return MysqlPrisma.userteam.deleteMany({
+                where: {
+                    teamId: {
+                        in: idTeams,
+                    },
+                },
+            });
+        }
     }
 
     async getUserWithTeamIm(idTeam: number) {
