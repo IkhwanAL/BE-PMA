@@ -1,6 +1,5 @@
-import { Prisma } from '@prisma/client';
 import MysqlPrisma from '../../common/services/mysql.service.config';
-
+import { Prisma } from '@prisma/client';
 class UserTeamDao {
     async delete(idProject: number, idUser: number) {
         return MysqlPrisma.userteam.deleteMany({
@@ -48,10 +47,10 @@ class UserTeamDao {
      * @returns
      */
     async changePM(idChoosenUser: number, idProject: number) {
-        return MysqlPrisma.$transaction(async (Prisma) => {
+        return MysqlPrisma.$transaction(async (PrismaType) => {
             // 1. Ubah Semua Status Pada IdProject di table userteam menjadi tim
             const ChangeIdProjectTeamUserRoleToTim =
-                await Prisma.userteam.updateMany({
+                await PrismaType.userteam.updateMany({
                     where: {
                         projectId: idProject,
                     },
@@ -65,7 +64,7 @@ class UserTeamDao {
                 throw new Error('User Tim Kosong');
             }
 
-            const ChangeOwner = await Prisma.project.update({
+            const ChangeOwner = await PrismaType.project.update({
                 where: {
                     projectId: idProject,
                 },
@@ -79,7 +78,7 @@ class UserTeamDao {
             }
 
             const ChangeChoosenUserBecomeAProyekManager =
-                await Prisma.userteam.updateMany({
+                await PrismaType.userteam.updateMany({
                     where: {
                         AND: [
                             {
