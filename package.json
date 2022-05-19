@@ -44,10 +44,11 @@
   "license": "MIT",
   "scripts": {
     "start": "tsc && node --unhandled-rejections=strict ./dist/app.js",
-    "debug": "cross-env SET DEBUG=* && npm run start",
+    "debug": "cross-env SET DEBUG=* && yarn run start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "generate": "npx prisma generate && yarn install",
-    "dev": "nodemon --watch src/ --exec \"yarn run start\" --verbose -e ts"
+    "dev": "nodemon --watch src/ --exec \"yarn run start\" --verbose -e ts",
+    "start:ts": "nodemon app.ts"
   },
   "author": "IkhwanAl <ikhwanal235@gmail.com>"
 }

@@ -1,4 +1,4 @@
-import { projectactivity_position } from '@prisma/client';
+import { projectactivity_position, usertaskfromassignee } from '@prisma/client';
 import { Request, Response } from 'express';
 import { bodyBlacklist } from 'express-winston';
 import { CPM } from '../../common/cpm/calculate.cpm.config';
@@ -41,6 +41,16 @@ class ProjectACtivityController {
 
     async createProjectActivity(req: Request, res: Response) {
         try {
+            const usertask: { idUser: number }[] = [];
+
+            for (const iterator of req.body.usertaskfromassignee as number[]) {
+                const payload = {
+                    idUser: iterator,
+                };
+
+                usertask.push(payload);
+            }
+
             const payload = {
                 projectId: req.body.idProject,
                 name: req.body.name,
@@ -52,6 +62,9 @@ class ProjectACtivityController {
                 position: req.body.position ?? projectactivity_position.To_Do,
                 progress: req.body.progress ?? 0,
                 status: req.body.status ?? false,
+                subdetailprojectactivity:
+                    req.body.subdetailprojectactivity ?? [],
+                usertaskfromassignee: usertask ?? [],
             } as CreateProjectActivityDto;
 
             const projectAct = await projectActivityService.createNewProject(

@@ -151,6 +151,20 @@ export abstract class CommonMiddleware {
         }
     }
 
+    async checkIsItLeaderNoCallback(idUser: number) {
+        try {
+            const leader = await userteamDao.getLeader(idUser);
+
+            if (!leader) {
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
     async extractIdProjectActivity(
         req: express.Request,
         _res: express.Response,
