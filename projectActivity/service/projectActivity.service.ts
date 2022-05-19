@@ -48,6 +48,13 @@ class ProjectActivityService {
     async getSimple(idProjectActivity: number) {
         return projectActivityDao.getOneSimple(idProjectActivity);
     }
+
+    async MovingCardPosisition(
+        idProjectActivity: number,
+        resource: PatchProjectActivityDto
+    ) {
+        return projectActivityDao.MoveCardPosition(idProjectActivity, resource);
+    }
 }
 
 export default new ProjectActivityService();

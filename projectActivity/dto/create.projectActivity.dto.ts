@@ -20,9 +20,9 @@ export interface CreateProjectActivityDto {
     usertaskfromassignee:
         | Array<number>
         | usertaskfromassignee[]
-        | UserTaskAssignee[];
+        | CreateUserTaskFromAssigneeDto[];
 }
 
-export interface UserTaskAssignee {
+export interface CreateUserTaskFromAssigneeDto {
     idUser: number;
 }

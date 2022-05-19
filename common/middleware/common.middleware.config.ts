@@ -161,7 +161,7 @@ export abstract class CommonMiddleware {
 
             return true;
         } catch (error) {
-            return false;
+            throw new Error('Terjadi Kesalahan Pada Server');
         }
     }
 

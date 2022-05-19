@@ -41,9 +41,9 @@ class ProjectACtivityController {
 
     async createProjectActivity(req: Request, res: Response) {
         try {
-            const usertask: { idUser: number }[] = [];
+            const usertask = [];
 
-            for (const iterator of req.body.usertaskfromassignee as number[]) {
+            for (const iterator of req.body.usertaskfromassignee) {
                 const payload = {
                     idUser: iterator,
                 };
@@ -62,8 +62,6 @@ class ProjectACtivityController {
                 position: req.body.position ?? projectactivity_position.To_Do,
                 progress: req.body.progress ?? 0,
                 status: req.body.status ?? false,
-                subdetailprojectactivity:
-                    req.body.subdetailprojectactivity ?? [],
                 usertaskfromassignee: usertask ?? [],
             } as CreateProjectActivityDto;
 
@@ -157,7 +155,7 @@ class ProjectACtivityController {
                 req.body;
 
             const projectActivity =
-                await projectActivityService.patchProjectActivity(
+                await projectActivityService.MovingCardPosisition(
                     idProjectActivity,
                     {
                         position: rest.position,

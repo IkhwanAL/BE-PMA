@@ -7,10 +7,17 @@ import MysqlPrisma from '../../common/services/mysql.service.config';
 import { ProjectActivityType } from '../../common/@types/project.types';
 import {
     CreateProjectActivityDto,
-    UserTaskAssignee,
+    CreateUserTaskFromAssigneeDto,
 } from '../dto/create.projectActivity.dto';
 import { PatchProjectActivityDto } from '../dto/patch.projectActivity.dto';
-import projectActivityMiddleware from '../middleware/projectActivity.middleware';
+import userteamDao from '../../userTeam/daos/userteam.dao';
+
+interface SubDetailProjectActivityPatch {
+    subDetailProjectActivityId?: number;
+    detailProyekId: number;
+    description: string;
+    isComplete?: boolean;
+}
 
 class ProjectActivityDao {
     async getAllActivityWithIdProjectAndIdUser(
@@ -66,7 +73,7 @@ class ProjectActivityDao {
                 },
                 usertaskfromassignee: {
                     createMany: {
-                        data: usertaskfromassignee as UserTaskAssignee[],
+                        data: usertaskfromassignee as CreateUserTaskFromAssigneeDto[],
                     },
                 },
             },
@@ -80,45 +87,50 @@ class ProjectActivityDao {
     ) {
         const { subdetailprojectactivity, usertaskfromassignee, ...rest } =
             resource;
+        return MysqlPrisma.$transaction(async (QueryPrisma) => {
+            const leader = userteamDao.getLeader(idUser);
 
-        return MysqlPrisma.$transaction(async (MainPrisma) => {
-            // 1. Update ProjectActivity
-
-            let updateProjectActivity;
-            let updateSubDetailProjectActivity;
-
-            if (
-                await projectActivityMiddleware.checkIsItLeaderNoCallback(
-                    idUser
-                )
-            ) {
-                updateProjectActivity = await MainPrisma.projectactivity.update(
-                    {
-                        where: {
-                            projectActivityId: idProjectActivity,
-                        },
-                        data: {
-                            ...rest,
-                            updatedAt: new Date(),
-                        },
-                    }
-                );
-
-                if (!updateProjectActivity) {
-                    throw new Error(`Terjadi Kesalahan Pada Server`);
+            const UpdateSubDetailProjectActivity = async (
+                data: SubDetailProjectActivityPatch[]
+            ) => {
+                const SavedId: number[] = [];
+                for (const iterator of data) {
+                    const update =
+                        await QueryPrisma.subdetailprojectactivity.update({
+                            where: {
+                                subDetailProjectActivityId:
+                                    iterator.subDetailProjectActivityId,
+                            },
+                            data: {
+                                ...rest,
+                                updatedAt: new Date(),
+                            },
+                        });
+                    SavedId.push(update.subDetailProjectActivityId);
                 }
 
-                const deleteResult = await MainPrisma.subdetailprojectactivity.deleteMany({
-                    where: {
-                        detailProyekId: idProjectActivity
-                    }
-                });
+                const deleteData =
+                    await QueryPrisma.subdetailprojectactivity.deleteMany({
+                        where: {
+                            subDetailProjectActivityId: {
+                                notIn: SavedId,
+                            },
+                        },
+                    });
 
-                updateSubDetailProjectActivity = await MainPrisma.subdetailprojectactivity.createMany({
-                    data: subdetailprojectactivity
-                });
+                if (deleteData.count !== SavedId.length) {
+                    throw new Error('Terjadi Kesalahan Pada Server');
+                }
+            };
 
-                if(updateSubDetailProjectActivity)
+            const UpdateUserTaskFromAssignee = async (
+                data: CreateUserTaskFromAssigneeDto[]
+            ) => {};
+
+            if (!leader) {
+                await UpdateSubDetailProjectActivity(subdetailprojectactivity);
+            } else {
+                await UpdateSubDetailProjectActivity(subdetailprojectactivity);
             }
         });
     }
@@ -162,6 +174,23 @@ class ProjectActivityDao {
             },
             select: {
                 name: true,
+            },
+        });
+    }
+
+    async MoveCardPosition(
+        idProjectActivity: number,
+        resource: PatchProjectActivityDto
+    ) {
+        const { subdetailprojectactivity, usertaskfromassignee, ...rest } =
+            resource;
+        return MysqlPrisma.projectactivity.update({
+            where: {
+                projectActivityId: idProjectActivity,
+            },
+            data: {
+                ...rest,
+                updatedAt: new Date(),
             },
         });
     }
