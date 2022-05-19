@@ -236,7 +236,7 @@ class UsersController {
                 } as FailedTypes);
             }
         } catch (error) {
-            // console
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
