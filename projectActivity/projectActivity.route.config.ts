@@ -23,7 +23,7 @@ export class ProjectActivityRoute extends CommonRoutesConfig {
             )
             .get(
                 projectActivityMiddleware.checkProject,
-                projectActivityController.getProjectActivityBaseOfIdProject
+                projectActivityController.getAllProjectActivityWithIdProject
             );
 
         this.app.param(

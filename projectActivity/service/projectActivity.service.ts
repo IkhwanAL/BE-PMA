@@ -55,6 +55,10 @@ class ProjectActivityService {
     ) {
         return projectActivityDao.MoveCardPosition(idProjectActivity, resource);
     }
+
+    async getAllProjectActivityBasedOnidProject(idProject: number) {
+        return projectActivityDao.getAllActivityBasedOnIdProject(idProject);
+    }
 }
 
 export default new ProjectActivityService();

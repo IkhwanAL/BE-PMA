@@ -42,6 +42,7 @@ class ProjectACtivityController {
     async createProjectActivity(req: Request, res: Response) {
         try {
             const usertask = [];
+            const subdetailprojectactivity = [];
 
             for (const iterator of req.body.usertaskfromassignee) {
                 const payload = {
@@ -49,6 +50,11 @@ class ProjectACtivityController {
                 };
 
                 usertask.push(payload);
+            }
+
+            for (const iterator of req.body.subdetailprojectactivity) {
+                const { subDetailProjectActivityId, ...rest } = iterator;
+                subdetailprojectactivity.push({ ...rest });
             }
 
             const payload = {
@@ -63,6 +69,7 @@ class ProjectACtivityController {
                 progress: req.body.progress ?? 0,
                 status: req.body.status ?? false,
                 usertaskfromassignee: usertask ?? [],
+                subdetailprojectactivity: subdetailprojectactivity ?? [],
             } as CreateProjectActivityDto;
 
             const projectAct = await projectActivityService.createNewProject(
@@ -94,6 +101,7 @@ class ProjectACtivityController {
 
             return HttpResponse.Created(res, project);
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
@@ -181,18 +189,25 @@ class ProjectACtivityController {
                 );
             const ParentActivity: Array<any> = [];
             const Split = projectActivity.parent.split(',') as Array<string>;
-            for (let index = 0; index < Split.length; index++) {
-                const element = parseInt(Split[index]);
-                const Parent = await projectActivityService.getSimple(element);
-                const Payload = [element, Parent.name];
-                ParentActivity.push(Payload);
+            if (projectActivity.parent) {
+                for (let index = 0; index < Split.length; index++) {
+                    const element = parseInt(Split[index]);
+
+                    const Parent = await projectActivityService.getSimple(
+                        element
+                    );
+                    const Payload = [element, Parent.name];
+                    ParentActivity.push(Payload);
+                }
             }
+
             const NewProjectActivity = {
                 ...projectActivity,
                 ['ParentActivityName']: ParentActivity,
             };
             return HttpResponse.Ok(res, NewProjectActivity);
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
@@ -204,6 +219,24 @@ class ProjectACtivityController {
             );
 
             return HttpResponse.Ok(res, projectActivity);
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
+        }
+    };
+
+    public getAllProjectActivityWithIdProject = async (
+        req: Request,
+        res: Response
+    ) => {
+        try {
+            const { idProject } = req.body;
+
+            const activity =
+                await projectActivityService.getAllProjectActivityBasedOnidProject(
+                    idProject
+                );
+            // console.log(activity);
+            return HttpResponse.Ok(res, activity);
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }

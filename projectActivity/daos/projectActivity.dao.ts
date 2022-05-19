@@ -125,12 +125,47 @@ class ProjectActivityDao {
 
             const UpdateUserTaskFromAssignee = async (
                 data: CreateUserTaskFromAssigneeDto[]
-            ) => {};
+            ) => {
+                const deleteMany =
+                    await QueryPrisma.usertaskfromassignee.deleteMany({
+                        where: {
+                            projectActivityId: idProjectActivity,
+                        },
+                    });
+
+                const usertask = [];
+                for (const iterator of data) {
+                    const payload = {
+                        idUser: iterator.idUser,
+                        projectActivityId: idProjectActivity,
+                    };
+
+                    usertask.push(payload);
+                }
+
+                const createMany =
+                    await QueryPrisma.usertaskfromassignee.createMany({
+                        data: usertask,
+                    });
+            };
 
             if (!leader) {
                 await UpdateSubDetailProjectActivity(subdetailprojectactivity);
             } else {
                 await UpdateSubDetailProjectActivity(subdetailprojectactivity);
+                await UpdateUserTaskFromAssignee(
+                    usertaskfromassignee as CreateUserTaskFromAssigneeDto[]
+                );
+
+                const UpdateQuery = await QueryPrisma.projectactivity.update({
+                    where: {
+                        projectActivityId: idProjectActivity,
+                    },
+                    data: {
+                        ...rest,
+                        updatedAt: new Date(),
+                    },
+                });
             }
         });
     }
@@ -152,7 +187,7 @@ class ProjectActivityDao {
     async getOne(idProjectActivity: number) {
         return MysqlPrisma.projectactivity.findFirst({
             where: {
-                projectActivityId: idProjectActivity,
+                projectActivityId: idProjectActivity as number,
             },
             include: {
                 subdetailprojectactivity: true,
@@ -191,6 +226,14 @@ class ProjectActivityDao {
             data: {
                 ...rest,
                 updatedAt: new Date(),
+            },
+        });
+    }
+
+    async getAllActivityBasedOnIdProject(idProject: number) {
+        return MysqlPrisma.projectactivity.findMany({
+            where: {
+                projectId: idProject,
             },
         });
     }
