@@ -21,6 +21,10 @@ export class ProjectActivityRoute extends CommonRoutesConfig {
                 projectActivityMiddleware.checkFieldProjectActivity,
                 projectActivityController.createProjectActivity
             )
+            .patch(
+                projectActivityMiddleware.checkFieldProjectActivity,
+                projectActivityController.patchProjectActivity
+            )
             .get(
                 projectActivityMiddleware.checkProject,
                 projectActivityController.getAllProjectActivityWithIdProject
@@ -35,10 +39,10 @@ export class ProjectActivityRoute extends CommonRoutesConfig {
             .route('/projectactivity/:idProjectActivity')
             .all(projectActivityMiddleware.Authentication)
             // .get(projectActivityController.getOne)
-            .patch(
-                projectActivityMiddleware.checkIsItLeader,
-                projectActivityController.patchProjectActivity
-            )
+            // .patch(
+            //     projectActivityMiddleware.checkIsItLeader,
+            //     projectActivityController.patchProjectActivity
+            // )
             .delete(
                 projectActivityMiddleware.checkIsItLeader,
                 projectActivityController.deleteProjectActivity

@@ -189,6 +189,7 @@ class ProjectACtivityController {
                 );
             const ParentActivity: Array<any> = [];
             const Split = projectActivity.parent.split(',') as Array<string>;
+
             if (projectActivity.parent) {
                 for (let index = 0; index < Split.length; index++) {
                     const element = parseInt(Split[index]);
@@ -207,7 +208,6 @@ class ProjectACtivityController {
             };
             return HttpResponse.Ok(res, NewProjectActivity);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
