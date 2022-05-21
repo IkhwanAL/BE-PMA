@@ -111,14 +111,18 @@ class ProjectACtivityController {
             const { idProjectActivity, idProject, id, email, ...rest } =
                 req.body;
 
+            const IdProjectActivityParams = req.body.projectActivityId;
+
             const projectActivity =
                 await projectActivityService.patchProjectActivity(
-                    idProjectActivity,
-                    rest
+                    IdProjectActivityParams,
+                    rest,
+                    id
                 );
 
             return HttpResponse.Created(res, projectActivity);
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
@@ -188,17 +192,22 @@ class ProjectACtivityController {
                     req.body.idProjectActivity
                 );
             const ParentActivity: Array<any> = [];
-            const Split = projectActivity.parent.split(',') as Array<string>;
 
             if (projectActivity.parent) {
-                for (let index = 0; index < Split.length; index++) {
-                    const element = parseInt(Split[index]);
+                const Split = projectActivity.parent.split(
+                    ','
+                ) as Array<string>;
 
-                    const Parent = await projectActivityService.getSimple(
-                        element
-                    );
-                    const Payload = [element, Parent.name];
-                    ParentActivity.push(Payload);
+                if (projectActivity.parent) {
+                    for (let index = 0; index < Split.length; index++) {
+                        const element = parseInt(Split[index]);
+
+                        const Parent = await projectActivityService.getSimple(
+                            element
+                        );
+                        const Payload = [element, Parent.name];
+                        ParentActivity.push(Payload);
+                    }
                 }
             }
 
@@ -208,6 +217,7 @@ class ProjectACtivityController {
             };
             return HttpResponse.Ok(res, NewProjectActivity);
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };

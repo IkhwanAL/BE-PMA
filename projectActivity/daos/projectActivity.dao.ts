@@ -95,14 +95,28 @@ class ProjectActivityDao {
             ) => {
                 const SavedId: number[] = [];
                 for (const iterator of data) {
+                    const IdProjectSubActivity =
+                        iterator.subDetailProjectActivityId
+                            ? iterator.subDetailProjectActivityId
+                            : 0;
+                    console.log('bang');
                     const update =
-                        await QueryPrisma.subdetailprojectactivity.update({
+                        await QueryPrisma.subdetailprojectactivity.upsert({
                             where: {
                                 subDetailProjectActivityId:
-                                    iterator.subDetailProjectActivityId,
+                                    IdProjectSubActivity,
                             },
-                            data: {
-                                ...rest,
+                            update: {
+                                description: iterator.description,
+                                isComplete: iterator.isComplete,
+                                detailProyekId: iterator.detailProyekId,
+                                updatedAt: new Date(),
+                            },
+                            create: {
+                                description: iterator.description,
+                                isComplete: iterator.isComplete,
+                                detailProyekId: iterator.detailProyekId,
+                                createdAt: new Date(),
                                 updatedAt: new Date(),
                             },
                         });
@@ -117,10 +131,6 @@ class ProjectActivityDao {
                             },
                         },
                     });
-
-                if (deleteData.count !== SavedId.length) {
-                    throw new Error('Terjadi Kesalahan Pada Server');
-                }
             };
 
             const UpdateUserTaskFromAssignee = async (
@@ -150,13 +160,15 @@ class ProjectActivityDao {
             };
 
             if (!leader) {
+                console.log('Crook');
                 await UpdateSubDetailProjectActivity(subdetailprojectactivity);
             } else {
+                console.log('Boss');
                 await UpdateSubDetailProjectActivity(subdetailprojectactivity);
                 await UpdateUserTaskFromAssignee(
                     usertaskfromassignee as CreateUserTaskFromAssigneeDto[]
                 );
-
+                console.log(idProjectActivity);
                 const UpdateQuery = await QueryPrisma.projectactivity.update({
                     where: {
                         projectActivityId: idProjectActivity,

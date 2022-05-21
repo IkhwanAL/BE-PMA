@@ -23,11 +23,13 @@ class ProjectActivityService {
 
     async patchProjectActivity(
         idProjectActivity: number,
-        resource: PatchProjectActivityDto
+        resource: PatchProjectActivityDto,
+        idUser?: number
     ) {
         return projectActivityDao.patchProjectActivityById(
             idProjectActivity,
-            resource
+            resource,
+            idUser
         );
     }
 
