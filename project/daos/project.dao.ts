@@ -109,6 +109,7 @@ class ProjectDao {
                 projectId: true,
                 projectName: true,
                 projectDescription: true,
+                startDate: true,
             },
         });
     }
@@ -194,13 +195,15 @@ class ProjectDao {
         });
     }
 
-    async patchDeadline(idProject: number, deadline: number) {
+    async patchDeadline(idProject: number, deadline: number, startDate?: Date) {
         return MysqlPrisma.project.update({
             where: {
                 projectId: idProject,
             },
             data: {
-                deadline: moment().add(deadline, 'days').toDate(),
+                deadline: moment(startDate ?? null)
+                    .add(deadline, 'days')
+                    .toDate(),
                 deadlineInString: deadline.toString(),
                 updatedAt: new Date(),
             },

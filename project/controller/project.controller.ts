@@ -20,6 +20,7 @@ class ProjectController extends CommonController {
             const payload = {
                 projectName: req.body.projectName,
                 projectDescription: req.body.projectDescription,
+                startDate: req.body.startDate ?? new Date(),
             } as CreateProjectDto;
 
             const project = await projectService.create(req.body.id, payload);
@@ -28,6 +29,7 @@ class ProjectController extends CommonController {
                 projectId: project.projectId,
                 projectName: project.projectName,
                 projectDescription: project.projectDescription,
+                startDate: project.startDate,
             });
         } catch (error) {
             return HttpResponse.InternalServerError(res);
@@ -74,7 +76,11 @@ class ProjectController extends CommonController {
 
     async patchProject(req: Request, res: Response) {
         try {
-            const allowedPatch = ['projectName', 'projectDescription'];
+            const allowedPatch = [
+                'projectName',
+                'projectDescription',
+                'startDate',
+            ];
 
             const { id, email, idProject, ...rest } = req.body;
 
@@ -170,7 +176,8 @@ class ProjectController extends CommonController {
 
             const saveDeadLineProject = await projectDao.patchDeadline(
                 req.body.idProject,
-                cpm.getDeadLine()
+                cpm.getDeadLine(),
+                project.startDate
             );
 
             const getFloat = cpm.getCalculate();

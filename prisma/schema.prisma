@@ -9,17 +9,16 @@ datasource db {
 }
 
 model activity {
-  id                         Int                       @id @default(autoincrement())
+  id                         Int                      @id @default(autoincrement())
   activity                   String
   userId                     Int
-  projectId                  Int?
-  projectActivityId          Int?
-  subDetailProjectActivityId Int?
-  createdAt                  DateTime
-  projectactivity            projectactivity?          @relation(fields: [projectActivityId], references: [projectActivityId], onDelete: NoAction, onUpdate: NoAction, map: "Activity_projectActivityId_fkey")
-  project                    project?                  @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Activity_projectId_fkey")
-  subdetailprojectactivity   subdetailprojectactivity? @relation(fields: [subDetailProjectActivityId], references: [subDetailProjectActivityId], onDelete: NoAction, onUpdate: NoAction, map: "Activity_subDetailProjectActivityId_fkey")
-  user                       user                      @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Activity_userId_fkey")
+  projectId                  Int
+  projectActivityId          Int
+  subDetailProjectActivityId Int
+  projectactivity            projectactivity          @relation(fields: [projectActivityId], references: [projectActivityId], onDelete: NoAction, onUpdate: NoAction, map: "Activity_projectActivityId_fkey")
+  project                    project                  @relation(fields: [projectId], references: [projectId], onDelete: NoAction, onUpdate: NoAction, map: "Activity_projectId_fkey")
+  subdetailprojectactivity   subdetailprojectactivity @relation(fields: [subDetailProjectActivityId], references: [subDetailProjectActivityId], onDelete: NoAction, onUpdate: NoAction, map: "Activity_subDetailProjectActivityId_fkey")
+  user                       user                     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Activity_userId_fkey")
 
   @@index([projectActivityId], map: "Activity_projectActivityId_fkey")
   @@index([projectId], map: "Activity_projectId_fkey")
@@ -42,6 +41,7 @@ model project {
   projectId          Int               @id @default(autoincrement())
   projectName        String            @unique(map: "Project_projectName_key")
   projectDescription String            @db.Text
+  startDate          DateTime?
   deadline           DateTime?
   deadlineInString   String?
   userOwner          Int
@@ -62,6 +62,7 @@ model projectactivity {
   critical                 Boolean?
   progress                 Float                      @default(0)
   position                 projectactivity_position   @default(To_Do)
+  startDate                DateTime?
   timeToComplete           Int
   status                   Boolean                    @default(false)
   description              String

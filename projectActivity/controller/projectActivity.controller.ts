@@ -66,6 +66,7 @@ class ProjectACtivityController {
                 critical: req.body.critical ?? false,
                 parent: req.body.parent ?? '',
                 position: req.body.position ?? projectactivity_position.To_Do,
+                startDate: req.body.startDate ?? new Date(),
                 progress: req.body.progress ?? 0,
                 status: req.body.status ?? false,
                 usertaskfromassignee: usertask ?? [],
@@ -93,7 +94,8 @@ class ProjectACtivityController {
 
             const saveDeadLineProject = await projectDao.patchDeadline(
                 req.body.idProject,
-                cpm.getDeadLine()
+                cpm.getDeadLine(),
+                project.startDate
             );
 
             project.deadline = saveDeadLineProject.deadline;
@@ -119,6 +121,27 @@ class ProjectACtivityController {
                     rest,
                     id
                 );
+
+            let project = await projectService.getOne(
+                req.body.id,
+                req.body.idProject
+            );
+            if (!project) {
+                project = await projectService.getOneWithIdUserTeam(
+                    req.body.id,
+                    req.body.idProject
+                );
+            }
+
+            const cpm = new CPM(project);
+
+            cpm.calculate();
+
+            await projectDao.patchDeadline(
+                req.body.idProject,
+                cpm.getDeadLine(),
+                project.startDate
+            );
 
             return HttpResponse.Created(res, projectActivity);
         } catch (error) {
