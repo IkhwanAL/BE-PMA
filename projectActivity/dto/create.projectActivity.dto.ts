@@ -7,7 +7,6 @@ export interface CreateProjectActivityDto {
     progress?: number;
     position?: projectactivity_position;
     timeToComplete: number;
-    startDate?: Date;
     status?: boolean;
     description: string;
     parent?: string;

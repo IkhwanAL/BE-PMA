@@ -68,12 +68,16 @@ class ProjectActivityDao {
                 updatedAt: new Date(),
                 subdetailprojectactivity: {
                     createMany: {
-                        data: subdetailprojectactivity as subdetailprojectactivity[],
+                        data:
+                            (subdetailprojectactivity as subdetailprojectactivity[]) ??
+                            [],
                     },
                 },
                 usertaskfromassignee: {
                     createMany: {
-                        data: usertaskfromassignee as CreateUserTaskFromAssigneeDto[],
+                        data:
+                            (usertaskfromassignee as CreateUserTaskFromAssigneeDto[]) ??
+                            [],
                     },
                 },
             },
@@ -133,9 +137,7 @@ class ProjectActivityDao {
                     });
             };
 
-            const UpdateUserTaskFromAssignee = async (
-                data: CreateUserTaskFromAssigneeDto[]
-            ) => {
+            const UpdateUserTaskFromAssignee = async (data: number[]) => {
                 const deleteMany =
                     await QueryPrisma.usertaskfromassignee.deleteMany({
                         where: {
@@ -146,7 +148,7 @@ class ProjectActivityDao {
                 const usertask = [];
                 for (const iterator of data) {
                     const payload = {
-                        idUser: iterator.idUser,
+                        idUser: iterator,
                         projectActivityId: idProjectActivity,
                     };
 
@@ -160,15 +162,12 @@ class ProjectActivityDao {
             };
 
             if (!leader) {
-                console.log('Crook');
                 await UpdateSubDetailProjectActivity(subdetailprojectactivity);
             } else {
-                console.log('Boss');
                 await UpdateSubDetailProjectActivity(subdetailprojectactivity);
                 await UpdateUserTaskFromAssignee(
-                    usertaskfromassignee as CreateUserTaskFromAssigneeDto[]
+                    usertaskfromassignee as number[]
                 );
-                console.log(idProjectActivity);
                 const UpdateQuery = await QueryPrisma.projectactivity.update({
                     where: {
                         projectActivityId: idProjectActivity,

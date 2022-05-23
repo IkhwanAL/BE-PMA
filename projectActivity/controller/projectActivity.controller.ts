@@ -44,12 +44,14 @@ class ProjectACtivityController {
             const usertask = [];
             const subdetailprojectactivity = [];
 
-            for (const iterator of req.body.usertaskfromassignee) {
-                const payload = {
-                    idUser: iterator,
-                };
+            if (req.body.usertaskfromassignee) {
+                for (const iterator of req.body.usertaskfromassignee) {
+                    const payload = {
+                        idUser: iterator,
+                    };
 
-                usertask.push(payload);
+                    usertask.push(payload);
+                }
             }
 
             for (const iterator of req.body.subdetailprojectactivity) {
@@ -66,7 +68,6 @@ class ProjectACtivityController {
                 critical: req.body.critical ?? false,
                 parent: req.body.parent ?? '',
                 position: req.body.position ?? projectactivity_position.To_Do,
-                startDate: req.body.startDate ?? new Date(),
                 progress: req.body.progress ?? 0,
                 status: req.body.status ?? false,
                 usertaskfromassignee: usertask ?? [],
@@ -137,7 +138,7 @@ class ProjectACtivityController {
 
             cpm.calculate();
 
-            await projectDao.patchDeadline(
+            const ress = await projectDao.patchDeadline(
                 req.body.idProject,
                 cpm.getDeadLine(),
                 project.startDate
@@ -171,9 +172,33 @@ class ProjectACtivityController {
                 );
             }
 
-            await projectActivityService.deleteProjectActivity(
+            const success = await projectActivityService.deleteProjectActivity(
                 req.body.idProjectActivity
             );
+
+            let project = await projectService.getOne(
+                req.body.id,
+                req.body.idProject
+            );
+            if (!project) {
+                project = await projectService.getOneWithIdUserTeam(
+                    req.body.id,
+                    req.body.idProject
+                );
+            }
+
+            const cpm = new CPM(project);
+
+            cpm.calculate();
+
+            const saveDeadLineProject = await projectDao.patchDeadline(
+                req.body.idProject,
+                cpm.getDeadLine(),
+                project.startDate
+            );
+
+            project.deadline = saveDeadLineProject.deadline;
+            project.deadlineInString = saveDeadLineProject.deadlineInString;
 
             return HttpResponse.NoContent(res);
         } catch (error) {

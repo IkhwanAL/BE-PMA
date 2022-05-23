@@ -62,7 +62,6 @@ model projectactivity {
   critical                 Boolean?
   progress                 Float                      @default(0)
   position                 projectactivity_position   @default(To_Do)
-  startDate                DateTime?
   timeToComplete           Int
   status                   Boolean                    @default(false)
   description              String

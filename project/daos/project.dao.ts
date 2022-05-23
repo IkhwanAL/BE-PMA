@@ -196,14 +196,17 @@ class ProjectDao {
     }
 
     async patchDeadline(idProject: number, deadline: number, startDate?: Date) {
+        console.log(
+            'Deadline Calculate',
+            moment(startDate).add(deadline, 'days').toDate(),
+            deadline
+        );
         return MysqlPrisma.project.update({
             where: {
                 projectId: idProject,
             },
             data: {
-                deadline: moment(startDate ?? null)
-                    .add(deadline, 'days')
-                    .toDate(),
+                deadline: moment(startDate).add(deadline, 'days').toDate(),
                 deadlineInString: deadline.toString(),
                 updatedAt: new Date(),
             },
