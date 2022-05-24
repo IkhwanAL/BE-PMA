@@ -24,6 +24,7 @@ class UserTeamController {
      */
     async invite(req: Request, res: Response) {
         try {
+            // User Yang Di undang
             const findEmail = (await userService.readById(
                 req.body.idUserInvitation
             )) as RestApiGetUserById;
@@ -32,9 +33,11 @@ class UserTeamController {
                 return HttpResponse.BadRequest(res);
             }
 
+            // User Yang mengundang
             const inviterEmail = (await userService.readById(
                 req.body.id
             )) as RestApiGetUserById;
+
             const inviterProject = await projectService.getOneByIdProject(
                 req.body.idProject
             );

@@ -5,6 +5,8 @@ import {
     userteam,
 } from '@prisma/client';
 import { Request, Response } from 'express';
+import { CreateActivityDto } from '../../activity/dto/create.activity.dto';
+import activityService from '../../activity/service/activity.service';
 import { ProjecType } from '../../common/@types/project.types';
 import { CommonController } from '../../common/controller/controller.config';
 import { CPM } from '../../common/cpm/calculate.cpm.config';
@@ -15,6 +17,7 @@ import { CreateProjectDto } from '../dto/create.project.dto';
 import projectService from '../service/project.service';
 
 class ProjectController extends CommonController {
+    // Membuat Project Baru Dan Menyimpan Aktifitas Pengguna
     async createProject(req: Request, res: Response) {
         try {
             const payload = {
@@ -24,6 +27,14 @@ class ProjectController extends CommonController {
             } as CreateProjectDto;
 
             const project = await projectService.create(req.body.id, payload);
+
+            const PayloadActivity: CreateActivityDto = {
+                activity: 'Membuat Baru',
+                userId: req.body.id,
+                projectId: project.projectId,
+            };
+
+            await activityService.createAsync(PayloadActivity);
 
             return HttpResponse.Ok(res, {
                 projectId: project.projectId,
@@ -36,6 +47,7 @@ class ProjectController extends CommonController {
         }
     }
 
+    // Menghapus Project Pada Database Secara Permanen
     async deleteProject(req: Request, res: Response) {
         try {
             const { idProject } = req.params;
@@ -52,6 +64,7 @@ class ProjectController extends CommonController {
         }
     }
 
+    // Mengambil Semua Project Pada User
     async getAllProject(req: Request, res: Response) {
         try {
             const project = await projectService.getAll(req.body.id);
@@ -61,6 +74,7 @@ class ProjectController extends CommonController {
         }
     }
 
+    // Mengambil Sebagian Kecil Project Dengan Id User
     async getOneSmallProject(req: Request, res: Response) {
         try {
             const project = await projectService.getOneSmallColumn(
@@ -74,6 +88,7 @@ class ProjectController extends CommonController {
         }
     }
 
+    // Update Data Project dan Menyimpan Aktifitas User
     async patchProject(req: Request, res: Response) {
         try {
             const allowedPatch = [
@@ -98,6 +113,14 @@ class ProjectController extends CommonController {
                 rest
             );
 
+            const PayloadActivity: CreateActivityDto = {
+                activity: 'Mengubah Data Project',
+                userId: req.body.id,
+                projectId: project.projectId,
+            };
+
+            await activityService.createAsync(PayloadActivity);
+
             return HttpResponse.Created(res, {
                 projectId: project.projectId,
                 projectName: project.projectName,
@@ -108,6 +131,7 @@ class ProjectController extends CommonController {
         }
     }
 
+    // Mengambil Data Lengkap Pada Satu Project Dan Mengupdate Progress Project
     public getOneProject = async (req: Request, res: Response) => {
         try {
             let project = await projectService.getOne(
@@ -133,6 +157,7 @@ class ProjectController extends CommonController {
         }
     };
 
+    // Menghitung Progress Aktifitas
     async countProjectActivityProgress(_project: ProjecType, res: Response) {
         const TemporaryProject = _project;
         try {

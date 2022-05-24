@@ -1,6 +1,8 @@
 import { projectactivity_position, usertaskfromassignee } from '@prisma/client';
 import { Request, Response } from 'express';
 import { bodyBlacklist } from 'express-winston';
+import { CreateActivityDto } from '../../activity/dto/create.activity.dto';
+import activityService from '../../activity/service/activity.service';
 import { CPM } from '../../common/cpm/calculate.cpm.config';
 import { HttpResponse } from '../../common/services/http.service.config';
 
@@ -39,6 +41,7 @@ class ProjectACtivityController {
         }
     }
 
+    // Membuat Aktifitas Project Baru dan Menyimpan Aktitifitas User
     async createProjectActivity(req: Request, res: Response) {
         try {
             const usertask = [];
@@ -101,6 +104,14 @@ class ProjectACtivityController {
 
             project.deadline = saveDeadLineProject.deadline;
             project.deadlineInString = saveDeadLineProject.deadlineInString;
+
+            const PayloadActivity: CreateActivityDto = {
+                activity: 'Membuat Aktifitas Project Baru',
+                userId: req.body.id,
+                projectId: req.body.idProject,
+            };
+
+            await activityService.createAsync(PayloadActivity);
 
             return HttpResponse.Created(res, project);
         } catch (error) {
