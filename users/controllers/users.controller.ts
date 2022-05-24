@@ -224,7 +224,11 @@ class UsersController {
                     sukses: true,
                     message: 'Sukses Login',
                     status: 200,
-                    data: { token: accessToken, id: rest.id },
+                    data: {
+                        token: accessToken,
+                        id: rest.id,
+                        user: rest.username,
+                    },
                 } as SuccessType);
             } else {
                 return res.status(401).send({

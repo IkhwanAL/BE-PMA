@@ -7,6 +7,13 @@ class ActivityDao {
             where: {
                 projectId: idProject,
             },
+            include: {
+                user: {
+                    select: {
+                        username: true,
+                    },
+                },
+            },
         });
     }
 

@@ -18,6 +18,7 @@ import { UserTeamRoutes } from './userTeam/userTeam.route.config';
 import { ProjectActivityRoute } from './projectActivity/projectActivity.route.config';
 import { SubProjectActivityRoute } from './subProjectActivity/subProjectActivity.route.config';
 import { SessionUser } from './common/interfaces/session.interface';
+import { ActivityRoute } from './activity/activity.route.config';
 
 const debugLog: debug.IDebugger = debug('app');
 
@@ -76,6 +77,7 @@ Routes.push(new ProjectRoute(app));
 Routes.push(new UserTeamRoutes(app));
 Routes.push(new ProjectActivityRoute(app));
 Routes.push(new SubProjectActivityRoute(app));
+Routes.push(new ActivityRoute(app));
 
 const runningMessage = `Server running at http://localhost:${port}`;
 

@@ -57,9 +57,11 @@ class ProjectACtivityController {
                 }
             }
 
-            for (const iterator of req.body.subdetailprojectactivity) {
-                const { subDetailProjectActivityId, ...rest } = iterator;
-                subdetailprojectactivity.push({ ...rest });
+            if (req.body.subdetailprojectactivity) {
+                for (const iterator of req.body.subdetailprojectactivity) {
+                    const { subDetailProjectActivityId, ...rest } = iterator;
+                    subdetailprojectactivity.push({ ...rest });
+                }
             }
 
             const payload = {
@@ -96,17 +98,22 @@ class ProjectACtivityController {
 
             cpm.calculate();
 
-            const saveDeadLineProject = await projectDao.patchDeadline(
-                req.body.idProject,
-                cpm.getDeadLine(),
-                project.startDate
-            );
-
-            project.deadline = saveDeadLineProject.deadline;
-            project.deadlineInString = saveDeadLineProject.deadlineInString;
+            if (cpm.getDeadLine() !== 0) {
+                const saveDeadLineProject = await projectDao.patchDeadline(
+                    req.body.idProject,
+                    cpm.getDeadLine(),
+                    project.startDate
+                );
+                project.deadline = saveDeadLineProject.deadline;
+                project.deadlineInString = saveDeadLineProject.deadlineInString;
+            } else {
+                project.deadline = null;
+                project.deadlineInString = '0';
+            }
 
             const PayloadActivity: CreateActivityDto = {
-                activity: 'Membuat Aktifitas Project Baru',
+                activity:
+                    'Membuat Aktifitas Project Baru ' + `"${projectAct.name}"`,
                 userId: req.body.id,
                 projectId: req.body.idProject,
             };
@@ -149,11 +156,27 @@ class ProjectACtivityController {
 
             cpm.calculate();
 
-            const ress = await projectDao.patchDeadline(
-                req.body.idProject,
-                cpm.getDeadLine(),
-                project.startDate
-            );
+            if (cpm.getDeadLine() !== 0) {
+                const saveDeadLineProject = await projectDao.patchDeadline(
+                    req.body.idProject,
+                    cpm.getDeadLine(),
+                    project.startDate
+                );
+                project.deadline = saveDeadLineProject.deadline;
+                project.deadlineInString = saveDeadLineProject.deadlineInString;
+            } else {
+                project.deadline = null;
+                project.deadlineInString = '0';
+            }
+
+            const PayloadActivity: CreateActivityDto = {
+                activity:
+                    'Update Aktifitas Project ' + `"${projectActivity.name}"`,
+                userId: req.body.id,
+                projectId: req.body.idProject,
+            };
+
+            await activityService.createAsync(PayloadActivity);
 
             return HttpResponse.Created(res, projectActivity);
         } catch (error) {
@@ -202,14 +225,18 @@ class ProjectACtivityController {
 
             cpm.calculate();
 
-            const saveDeadLineProject = await projectDao.patchDeadline(
-                req.body.idProject,
-                cpm.getDeadLine(),
-                project.startDate
-            );
-
-            project.deadline = saveDeadLineProject.deadline;
-            project.deadlineInString = saveDeadLineProject.deadlineInString;
+            if (cpm.getDeadLine() !== 0) {
+                const saveDeadLineProject = await projectDao.patchDeadline(
+                    req.body.idProject,
+                    cpm.getDeadLine(),
+                    project.startDate
+                );
+                project.deadline = saveDeadLineProject.deadline;
+                project.deadlineInString = saveDeadLineProject.deadlineInString;
+            } else {
+                project.deadline = null;
+                project.deadlineInString = '0';
+            }
 
             return HttpResponse.NoContent(res);
         } catch (error) {

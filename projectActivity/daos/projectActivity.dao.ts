@@ -103,7 +103,6 @@ class ProjectActivityDao {
                         iterator.subDetailProjectActivityId
                             ? iterator.subDetailProjectActivityId
                             : 0;
-                    console.log('bang');
                     const update =
                         await QueryPrisma.subdetailprojectactivity.upsert({
                             where: {
@@ -163,6 +162,8 @@ class ProjectActivityDao {
 
             if (!leader) {
                 await UpdateSubDetailProjectActivity(subdetailprojectactivity);
+
+                return rest;
             } else {
                 await UpdateSubDetailProjectActivity(subdetailprojectactivity);
                 await UpdateUserTaskFromAssignee(
@@ -177,6 +178,8 @@ class ProjectActivityDao {
                         updatedAt: new Date(),
                     },
                 });
+
+                return UpdateQuery;
             }
         });
     }
