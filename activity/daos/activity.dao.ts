@@ -1,3 +1,4 @@
+import moment from 'moment';
 import MysqlPrisma from '../../common/services/mysql.service.config';
 import { CreateActivityDto } from '../dto/create.activity.dto';
 
@@ -29,7 +30,7 @@ class ActivityDao {
         return MysqlPrisma.activity.create({
             data: {
                 ...resource,
-                createdAt: new Date(),
+                createdAt: moment().toDate(),
             },
         });
     }

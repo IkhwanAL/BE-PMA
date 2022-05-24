@@ -12,6 +12,18 @@ import usersDao from '../../users/daos/users.dao';
 import projectDao from '../../project/daos/project.dao';
 import { RestApiGetUserById } from '../../common/interfaces/api.interface';
 
+interface LinkAcceptDecrypt {
+    inviter: {
+        id: number;
+        project: string;
+        idProject: number;
+    };
+    userBeenInvited: {
+        id: number;
+        email: string;
+    };
+}
+
 class UserTeamController {
     /**
      * Needs
@@ -25,9 +37,14 @@ class UserTeamController {
     async invite(req: Request, res: Response) {
         try {
             // User Yang Di undang
-            const findEmail = (await userService.readById(
-                req.body.idUserInvitation
-            )) as RestApiGetUserById;
+            // const findEmail = (await userService.readById(
+            //     req.body.idUserInvitation
+            // )) as RestApiGetUserById;
+
+            const findEmail = await userService.readByEmail(
+                req.body.emailInvited,
+                true
+            );
 
             if (!findEmail) {
                 return HttpResponse.BadRequest(res);
@@ -59,14 +76,14 @@ class UserTeamController {
                 })
                 .toString();
 
-            const link = `${process.env.IPWEB}?q=${encodeURIComponent(
-                encrypt
-            )}&l=verfiy`;
+            const link = `http://${
+                req.headers.host
+            }/accept?q=${encodeURIComponent(encrypt)}&l=verfiy`;
 
             const saved = await userService.createLink(req.body.id, link);
 
             const transport = new EmailNodeMailer();
-
+            console.log(saved.user.email, findEmail.email);
             transport.setOptionEmail({
                 from: saved.user.email,
                 to: findEmail.email,
@@ -83,6 +100,7 @@ class UserTeamController {
             const { response } = await transport.send();
 
             if (response.includes('OK')) {
+                console.log('Success');
                 return HttpResponse.Created(res, {});
             }
 
@@ -122,9 +140,20 @@ class UserTeamController {
      */
     async accept(req: Request, res: Response) {
         try {
-            await userteamService.addUserTeam(req.body.idProject, req.body.id);
+            const crypt = new EncryptService();
+            const link = req.query.q as string;
 
-            return HttpResponse.Created(res, {});
+            const Url = decodeURIComponent(link);
+            const decrypt = crypt.decrypt(Url);
+
+            const { userBeenInvited, inviter } = decrypt as LinkAcceptDecrypt;
+
+            await userteamService.addUserTeam(
+                inviter.idProject,
+                userBeenInvited.id
+            );
+
+            return HttpResponse.RedirectPermanent(res, process.env.IPWEB);
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }

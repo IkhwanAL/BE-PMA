@@ -20,7 +20,7 @@ export class UserRoutes extends CommonRoutesConfig {
 
         // Register
         this.app
-            .route('/users')
+            .route('/register')
             .post(
                 usersMiddleware.validateRequiredUserBodyFields,
                 usersMiddleware.validateSameEmailDoesntExist,

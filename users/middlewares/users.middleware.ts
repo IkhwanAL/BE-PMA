@@ -25,6 +25,7 @@ class UsersMiddleware extends CommonMiddleware {
             req.body.password &&
             req.body.username
         ) {
+            console.log('First Pahse');
             next();
         } else {
             res.status(400).send({
@@ -42,6 +43,7 @@ class UsersMiddleware extends CommonMiddleware {
         if (user) {
             res.status(400).send({ error: `User email already exists` });
         } else {
+            console.log('CSSecond Pahse');
             next();
         }
     }

@@ -8,9 +8,9 @@ class UserTeamMiddleware extends CommonMiddleware {
     async checkUserTeam(req: Request, res: Response, next: NextFunction) {
         const crypt = new EncryptService();
         try {
-            if (req.body.idUserInvitation) {
-                const userTeam = await usersDao.getUsersById(
-                    req.body.idUserInvitation,
+            if (req.body.emailInvited) {
+                const userTeam = await usersDao.getUserByEmail(
+                    req.body.emailInvited,
                     true
                 );
 

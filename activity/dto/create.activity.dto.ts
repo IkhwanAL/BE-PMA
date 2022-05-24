@@ -8,4 +8,6 @@ export interface CreateActivityDto {
     projectActivityId?: number;
 
     subDetailProjectActivityId?: number;
+
+    createdAt?: Date;
 }

@@ -24,6 +24,7 @@ export class UserTeamRoutes extends CommonRoutesConfig {
 
         this.app.param('idTeam', userTeamMiddleware.extractIdTeam);
 
+        // Invite User
         this.app.post(
             '/invite',
             userTeamMiddleware.Authentication,
@@ -33,11 +34,12 @@ export class UserTeamRoutes extends CommonRoutesConfig {
             userteamController.invite
         );
 
-        this.app.post(
+        // User
+        this.app.get(
             '/accept',
-            userTeamMiddleware.Authentication,
-            userTeamMiddleware.checkUserTeam,
-            userTeamMiddleware.checkProjectIsExists,
+            // userTeamMiddleware.Authentication,
+            // userTeamMiddleware.checkUserTeam,
+            // userTeamMiddleware.checkProjectIsExists,
             userteamController.accept
         );
 
@@ -49,6 +51,7 @@ export class UserTeamRoutes extends CommonRoutesConfig {
             userteamController.deleteTeam
         );
 
+        // Invitation To Change Owner
         this.app.post(
             '/changeowner/:idProject/:idUserInvitation',
             userTeamMiddleware.Authentication,
@@ -65,6 +68,8 @@ export class UserTeamRoutes extends CommonRoutesConfig {
         // );
 
         this.app.param('Link', userTeamMiddleware.extractLink);
+
+        // Accept Change Owner
         this.app.get(
             '/ownerchange/:Link',
             // userTeamMiddleware.Authentication,

@@ -53,42 +53,46 @@ class UsersController {
     }
 
     async createUser(req: express.Request, res: express.Response) {
-        req.body.password = await argon2.hash(req.body.password);
+        try {
+            req.body.password = await argon2.hash(req.body.password);
+            console.log(req);
+            const crypt = new EncryptService();
 
-        const crypt = new EncryptService();
+            const encrypt = crypt.encrypt({ email: req.body.email }).toString();
 
-        const encrypt = crypt.encrypt({ email: req.body.email }).toString();
+            req.body.link = `${
+                process.env.IPWEB
+            }/verify/?Url=verify&_q=${encodeURIComponent(encrypt)}`;
+            const { id, email, username, link } = await usersService.create(
+                req.body
+            );
 
-        req.body.link = `${
-            process.env.IPWEB
-        }/verify/?Url=verify&_q=${encodeURIComponent(encrypt)}`;
-        const { id, email, username, link } = await usersService.create(
-            req.body
-        );
+            const transporter = new EmailNodeMailer();
 
-        const transporter = new EmailNodeMailer();
+            transporter.setOptionEmail({
+                from: 'ikhwanal235@gmail.com',
+                to: email,
+                subject: 'Verify Register User',
+                template: 'register',
+                context: {
+                    username: username,
+                    link: req.body.link,
+                    expired: moment(link[0].expiredAt).format('LLLL'),
+                },
+            });
 
-        transporter.setOptionEmail({
-            from: 'ikhwanal235@gmail.com',
-            to: email,
-            subject: 'Verify Register User',
-            template: 'register',
-            context: {
-                username: username,
-                link: req.body.link,
-                expired: moment(link[0].expiredAt).format('LLLL'),
-            },
-        });
+            const { response } = await transporter.send();
 
-        const { response } = await transporter.send();
+            if (response.includes('OK')) {
+                return res.status(201).send({ id: id });
+            }
 
-        if (response.includes('OK')) {
-            return res.status(201).send({ id: id });
+            return res.status(409).send({
+                error: 'Something Wrong',
+            });
+        } catch (error) {
+            return HttpResponse.InternalServerError(res);
         }
-
-        return res.status(409).send({
-            error: 'Something Wrong',
-        });
     }
 
     async patchUser(req: express.Request, res: express.Response) {

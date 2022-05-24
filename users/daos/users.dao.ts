@@ -3,6 +3,7 @@ import { CreateUserDto } from '../dto/create.user.dto';
 import { PatchUserDto } from '../dto/patch.user.dto';
 import MysqlPrisma from '../../common/services/mysql.service.config';
 import { Prisma } from '@prisma/client';
+import moment from 'moment';
 
 const log: debug.IDebugger = debug('app:in-memory-dao');
 
@@ -73,7 +74,12 @@ class UserDao {
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 link: {
-                    create: [{ description: link }],
+                    create: {
+                        link: link,
+                        description: 'Membuat Link Aktifasi',
+                        expiredAt: moment().add(1, 'days').toDate(),
+                        createdAt: moment().toDate(),
+                    },
                 },
             },
             include: {
@@ -144,8 +150,10 @@ class UserDao {
         return MysqlPrisma.link.create({
             data: {
                 userId: id,
-                description: link,
+                link: link,
+                description: 'Membuat Link Baru',
                 createdAt: new Date(),
+                expiredAt: moment().add(1, 'days').toDate(),
             },
             include: {
                 user: {
@@ -154,6 +162,12 @@ class UserDao {
                         email: true,
                     },
                 },
+                // user: {
+                //     select: {
+                //         username: true,
+                //         email: true,
+                //     },
+                // },
             },
         });
     }
