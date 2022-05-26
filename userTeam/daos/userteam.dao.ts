@@ -149,6 +149,23 @@ class UserTeamDao {
             },
         });
     }
+
+    async getTeamWithIdProject(idProject: number) {
+        return MysqlPrisma.userteam.findMany({
+            where: {
+                projectId: idProject,
+            },
+            include: {
+                project: false,
+                user: {
+                    select: {
+                        username: true,
+                        email: true,
+                    },
+                },
+            },
+        });
+    }
 }
 
 export default new UserTeamDao();

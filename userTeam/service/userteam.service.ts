@@ -20,6 +20,10 @@ class UserTeamService {
     async getUserWithIdTeam(idTeam: number) {
         return userteamDao.getUserWithTeamIm(idTeam);
     }
+
+    async getTeamWithIdProject(idProject: number) {
+        return userteamDao.getTeamWithIdProject(idProject);
+    }
 }
 
 export default new UserTeamService();

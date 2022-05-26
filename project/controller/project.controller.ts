@@ -5,18 +5,30 @@ import {
     userteam,
 } from '@prisma/client';
 import { Request, Response } from 'express';
+import moment from 'moment';
 import { CreateActivityDto } from '../../activity/dto/create.activity.dto';
 import activityService from '../../activity/service/activity.service';
 import { ProjecType } from '../../common/@types/project.types';
 import { CommonController } from '../../common/controller/controller.config';
 import { CPM } from '../../common/cpm/calculate.cpm.config';
+import { EmailNodeMailer } from '../../common/email/email.config.service';
+import {
+    ManipulationDataProjectTemplateEmail,
+    ProjectContext,
+    StatsActivity,
+} from '../../common/email/email.template';
+import { RestApiGetUserById } from '../../common/interfaces/api.interface';
 import { HttpResponse } from '../../common/services/http.service.config';
 import subProjectActivityDao from '../../subProjectActivity/daos/subProjectActivity.dao';
+import userService from '../../users/services/user.service';
+import userteamService from '../../userTeam/service/userteam.service';
 import projectDao from '../daos/project.dao';
 import { CreateProjectDto } from '../dto/create.project.dto';
 import projectService from '../service/project.service';
 
 class ProjectController extends CommonController {
+    Email = new EmailNodeMailer();
+
     // Membuat Project Baru Dan Menyimpan Aktifitas Pengguna
     async createProject(req: Request, res: Response) {
         try {
@@ -56,7 +68,26 @@ class ProjectController extends CommonController {
                 return HttpResponse.BadRequest(res);
             }
 
-            await projectService.deleteProject(req.body.idProject);
+            const project = await projectService.deleteProject(
+                req.body.idProject
+            );
+
+            const PayloadActivity: CreateActivityDto = {
+                activity: 'Mengubah Data Project',
+                userId: req.body.id,
+                projectId: project.projectId,
+            };
+            await activityService.createAsync(PayloadActivity);
+
+            await this.sendEmailNotification(
+                req.body.id,
+                project,
+                {
+                    h2: 'Delete Proyek ' + project.projectName,
+                    p: 'Proyek Telah di Hapus',
+                },
+                StatsActivity.Delete
+            );
 
             return HttpResponse.NoContent(res);
         } catch (error) {
@@ -89,7 +120,7 @@ class ProjectController extends CommonController {
     }
 
     // Update Data Project dan Menyimpan Aktifitas User
-    async patchProject(req: Request, res: Response) {
+    public patchProject = async (req: Request, res: Response) => {
         try {
             const allowedPatch = [
                 'projectName',
@@ -120,6 +151,15 @@ class ProjectController extends CommonController {
             };
 
             await activityService.createAsync(PayloadActivity);
+            await this.sendEmailNotification(
+                req.body.id,
+                project,
+                {
+                    h2: 'Update Proyek ' + project.projectName,
+                    p: 'Proyek Telah di Update',
+                },
+                StatsActivity.Update
+            );
 
             return HttpResponse.Created(res, {
                 projectId: project.projectId,
@@ -127,9 +167,10 @@ class ProjectController extends CommonController {
                 projectDescription: project.projectDescription,
             });
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
-    }
+    };
 
     // Mengambil Data Lengkap Pada Satu Project Dan Mengupdate Progress Project
     public getOneProject = async (req: Request, res: Response) => {
@@ -259,6 +300,42 @@ class ProjectController extends CommonController {
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }
+    };
+
+    private sendEmailNotification = async (
+        idUser: number,
+        project: project,
+        Context: ProjectContext,
+        Stats: StatsActivity
+    ) => {
+        const user = (await userService.readById(idUser, true, [
+            'username',
+            'email',
+        ])) as RestApiGetUserById;
+        const team = await userteamService.getTeamWithIdProject(
+            project.projectId
+        );
+
+        const UserTeam = team.map((x) => x.user.email);
+
+        // console.log(user, team);
+        // for (const iterator of team) {
+        const Contexts = ManipulationDataProjectTemplateEmail(
+            Stats,
+            user.email,
+            UserTeam.join(','),
+            {
+                ...Context,
+                user: user.username,
+                updatedAt: moment(project.updatedAt).format('LL'),
+            }
+        );
+
+        console.log(Contexts);
+        this.Email.setOptionEmail(Contexts);
+
+        await this.Email.send();
+        // }
     };
 }
 
