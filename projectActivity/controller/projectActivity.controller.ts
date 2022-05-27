@@ -1,18 +1,37 @@
-import { projectactivity_position, usertaskfromassignee } from '@prisma/client';
+import {
+    project,
+    projectactivity,
+    projectactivity_position,
+    subdetailprojectactivity,
+    usertaskfromassignee,
+} from '@prisma/client';
 import { Request, Response } from 'express';
 import { bodyBlacklist } from 'express-winston';
+import moment from 'moment';
 import { CreateActivityDto } from '../../activity/dto/create.activity.dto';
 import activityService from '../../activity/service/activity.service';
 import { CPM } from '../../common/cpm/calculate.cpm.config';
+import { EmailNodeMailer } from '../../common/email/email.config.service';
+import {
+    ManipulateDataProjectActivityTemplateEmail,
+    ProjectActivityContext,
+    StatsActivity,
+} from '../../common/email/email.template';
+import { RestApiGetUserById } from '../../common/interfaces/api.interface';
 import { HttpResponse } from '../../common/services/http.service.config';
 
 import projectDao from '../../project/daos/project.dao';
 import projectService from '../../project/service/project.service';
+import subProjectActivityDao from '../../subProjectActivity/daos/subProjectActivity.dao';
+import userService from '../../users/services/user.service';
+import userteamService from '../../userTeam/service/userteam.service';
 import { CreateProjectActivityDto } from '../dto/create.projectActivity.dto';
 import { PatchProjectActivityDto } from '../dto/patch.projectActivity.dto';
 import projectActivityService from '../service/projectActivity.service';
 
 class ProjectACtivityController {
+    Email = new EmailNodeMailer();
+
     async getProjectActivityBaseOfIdProject(req: Request, res: Response) {
         try {
             const projectActivity =
@@ -42,7 +61,7 @@ class ProjectACtivityController {
     }
 
     // Membuat Aktifitas Project Baru dan Menyimpan Aktitifitas User
-    async createProjectActivity(req: Request, res: Response) {
+    public createProjectActivity = async (req: Request, res: Response) => {
         try {
             const usertask = [];
             const subdetailprojectactivity = [];
@@ -83,6 +102,11 @@ class ProjectACtivityController {
                 payload
             );
 
+            const Percentage = await this.CalculateProgress(
+                projectAct.projectActivityId,
+                subdetailprojectactivity
+            );
+
             let project = await projectService.getOne(
                 req.body.id,
                 req.body.idProject
@@ -120,14 +144,51 @@ class ProjectACtivityController {
 
             await activityService.createAsync(PayloadActivity);
 
+            await this.SendEmailNotification(
+                req.body.id,
+                project,
+                Percentage,
+                {
+                    h2:
+                        Percentage >= 100
+                            ? `Project Activity ${payload.name} Selesai`
+                            : `Create Project Activity`,
+                    p: 'Proyek Activity Telah Di Buat',
+                },
+                StatsActivity.Create
+            );
+
             return HttpResponse.Created(res, project);
         } catch (error) {
             console.log(error);
             return HttpResponse.InternalServerError(res);
         }
-    }
+    };
 
-    async patchProjectActivity(req: Request, res: Response) {
+    private CalculateProgress = async (
+        idProjectActivity: number,
+        subdetailprojectactivity: subdetailprojectactivity[]
+    ) => {
+        if (subdetailprojectactivity.length == 0) {
+            return;
+        }
+        const FindTotalSubDetail = subdetailprojectactivity.length;
+
+        const TotalCompleted = subdetailprojectactivity.filter(
+            (x) => x.isComplete === true
+        ).length;
+
+        const Percentage = (TotalCompleted / FindTotalSubDetail) * 100;
+
+        await projectActivityService.PatchProgress(
+            idProjectActivity,
+            Math.ceil(Percentage)
+        );
+
+        return Percentage;
+    };
+
+    public patchProjectActivity = async (req: Request, res: Response) => {
         try {
             const { idProjectActivity, idProject, id, email, ...rest } =
                 req.body;
@@ -140,6 +201,16 @@ class ProjectACtivityController {
                     rest,
                     id
                 );
+
+            const FindSubDetailActivity =
+                await subProjectActivityDao.getBasedOnIdProjectActivity(
+                    IdProjectActivityParams
+                );
+
+            const Percentage = await this.CalculateProgress(
+                +IdProjectActivityParams,
+                FindSubDetailActivity
+            );
 
             let project = await projectService.getOne(
                 req.body.id,
@@ -171,19 +242,33 @@ class ProjectACtivityController {
 
             const PayloadActivity: CreateActivityDto = {
                 activity:
-                    'Update Aktifitas Project ' + `"${projectActivity.name}"`,
+                    'Update Aktifitas Project ' + `${projectActivity.name}`,
                 userId: req.body.id,
                 projectId: req.body.idProject,
             };
 
             await activityService.createAsync(PayloadActivity);
 
+            await this.SendEmailNotification(
+                req.body.id,
+                project,
+                Percentage,
+                {
+                    h2:
+                        Percentage >= 100
+                            ? `Project Activity ${projectActivity.name} Selesai`
+                            : `Update Project Activity`,
+                    p: 'Proyek Activity Telah Di Update',
+                },
+                StatsActivity.Update
+            );
+
             return HttpResponse.Created(res, projectActivity);
         } catch (error) {
             console.log(error);
             return HttpResponse.InternalServerError(res);
         }
-    }
+    };
 
     async deleteProjectActivity(req: Request, res: Response) {
         try {
@@ -336,6 +421,40 @@ class ProjectACtivityController {
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }
+    };
+
+    public SendEmailNotification = async (
+        idUser: number,
+        project: project,
+        Progress: number,
+        Context: ProjectActivityContext,
+        Stats: StatsActivity
+    ) => {
+        const user = (await userService.readById(idUser, true, [
+            'username',
+            'email',
+        ])) as RestApiGetUserById;
+        const team = await userteamService.getTeamWithIdProject(
+            project.projectId
+        );
+
+        const UserTeam = team.map((x) => x.user.email);
+
+        const Contexts = ManipulateDataProjectActivityTemplateEmail(
+            Stats,
+            user.email,
+            UserTeam.join(','),
+            {
+                ...Context,
+                user: user.username,
+                updatedAt: moment(project.updatedAt).format('LL'),
+            },
+            Progress
+        );
+
+        this.Email.setOptionEmail(Contexts);
+
+        await this.Email.send();
     };
 }
 

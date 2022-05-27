@@ -31,7 +31,6 @@ export class ProjectRoute extends CommonRoutesConfig {
                 projectMiddleware.checkProject
             )
             .get(projectController.getOneProject)
-
             .delete(
                 projectMiddleware.checkIsItLeader,
                 projectController.deleteProject

@@ -60,7 +60,7 @@ class ProjectController extends CommonController {
     }
 
     // Menghapus Project Pada Database Secara Permanen
-    async deleteProject(req: Request, res: Response) {
+    public deleteProject = async (req: Request, res: Response) => {
         try {
             const { idProject } = req.params;
 
@@ -68,32 +68,38 @@ class ProjectController extends CommonController {
                 return HttpResponse.BadRequest(res);
             }
 
-            const project = await projectService.deleteProject(
+            const findP = await projectService.getOneByIdProject(
                 req.body.idProject
             );
 
-            const PayloadActivity: CreateActivityDto = {
-                activity: 'Mengubah Data Project',
-                userId: req.body.id,
-                projectId: project.projectId,
-            };
-            await activityService.createAsync(PayloadActivity);
+            // const PayloadActivity: CreateActivityDto = {
+            //     activity: 'Menghapus Data Project',
+            //     userId: req.body.id,
+            //     projectId: project.projectId,
+            // };
+
+            // await activityService.createAsync(PayloadActivity);
 
             await this.sendEmailNotification(
                 req.body.id,
-                project,
+                findP,
                 {
-                    h2: 'Delete Proyek ' + project.projectName,
+                    h2: 'Delete Proyek ' + findP.projectName,
                     p: 'Proyek Telah di Hapus',
                 },
                 StatsActivity.Delete
             );
 
+            const project = await projectService.deleteProject(
+                req.body.idProject
+            );
+
             return HttpResponse.NoContent(res);
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
-    }
+    };
 
     // Mengambil Semua Project Pada User
     async getAllProject(req: Request, res: Response) {
@@ -318,8 +324,6 @@ class ProjectController extends CommonController {
 
         const UserTeam = team.map((x) => x.user.email);
 
-        // console.log(user, team);
-        // for (const iterator of team) {
         const Contexts = ManipulationDataProjectTemplateEmail(
             Stats,
             user.email,

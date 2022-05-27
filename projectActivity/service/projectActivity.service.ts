@@ -33,6 +33,10 @@ class ProjectActivityService {
         );
     }
 
+    async PatchProgress(idProjectActivity: number, Progress: number) {
+        return projectActivityDao.patchProgress(idProjectActivity, Progress);
+    }
+
     async deleteProjectActivity(idProjectActivity: number) {
         return projectActivityDao.deleteProjectActivity(idProjectActivity);
     }

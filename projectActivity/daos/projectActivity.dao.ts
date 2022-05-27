@@ -126,14 +126,14 @@ class ProjectActivityDao {
                     SavedId.push(update.subDetailProjectActivityId);
                 }
 
-                const deleteData =
-                    await QueryPrisma.subdetailprojectactivity.deleteMany({
-                        where: {
-                            subDetailProjectActivityId: {
-                                notIn: SavedId,
-                            },
-                        },
-                    });
+                // const deleteData =
+                //     await QueryPrisma.subdetailprojectactivity.deleteMany({
+                //         where: {
+                //             subDetailProjectActivityId: {
+                //                 notIn: SavedId,
+                //             },
+                //         },
+                //     });
             };
 
             const UpdateUserTaskFromAssignee = async (data: number[]) => {
@@ -248,6 +248,18 @@ class ProjectActivityDao {
         return MysqlPrisma.projectactivity.findMany({
             where: {
                 projectId: idProject,
+            },
+        });
+    }
+
+    async patchProgress(idProjectActivity: number, Progress: number) {
+        return MysqlPrisma.projectactivity.update({
+            where: {
+                projectActivityId: idProjectActivity,
+            },
+            data: {
+                progress: Progress,
+                updatedAt: new Date(),
             },
         });
     }

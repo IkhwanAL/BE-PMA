@@ -17,6 +17,8 @@ export interface ProjectContext extends MainContext {
     updatedAt?: string | Date;
 }
 
+export interface ProjectActivityContext extends ProjectContext {}
+
 export const ManipulationDataProjectTemplateEmail = (
     Stats: StatsActivity,
     from: string,
@@ -28,6 +30,31 @@ export const ManipulationDataProjectTemplateEmail = (
         to: to,
         context: context,
         subject: `${Stats} Data Project`,
+        template: 'project',
+    };
+};
+
+export const ManipulateDataProjectActivityTemplateEmail = (
+    Stats: StatsActivity,
+    from: string,
+    to: string | Array<string>,
+    context: ProjectActivityContext,
+    Progress: number
+): nodemailer.SendMailOptions & hbs.TemplateOptions => {
+    if (Progress >= 100) {
+        return {
+            from: from,
+            to: to,
+            context: context,
+            subject: `Data Project Activity Progress 100%`,
+            template: 'project',
+        };
+    }
+    return {
+        from: from,
+        to: to,
+        context: context,
+        subject: `${Stats} Data Project Activity`,
         template: 'project',
     };
 };
