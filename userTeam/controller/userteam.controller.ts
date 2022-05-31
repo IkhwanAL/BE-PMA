@@ -119,12 +119,51 @@ class UserTeamController {
      */
     async deleteUserFromTeam(req: Request, res: Response) {
         try {
+            const email = [];
+
+            for (const iterator of req.body.Data as number[]) {
+                const find = (await userService.readById(iterator, true, [
+                    'email',
+                ])) as RestApiGetUserById;
+                if (find) {
+                    email.push(find.email);
+                } else {
+                    throw new Error('Email Tidak Terdaftar');
+                }
+            }
+
             await userteamService.deleteuserTeam(
                 req.body.idProject,
-                req.body.idUserInvitation
+                req.body.Data
             );
 
-            return HttpResponse.NoContent(res);
+            const Project = await projectService.getOneByIdProject(
+                req.body.idProject
+            );
+
+            const Leader = (await userService.readById(req.body.id, true, [
+                'email',
+                'username',
+            ])) as RestApiGetUserById;
+
+            const Email = new EmailNodeMailer();
+
+            Email.setOptionEmail({
+                from: Leader.email,
+                to: email.join(','),
+                template: 'deleteUser',
+                subject: 'Remove From Team',
+                context: {
+                    h2: 'Removed From ' + Project.projectName,
+                    p: 'You Been Deleted From Project ' + Project.projectName,
+                    Username: Leader.username,
+                    At: moment().format('LL'),
+                },
+            });
+
+            await Email.send();
+
+            return HttpResponse.Ok(res, {});
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }
@@ -249,8 +288,46 @@ class UserTeamController {
         try {
             const { Data, idProject } = req.body;
 
-            // return;
+            const email = [];
+
+            for (const iterator of Data as number[]) {
+                const find = (await userService.readById(iterator, true, [
+                    'email',
+                ])) as RestApiGetUserById;
+                if (find) {
+                    email.push(find.email);
+                } else {
+                    throw new Error('Email Tidak Terdaftar');
+                }
+            }
+
+            const Project = await projectService.getOneByIdProject(
+                req.body.idProject
+            );
+
+            const Leader = (await userService.readById(req.body.id, true, [
+                'email',
+                'username',
+            ])) as RestApiGetUserById;
+
             await userteamService.deleteTeam(Data as Array<number>, idProject);
+
+            const Email = new EmailNodeMailer();
+
+            Email.setOptionEmail({
+                from: Leader.email,
+                to: email.join(','),
+                template: 'deleteUser',
+                subject: 'Remove From Team',
+                context: {
+                    h2: 'Removed From ' + Project.projectName,
+                    p: 'You Been Deleted From Project ' + Project.projectName,
+                    Username: Leader.username,
+                    At: moment().format('LL'),
+                },
+            });
+
+            await Email.send();
 
             return HttpResponse.Ok(res, {});
         } catch (error) {

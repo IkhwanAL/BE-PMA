@@ -24,8 +24,8 @@ import { JwtService } from '../../common/services/jwt.service.config';
 const log: debug.IDebugger = debug('app:users-controller');
 
 class UsersController {
-    private readonly accessTokenExhaustedTime = 1 * 60 * 60;
-    private readonly refreshTokenExhaustedTime = 5 * 60 * 60;
+    private readonly accessTokenExhaustedTime = 1000 * 60 * 60 * 4; // Four Hours
+    private readonly refreshTokenExhaustedTime = 1000 * 60 * 60 * 10; // Ten Hours
 
     async getUserById(req: express.Request, res: express.Response) {
         const column = [
@@ -55,7 +55,7 @@ class UsersController {
     async createUser(req: express.Request, res: express.Response) {
         try {
             req.body.password = await argon2.hash(req.body.password);
-            console.log(req);
+
             const crypt = new EncryptService();
 
             const encrypt = crypt.encrypt({ email: req.body.email }).toString();
@@ -91,6 +91,7 @@ class UsersController {
                 error: 'Something Wrong',
             });
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
@@ -173,7 +174,8 @@ class UsersController {
 
     async removeUser(req: express.Request, res: express.Response) {
         try {
-            await usersService.deleteById(req.body.id);
+            const dataUser = await usersService.deleteById(req.body.id);
+
             res.clearCookie('cookie');
             return HttpResponse.NoContent(res);
         } catch (error) {

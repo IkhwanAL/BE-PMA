@@ -8,7 +8,9 @@ export interface CPM {
     f: number;
     critical: boolean;
 }
-
+/**
+ *
+ */
 export class CPM {
     private readonly project: project & {
         projectactivity: projectactivity[];
@@ -61,9 +63,13 @@ export class CPM {
         }
     }
 
+    /**
+     * * BIG O: N^2 (Quadratic Time)
+     */
     private convert() {
         const ProjectActivityTemp = this.project.projectactivity;
 
+        // N
         for (const iterator of ProjectActivityTemp) {
             // this.convertResult[].
             this.convertResult[iterator.projectActivityId] = {
@@ -76,6 +82,7 @@ export class CPM {
             }
         }
         /**
+         * * N^2
          * * Mencari Parent Node
          * * Dan Mencari Vertex Child
          */
@@ -101,11 +108,13 @@ export class CPM {
             this.convertResult[key].ParentActivity = temp;
         }
 
+        // N
         for (const iterator in this.backwardParent) {
             this.convertResult[iterator].child =
                 this.backwardParent[iterator].join(',');
         }
         /**
+         * * N^2
          * * Mencari Child Node
          */
         for (const key in this.convertResult) {
@@ -126,7 +135,9 @@ export class CPM {
             this.convertResult[key].ChildActivity = temp;
         }
     }
-
+    /**
+     * * B
+     */
     private Start() {
         const Act = this.convertResult;
 
@@ -134,6 +145,7 @@ export class CPM {
 
         const tempNumValue = [];
 
+        // N
         for (const key in this.memoize) {
             tempNumValue.push(this.memoize[key].ef);
         }
@@ -147,6 +159,12 @@ export class CPM {
         this.calculateFloatPointActivity();
     }
 
+    //#region Calculate Pass
+
+    /**
+     * * BIG 0: N^2 (Quadratic Time)
+     * @param Act
+     */
     private backwardPass(Act: {
         [key: string]: projectactivity & {
             ParentActivity: {
@@ -159,6 +177,7 @@ export class CPM {
     }) {
         const tempReverseObj = Act;
 
+        // N
         const arrReverse = this.reverseObjAct(tempReverseObj) as Array<
             projectactivity & {
                 ParentActivity: { [key: string]: projectactivity };
@@ -167,6 +186,7 @@ export class CPM {
             }
         >;
 
+        // N^2
         for (const currentId of arrReverse) {
             if (!Act[currentId.key].child) {
                 this.memoize[currentId.key].lf = this.LongestTime;
@@ -206,6 +226,10 @@ export class CPM {
         }
     }
 
+    /**
+     * * BIG 0: N^2 (Quadratic Time)
+     * @param Act
+     */
     private forwardPass(Act: {
         [key: string]: projectactivity & {
             ParentActivity: {
@@ -216,6 +240,7 @@ export class CPM {
             };
         };
     }) {
+        // N^2
         for (const currentId in Act) {
             if (!this.memoize[currentId]) {
                 this.memoize[currentId] = {} as CPM;
@@ -280,7 +305,9 @@ export class CPM {
             }
         }
     }
+    //#endregion
 
+    //#region GetResult
     public getDeadLine(): number {
         return this.LongestTime;
     }
@@ -288,9 +315,17 @@ export class CPM {
     public getCalculate() {
         return this.memoize;
     }
+    //#endregion
 
+    //#region of Reverse Object
+    /**
+     * * BIG O: N
+     * @param obj
+     * @returns
+     */
     private reverseObjAct: any = (obj: any) =>
         Object.keys(obj)
             .reverse()
             .map((key) => ({ ...obj[key], key: key }));
+    //#endregion
 }

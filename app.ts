@@ -1,11 +1,8 @@
 import express from 'express';
-import expressSession, { Session } from 'express-session';
-import { PrismaSessionStore } from '@quixo3/prisma-session-store';
-import MysqlPrisma from './common/services/mysql.service.config';
-import * as http from 'http';
 import cluster from 'cluster';
 import os from 'os';
 import cookieParser from 'cookie-parser';
+import 'dotenv/config';
 
 import * as winston from 'winston';
 import * as expressWinston from 'express-winston';
@@ -57,17 +54,27 @@ if (cluster.isPrimary) {
     app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
 
     const loggerOptions: expressWinston.LoggerOptions = {
-        transports: [new winston.transports.Console()],
+        transports: [
+            new winston.transports.Console(),
+            new winston.transports.File({
+                filename: 'logs/error.log',
+                level: 'error',
+                maxsize: 5242880,
+                maxFiles: 5,
+            }),
+            new winston.transports.File({ filename: 'logs/combined.log' }),
+        ],
+        meta: true,
         format: winston.format.combine(
             winston.format.json(),
             winston.format.prettyPrint(),
-            winston.format.colorize({ all: true })
+            winston.format.colorize({ all: true, message: true, level: true })
         ),
     };
 
-    if (!process.env.DEBUG) {
-        loggerOptions.meta = false;
-    }
+    // if (!process.env.DEBUG) {
+    //     loggerOptions.meta = false;
+    // }
 
     app.use(expressWinston.logger(loggerOptions));
 
