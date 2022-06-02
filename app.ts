@@ -51,7 +51,12 @@ if (cluster.isPrimary) {
 
     app.use(express.json());
 
-    app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+    app.use(
+        cors({
+            credentials: true,
+            origin: 'https://project-management-topaz.vercel.app',
+        })
+    );
 
     const loggerOptions: expressWinston.LoggerOptions = {
         transports: [
