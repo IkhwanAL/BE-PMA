@@ -27,83 +27,86 @@ const debugLog: debug.IDebugger = debug('app');
 
 const totalCpus = os.cpus().length;
 
-if (cluster.isPrimary) {
-    console.log(`Number of CPUs is ${totalCpus}`);
-    console.log(`Master ${process.pid} is running`);
+// if (cluster.isPrimary) {
+//     if (totalCpus > 1) {
+//         for (let index = 0; index < totalCpus / 2; index++) {
+//             cluster.fork();
+//         }
+//     } else {
+//         cluster.fork();
+//     }
 
-    for (let index = 0; index < totalCpus / 2; index++) {
-        cluster.fork();
-    }
+//     cluster.on('exit', (worker, code, signal) => {
+//         console.log(`worker ${worker.process.pid} died`);
+//         console.log("Let's fork another worker!");
+//         cluster.fork();
+//     });
+// } else {
+const app = express();
+app.disable('x-powered-by');
+const port = process.env.PORT || 3000;
 
-    cluster.on('exit', (worker, code, signal) => {
-        console.log(`worker ${worker.process.pid} died`);
-        console.log("Let's fork another worker!");
-        cluster.fork();
+const Routes: Array<CommonRoutesConfig> = [];
+
+app.use(cookieParser());
+
+app.use(express.json());
+
+app.use(
+    cors({
+        credentials: true,
+        origin: 'https://project-management-topaz.vercel.app',
+    })
+);
+
+const loggerOptions: expressWinston.LoggerOptions = {
+    transports: [
+        // new winston.transports.Console(),
+        new winston.transports.File({
+            filename: 'logs/error.log',
+            level: 'error',
+            maxsize: 5242880,
+            maxFiles: 5,
+        }),
+        new winston.transports.File({ filename: 'logs/combined.log' }),
+    ],
+    meta: true,
+    format: winston.format.combine(
+        winston.format.json(),
+        winston.format.prettyPrint(),
+        winston.format.colorize({ all: true, message: true, level: true })
+    ),
+};
+
+// if (!process.env.DEBUG) {
+//     loggerOptions.meta = false;
+// }
+
+app.use(expressWinston.logger(loggerOptions));
+
+Routes.push(new UserRoutes(app));
+Routes.push(new ProjectRoute(app));
+Routes.push(new UserTeamRoutes(app));
+Routes.push(new ProjectActivityRoute(app));
+Routes.push(new SubProjectActivityRoute(app));
+Routes.push(new ActivityRoute(app));
+
+const runningMessage = `Server running at http://localhost:${port}`;
+
+app.get('/', (req: express.Request, res: express.Response) => {
+    res.status(200).send(runningMessage);
+});
+
+console.log(port);
+
+app.listen(process.env.PORT || 3000, () => {
+    debugLog(`Server running at http://localhost:${port}`);
+    Routes.forEach((route: CommonRoutesConfig) => {
+        route.configureRoutes();
+
+        debugLog(`Routes configured for ${route.getName()}`);
     });
-} else {
-    const app = express();
-    app.disable('x-powered-by');
-    const port = 3001;
 
-    const Routes: Array<CommonRoutesConfig> = [];
-
-    app.use(cookieParser());
-
-    app.use(express.json());
-
-    app.use(
-        cors({
-            credentials: true,
-            origin: 'https://project-management-topaz.vercel.app',
-        })
-    );
-
-    const loggerOptions: expressWinston.LoggerOptions = {
-        transports: [
-            new winston.transports.Console(),
-            new winston.transports.File({
-                filename: 'logs/error.log',
-                level: 'error',
-                maxsize: 5242880,
-                maxFiles: 5,
-            }),
-            new winston.transports.File({ filename: 'logs/combined.log' }),
-        ],
-        meta: true,
-        format: winston.format.combine(
-            winston.format.json(),
-            winston.format.prettyPrint(),
-            winston.format.colorize({ all: true, message: true, level: true })
-        ),
-    };
-
-    // if (!process.env.DEBUG) {
-    //     loggerOptions.meta = false;
-    // }
-
-    app.use(expressWinston.logger(loggerOptions));
-
-    Routes.push(new UserRoutes(app));
-    Routes.push(new ProjectRoute(app));
-    Routes.push(new UserTeamRoutes(app));
-    Routes.push(new ProjectActivityRoute(app));
-    Routes.push(new SubProjectActivityRoute(app));
-    Routes.push(new ActivityRoute(app));
-
-    const runningMessage = `Server running at http://localhost:${port}`;
-
-    app.get('/', (req: express.Request, res: express.Response) => {
-        res.status(200).send(runningMessage);
-    });
-
-    app.listen(port, () => {
-        debugLog(`Server running at http://localhost:${port}`);
-        Routes.forEach((route: CommonRoutesConfig) => {
-            route.configureRoutes();
-
-            debugLog(`Routes configured for ${route.getName()}`);
-        });
-
-        console.log(runningMessage);
-    });
-}
+    console.log(runningMessage);
+});
+// }
