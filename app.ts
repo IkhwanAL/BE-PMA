@@ -30,8 +30,11 @@ const totalCpus = os.cpus().length;
 if (cluster.isPrimary) {
     console.log(`Number of CPUs is ${totalCpus}`);
     console.log(`Master ${process.pid} is running`);
-
-    for (let index = 0; index < totalCpus / 2; index++) {
+    if (totalCpus > 1) {
+        for (let index = 0; index < totalCpus / 2; index++) {
+            cluster.fork();
+        }
+    } else {
         cluster.fork();
     }
 
