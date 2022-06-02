@@ -46,7 +46,7 @@ if (cluster.isPrimary) {
 } else {
     const app = express();
     app.disable('x-powered-by');
-    const port = process.env.PORT || 3001;
+    const port = process.env.PORT || 3000;
 
     const Routes: Array<CommonRoutesConfig> = [];
 
@@ -93,6 +93,8 @@ if (cluster.isPrimary) {
     app.get('/', (req: express.Request, res: express.Response) => {
         res.status(200).send(runningMessage);
     });
+
+    console.log(port);
 
     app.listen(process.env.PORT || 3000, () => {
         debugLog(`Server running at http://localhost:${port}`);
