@@ -46,7 +46,7 @@ if (cluster.isPrimary) {
 } else {
     const app = express();
     app.disable('x-powered-by');
-    const port = 3001;
+    const port = process.env.PORT || 3001;
 
     const Routes: Array<CommonRoutesConfig> = [];
 
