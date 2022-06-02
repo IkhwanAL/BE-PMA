@@ -40,15 +40,15 @@
   },
   "name": "ApiExpressPMA",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "app.js",
   "license": "MIT",
   "scripts": {
-    "start": "tsc && node --unhandled-rejections=strict ./dist/app.js",
     "debug": "cross-env SET DEBUG=* && yarn run start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "generate": "npx prisma generate && yarn install",
     "dev": "nodemon --watch src/ --exec \"yarn run start\" --verbose -e ts",
-    "start:ts": "nodemon app.ts"
+    "start:ts": "nodemon app.ts",
+    "start": "ts-node app.ts"
   },
   "author": "IkhwanAl <ikhwanal235@gmail.com>"
 }
