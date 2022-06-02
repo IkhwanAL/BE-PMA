@@ -58,7 +58,7 @@ if (cluster.isPrimary) {
 
     const loggerOptions: expressWinston.LoggerOptions = {
         transports: [
-            new winston.transports.Console(),
+            // new winston.transports.Console(),
             new winston.transports.File({
                 filename: 'logs/error.log',
                 level: 'error',
@@ -94,7 +94,7 @@ if (cluster.isPrimary) {
         res.status(200).send(runningMessage);
     });
 
-    app.listen(port, () => {
+    app.listen(process.env.PORT || 3000, () => {
         debugLog(`Server running at http://localhost:${port}`);
         Routes.forEach((route: CommonRoutesConfig) => {
             route.configureRoutes();
