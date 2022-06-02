@@ -1,9 +1,0 @@
--- AlterTable
-ALTER TABLE `link` MODIFY `expiredAt` DATETIME(3) NOT NULL DEFAULT DATE_ADD(NOW(), INTERVAL 1 DAY);
-
--- AlterTable
-ALTER TABLE `project` MODIFY `deadline` DATETIME(3) NULL,
-    MODIFY `deadlineInString` VARCHAR(191) NULL;
-
--- AlterTable
-ALTER TABLE `session` MODIFY `expiresAt` DATETIME(3) NOT NULL DEFAULT DATE_ADD(NOW(), INTERVAL 1 DAY);
