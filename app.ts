@@ -52,7 +52,19 @@ app.use(cookieParser());
 
 app.use(express.json());
 
-app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+// app.use(
+//     cors({
+//         credentials: true,
+//         origin: 'https://project-management-topaz.vercel.app',
+//     })
+// );
+
+app.use(
+    cors({
+        credentials: true,
+        origin: 'http://localhost:3000/',
+    })
+);
 
 const loggerOptions: expressWinston.LoggerOptions = {
     transports: [
@@ -92,9 +104,7 @@ app.get('/', (req: express.Request, res: express.Response) => {
     res.status(200).send(runningMessage);
 });
 
-console.log(port);
-
-app.listen(process.env.PORT || 3000, () => {
+app.listen(process.env.PORT || 3001, () => {
     debugLog(`Server running at http://localhost:${port}`);
     Routes.forEach((route: CommonRoutesConfig) => {
         route.configureRoutes();
