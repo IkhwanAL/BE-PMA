@@ -70,7 +70,7 @@ class UsersController {
             const transporter = new EmailNodeMailer();
 
             transporter.setOptionEmail({
-                from: 'ikhwanal235@gmail.com',
+                from: process.env.USER ?? 'ikhwanal235@gmail.com',
                 to: email,
                 subject: 'Verify Register User',
                 template: 'register',
@@ -139,7 +139,7 @@ class UsersController {
             const transporter = new EmailNodeMailer();
 
             transporter.setOptionEmail({
-                from: 'ikhwanal235@gmail.com',
+                from: process.env.USER ?? 'ikhwanal235@gmail.com',
                 to: req.body.email,
                 subject: 'Verify Register User',
                 template: 'register',

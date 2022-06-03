@@ -200,7 +200,6 @@ class UserTeamController {
 
     async changeOwner(req: Request, res: Response) {
         try {
-            console.log(req.body);
             const { id, idUserInvitation, idProject } = req.body;
 
             const crypt = new EncryptService();
