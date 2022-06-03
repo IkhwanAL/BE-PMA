@@ -221,13 +221,14 @@ class UserTeamController {
             const emailReceiver = (await usersDao.getUsersById(
                 idUserInvitation,
                 true,
-                ['email', 'id']
+                ['email', 'id', 'username']
             )) as RestApiGetUserById;
 
             const getProject = await projectDao.readOne(idProject);
-            const getOwner = (await usersDao.getUsersById(
-                id
-            )) as RestApiGetUserById;
+            const getOwner = (await usersDao.getUsersById(id, true, [
+                'email',
+                'username',
+            ])) as RestApiGetUserById;
 
             const param = encodeURIComponent(
                 crypt
@@ -242,13 +243,13 @@ class UserTeamController {
             const Link = await userService.createLink(id, link);
 
             trasporter.setOptionEmail({
-                from: 'ikhwanal235@gmail.com',
+                from: getOwner.email,
                 to: emailReceiver.email,
                 subject: `Selected As Proyek Manager For ${getProject.projectName} Project`,
                 template: 'changeowner',
                 context: {
                     owner: getOwner.username,
-                    link: Link.description,
+                    link: Link.link,
                     choosen: emailReceiver.username,
                 },
             });
