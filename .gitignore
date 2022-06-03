@@ -106,3 +106,4 @@ dist
 
 # Local data folder from MongoDB with docker-compose.yml
 data
+.vercel
