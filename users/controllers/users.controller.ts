@@ -179,6 +179,7 @@ class UsersController {
             res.clearCookie('cookie');
             return HttpResponse.NoContent(res);
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
