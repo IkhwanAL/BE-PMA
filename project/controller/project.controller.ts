@@ -96,7 +96,6 @@ class ProjectController extends CommonController {
 
             return HttpResponse.NoContent(res);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
@@ -118,7 +117,7 @@ class ProjectController extends CommonController {
                 req.body.id,
                 req.body.idProject
             );
-            console.log(project);
+
             return HttpResponse.Ok(res, project);
         } catch (error) {
             return HttpResponse.InternalServerError(res);
@@ -195,7 +194,6 @@ class ProjectController extends CommonController {
                 projectDescription: project.projectDescription,
             });
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
@@ -357,7 +355,6 @@ class ProjectController extends CommonController {
             }
         );
 
-        console.log(Contexts);
         this.Email.setOptionEmail(Contexts);
 
         await this.Email.send();

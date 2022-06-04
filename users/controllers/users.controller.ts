@@ -91,7 +91,6 @@ class UsersController {
                 error: 'Something Wrong',
             });
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
@@ -179,7 +178,6 @@ class UsersController {
             res.clearCookie('cookie');
             return HttpResponse.NoContent(res);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
@@ -247,7 +245,6 @@ class UsersController {
                 } as FailedTypes);
             }
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };

@@ -36,7 +36,7 @@ class UserTeamMiddleware extends CommonMiddleware {
                 const Url = decodeURIComponent(req.body.Link);
                 const decrypt = crypt.decrypt(Url) as string;
                 const split = decrypt.split('+');
-                // console.log(decodeURIComponent(split[0]));
+                //
                 req.body.idLeaderParam = parseInt(split[1]);
                 req.body.idProject = crypt.decrypt(
                     decodeURIComponent(split[0])

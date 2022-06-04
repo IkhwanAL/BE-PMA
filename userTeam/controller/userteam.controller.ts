@@ -83,7 +83,7 @@ class UserTeamController {
             const saved = await userService.createLink(req.body.id, link);
 
             const transport = new EmailNodeMailer();
-            console.log(saved.user.email, findEmail.email);
+
             transport.setOptionEmail({
                 from: saved.user.email,
                 to: findEmail.email,
@@ -100,7 +100,6 @@ class UserTeamController {
             const { response } = await transport.send();
 
             if (response.includes('OK')) {
-                console.log('Success');
                 return HttpResponse.Created(res, {});
             }
 
@@ -261,14 +260,12 @@ class UserTeamController {
 
             return HttpResponse.BadRequest(res);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
 
     public ownerChange = async (req: Request, res: Response) => {
         try {
-            console.log(req.body, 'Body');
             /**
              * idProject => Id Project That Want To Change Leader
              * idLeaderParam => Id Leader Of Project
@@ -279,7 +276,6 @@ class UserTeamController {
             const link = `${process.env.IPWEB}?Url=ChangeOwner&_q=true`;
             return HttpResponse.RedirectPermanent(res, link);
         } catch (error) {
-            console.log(error, 'Fetch');
             return HttpResponse.InternalServerError(res);
         }
     };

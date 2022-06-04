@@ -37,8 +37,6 @@ const totalCpus = os.cpus().length;
 //     }
 
 //     cluster.on('exit', (worker, code, signal) => {
-//         console.log(`worker ${worker.process.pid} died`);
-//         console.log("Let's fork another worker!");
 //         cluster.fork();
 //     });
 // } else {
@@ -105,13 +103,10 @@ app.get('/', (req: express.Request, res: express.Response) => {
 });
 
 app.listen(process.env.PORT || 3001, () => {
-    debugLog(`Server running at http://localhost:${port}`);
     Routes.forEach((route: CommonRoutesConfig) => {
         route.configureRoutes();
 
         debugLog(`Routes configured for ${route.getName()}`);
     });
-
-    console.log(runningMessage);
 });
 // }

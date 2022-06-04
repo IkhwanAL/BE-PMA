@@ -23,7 +23,7 @@ class ProjectActivityMiddleware extends CommonMiddleware {
         if (!req.body.description) {
             return HttpResponse.BadRequest(res);
         }
-        console.log('Second Phase');
+
         next();
     }
 }

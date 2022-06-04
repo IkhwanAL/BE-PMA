@@ -144,7 +144,7 @@ export abstract class CommonMiddleware {
             if (!leader) {
                 return HttpResponse.Unauthorized(res);
             }
-            console.log('First Phase');
+
             next();
         } catch (error) {
             return HttpResponse.InternalServerError(res);

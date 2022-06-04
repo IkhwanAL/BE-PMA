@@ -16,7 +16,6 @@ class ActivityController extends CommonController {
 
             return HttpResponse.Ok(res, Activity);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };

@@ -117,7 +117,6 @@ class UserTeamDao {
     }
 
     async deleteWithIdTeam(idTeams: Array<number>, idProject?: number) {
-        console.log(idTeams, idProject);
         if (idProject) {
             return MysqlPrisma.userteam.deleteMany({
                 where: {

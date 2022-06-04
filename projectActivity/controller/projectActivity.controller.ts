@@ -160,7 +160,6 @@ class ProjectACtivityController {
 
             return HttpResponse.Created(res, project);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
@@ -265,7 +264,6 @@ class ProjectACtivityController {
 
             return HttpResponse.Created(res, projectActivity);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
@@ -388,7 +386,6 @@ class ProjectACtivityController {
             };
             return HttpResponse.Ok(res, NewProjectActivity);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
@@ -416,7 +413,7 @@ class ProjectACtivityController {
                 await projectActivityService.getAllProjectActivityBasedOnidProject(
                     idProject
                 );
-            // console.log(activity);
+            //
             return HttpResponse.Ok(res, activity);
         } catch (error) {
             return HttpResponse.InternalServerError(res);
