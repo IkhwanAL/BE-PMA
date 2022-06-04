@@ -150,6 +150,28 @@ class ProjectController extends CommonController {
                 rest
             );
 
+            let FullDetailProject = await projectService.getOne(
+                req.body.id,
+                req.body.idProject
+            );
+
+            const cpm = new CPM(FullDetailProject);
+
+            cpm.calculate();
+
+            if (cpm.getDeadLine() !== 0) {
+                const saveDeadLineProject = await projectDao.patchDeadline(
+                    req.body.idProject,
+                    cpm.getDeadLine(),
+                    project.startDate
+                );
+                project.deadline = saveDeadLineProject.deadline;
+                project.deadlineInString = saveDeadLineProject.deadlineInString;
+            } else {
+                project.deadline = null;
+                project.deadlineInString = '0';
+            }
+
             const PayloadActivity: CreateActivityDto = {
                 activity: 'Mengubah Data Project',
                 userId: req.body.id,
