@@ -23,6 +23,10 @@ class MysqlPrisma {
     private static ConnectionPrisma() {
         MysqlPrisma.Prisma = new PrismaClient();
     }
+
+    private static async CloseConnection() {
+        await MysqlPrisma.Prisma.$disconnect();
+    }
 }
 
 export default MysqlPrisma.PrismaMysql();

@@ -98,6 +98,7 @@ class ProjectActivityDao {
                 data: SubDetailProjectActivityPatch[]
             ) => {
                 const SavedId: number[] = [];
+                console.log(data);
                 for (const iterator of data) {
                     const IdProjectSubActivity =
                         iterator.subDetailProjectActivityId
@@ -165,6 +166,7 @@ class ProjectActivityDao {
 
                 return rest;
             } else {
+                console.log(subdetailprojectactivity);
                 await UpdateSubDetailProjectActivity(subdetailprojectactivity);
                 await UpdateUserTaskFromAssignee(
                     usertaskfromassignee as number[]
@@ -259,6 +261,18 @@ class ProjectActivityDao {
             },
             data: {
                 progress: Progress,
+                updatedAt: new Date(),
+            },
+        });
+    }
+
+    async UpdateParent(idProjectActivity: number, parent: string) {
+        return MysqlPrisma.projectactivity.update({
+            where: {
+                projectActivityId: idProjectActivity,
+            },
+            data: {
+                parent: parent,
                 updatedAt: new Date(),
             },
         });

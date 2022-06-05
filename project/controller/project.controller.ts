@@ -162,7 +162,8 @@ class ProjectController extends CommonController {
                 const saveDeadLineProject = await projectDao.patchDeadline(
                     req.body.idProject,
                     cpm.getDeadLine(),
-                    project.startDate
+                    null,
+                    cpm.getDate()
                 );
                 project.deadline = saveDeadLineProject.deadline;
                 project.deadlineInString = saveDeadLineProject.deadlineInString;
@@ -212,14 +213,15 @@ class ProjectController extends CommonController {
                 );
             }
 
-            const NewProject = await this.calc(project, req.body.idProject);
-            const NewNewProject = await this.countProjectActivityProgress(
-                NewProject,
-                res
-            );
+            // const NewProject = await this.calc(project, req.body.idProject);
+            // const NewNewProject = await this.countProjectActivityProgress(
+            //     NewProject,
+            //     res
+            // );
 
-            return HttpResponse.Ok(res, NewNewProject);
+            return HttpResponse.Ok(res, project);
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };

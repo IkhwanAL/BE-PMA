@@ -19,6 +19,7 @@ import {
 } from '../../common/email/email.template';
 import { RestApiGetUserById } from '../../common/interfaces/api.interface';
 import { HttpResponse } from '../../common/services/http.service.config';
+import mysqlServiceConfig from '../../common/services/mysql.service.config';
 
 import projectDao from '../../project/daos/project.dao';
 import projectService from '../../project/service/project.service';
@@ -118,7 +119,7 @@ class ProjectACtivityController {
                 );
             }
 
-            const cpm = new CPM(project);
+            const cpm = new CPM(project, project.startDate);
 
             cpm.calculate();
 
@@ -126,7 +127,8 @@ class ProjectACtivityController {
                 const saveDeadLineProject = await projectDao.patchDeadline(
                     req.body.idProject,
                     cpm.getDeadLine(),
-                    project.startDate
+                    null,
+                    cpm.getDate()
                 );
                 project.deadline = saveDeadLineProject.deadline;
                 project.deadlineInString = saveDeadLineProject.deadlineInString;
@@ -215,6 +217,7 @@ class ProjectACtivityController {
                 req.body.id,
                 req.body.idProject
             );
+
             if (!project) {
                 project = await projectService.getOneWithIdUserTeam(
                     req.body.id,
@@ -222,7 +225,7 @@ class ProjectACtivityController {
                 );
             }
 
-            const cpm = new CPM(project);
+            const cpm = new CPM(project, project.startDate);
 
             cpm.calculate();
 
@@ -230,7 +233,8 @@ class ProjectACtivityController {
                 const saveDeadLineProject = await projectDao.patchDeadline(
                     req.body.idProject,
                     cpm.getDeadLine(),
-                    project.startDate
+                    null,
+                    cpm.getDate()
                 );
                 project.deadline = saveDeadLineProject.deadline;
                 project.deadlineInString = saveDeadLineProject.deadlineInString;
@@ -261,9 +265,11 @@ class ProjectACtivityController {
                 },
                 StatsActivity.Update
             );
+            await mysqlServiceConfig.$disconnect();
 
             return HttpResponse.Created(res, projectActivity);
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
@@ -279,13 +285,13 @@ class ProjectACtivityController {
                 const parentSplit = iterator.parent.split(',');
 
                 const parentResource = parentSplit.filter(
-                    (x) => x !== req.body.idProjectActivity
+                    (x) => x != req.body.idProjectActivity
                 );
                 const joinSplitParent = parentResource.join(',');
 
-                await projectActivityService.patchProjectActivity(
+                await projectActivityService.UpdateParent(
                     iterator.projectActivityId,
-                    { parent: joinSplitParent }
+                    joinSplitParent
                 );
             }
 
@@ -304,7 +310,7 @@ class ProjectACtivityController {
                 );
             }
 
-            const cpm = new CPM(project);
+            const cpm = new CPM(project, project.startDate);
 
             cpm.calculate();
 
@@ -312,7 +318,8 @@ class ProjectACtivityController {
                 const saveDeadLineProject = await projectDao.patchDeadline(
                     req.body.idProject,
                     cpm.getDeadLine(),
-                    project.startDate
+                    null,
+                    cpm.getDate()
                 );
                 project.deadline = saveDeadLineProject.deadline;
                 project.deadlineInString = saveDeadLineProject.deadlineInString;
@@ -323,6 +330,7 @@ class ProjectACtivityController {
 
             return HttpResponse.NoContent(res);
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }

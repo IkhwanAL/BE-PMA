@@ -65,6 +65,10 @@ class ProjectActivityService {
     async getAllProjectActivityBasedOnidProject(idProject: number) {
         return projectActivityDao.getAllActivityBasedOnIdProject(idProject);
     }
+
+    async UpdateParent(idProjectActivity: number, Parent: string) {
+        return projectActivityDao.UpdateParent(idProjectActivity, Parent);
+    }
 }
 
 export default new ProjectActivityService();

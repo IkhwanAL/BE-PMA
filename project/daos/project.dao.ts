@@ -48,6 +48,9 @@ class ProjectDao {
                     include: {
                         subdetailprojectactivity: true,
                     },
+                    orderBy: {
+                        parent: 'asc',
+                    },
                 },
             },
         });
@@ -195,17 +198,42 @@ class ProjectDao {
         });
     }
 
-    async patchDeadline(idProject: number, deadline: number, startDate?: Date) {
-        return MysqlPrisma.project.update({
-            where: {
-                projectId: idProject,
-            },
-            data: {
-                deadline: moment(startDate).add(deadline, 'days').toDate(),
-                deadlineInString: deadline.toString(),
-                updatedAt: new Date(),
-            },
-        });
+    async patchDeadline(
+        idProject: number,
+        deadline: number,
+        startDate?: Date,
+        endDate?: Date
+    ) {
+        console.log(endDate, deadline, idProject);
+        if (startDate && endDate) {
+            throw Error('Gagal');
+        }
+
+        if (startDate) {
+            return MysqlPrisma.project.update({
+                where: {
+                    projectId: idProject,
+                },
+                data: {
+                    deadline: moment(startDate).add(deadline, 'days').toDate(),
+                    deadlineInString: deadline.toString(),
+                    updatedAt: new Date(),
+                },
+            });
+        }
+
+        if (endDate) {
+            return MysqlPrisma.project.update({
+                where: {
+                    projectId: idProject,
+                },
+                data: {
+                    deadline: endDate,
+                    deadlineInString: deadline.toString(),
+                    updatedAt: new Date(),
+                },
+            });
+        }
     }
 
     async getRecentProject(idUser: number) {

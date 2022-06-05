@@ -26,7 +26,7 @@ export class CommonController {
         },
         idProject: number
     ): Promise<ProjecType> {
-        const cpm = new CPM(_project);
+        const cpm = new CPM(_project, _project.startDate);
 
         cpm.calculate();
 
@@ -34,7 +34,8 @@ export class CommonController {
             const saveDeadLineProject = await projectDao.patchDeadline(
                 idProject,
                 cpm.getDeadLine(),
-                _project.startDate
+                null,
+                cpm.getDate()
             );
 
             const getFloat = cpm.getCalculate();

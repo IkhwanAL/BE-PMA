@@ -1,4 +1,5 @@
 import { project, projectactivity, user, userteam } from '@prisma/client';
+import moment from 'moment';
 
 export interface CPM {
     es: number;
@@ -12,6 +13,7 @@ export interface CPM {
  *
  */
 export class CPM {
+    private EndDate: Date;
     private readonly project: project & {
         projectactivity: projectactivity[];
         userteam: (userteam & {
@@ -37,6 +39,8 @@ export class CPM {
 
     private LongestTime = 0;
 
+    private keyOrder: number[] = [];
+
     constructor(
         data: project & {
             projectactivity: projectactivity[];
@@ -49,9 +53,11 @@ export class CPM {
                     username: string;
                 };
             })[];
-        }
+        },
+        date?: Date
     ) {
         this.project = data;
+        this.EndDate = date;
     }
 
     public calculate() {
@@ -71,7 +77,7 @@ export class CPM {
 
         // N
         for (const iterator of ProjectActivityTemp) {
-            // this.convertResult[].
+            this.keyOrder.push(iterator.projectActivityId);
             this.convertResult[iterator.projectActivityId] = {
                 ...iterator,
                 ParentActivity: {},
@@ -81,6 +87,7 @@ export class CPM {
                 this.backwardParent[iterator.projectActivityId.toString()] = [];
             }
         }
+
         /**
          * * N^2
          * * Mencari Parent Node
@@ -185,7 +192,6 @@ export class CPM {
                 key: string;
             }
         >;
-
         // N^2
         for (const currentId of arrReverse) {
             if (!Act[currentId.key].child) {
@@ -223,6 +229,25 @@ export class CPM {
                         Act[currentId.key].timeToComplete;
                 }
             }
+
+            const ef = this.memoize[currentId.key].ef;
+            const es = this.memoize[currentId.key].es;
+            const ls = this.memoize[currentId.key].ls;
+            const lf = this.memoize[currentId.key].lf;
+
+            if (lf - ef === 0) {
+                // this.memoize[currentId.key].f = lf - ef;
+                // this.memoize[currentId.key].critical = true;
+                this.EndDate = moment(this.EndDate)
+                    .add(Act[currentId.key].timeToComplete, 'days')
+                    .toDate();
+            } else if (ls - es === 0) {
+                // this.memoize[currentId.key].f = ls - es;
+                // this.memoize[currentId.key].critical = true;
+                this.EndDate = moment(this.EndDate)
+                    .add(Act[currentId.key].timeToComplete, 'days')
+                    .toDate();
+            }
         }
     }
 
@@ -241,11 +266,11 @@ export class CPM {
         };
     }) {
         // N^2
-        for (const currentId in Act) {
+        for (const currentId in this.keyOrder) {
             if (!this.memoize[currentId]) {
                 this.memoize[currentId] = {} as CPM;
             }
-
+            console.log(Act[currentId], currentId);
             if (!Act[currentId].parent) {
                 this.memoize[currentId].es = 0;
                 this.memoize[currentId].ef = Act[currentId].timeToComplete + 0;
@@ -253,7 +278,6 @@ export class CPM {
 
             if (Act[currentId].parent) {
                 const PreviousId = Act[currentId].ParentActivity; // Yang Terhubung
-
                 if (Object.keys(PreviousId).length <= 1) {
                     this.memoize[currentId].es =
                         this.memoize[
@@ -271,6 +295,7 @@ export class CPM {
 
                     for (const key in PreviousId) {
                         const num = this.memoize[key].ef;
+
                         GetEFValue.push(num);
                     }
 
@@ -314,6 +339,10 @@ export class CPM {
 
     public getCalculate() {
         return this.memoize;
+    }
+
+    public getDate() {
+        return this.EndDate;
     }
     //#endregion
 
