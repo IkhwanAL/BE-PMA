@@ -202,7 +202,7 @@ class ProjectController extends CommonController {
     // Mengambil Data Lengkap Pada Satu Project Dan Mengupdate Progress Project
     public getOneProject = async (req: Request, res: Response) => {
         try {
-            let project = await projectService.getOne(
+            let project = await projectService.GetOneRaw(
                 req.body.id,
                 req.body.idProject
             );

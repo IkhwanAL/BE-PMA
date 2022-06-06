@@ -103,6 +103,7 @@ app.get('/', (req: express.Request, res: express.Response) => {
 });
 
 app.listen(process.env.PORT || 3001, () => {
+    console.log(runningMessage);
     Routes.forEach((route: CommonRoutesConfig) => {
         route.configureRoutes();
 

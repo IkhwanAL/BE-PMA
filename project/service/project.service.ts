@@ -32,6 +32,14 @@ class ProjectService {
         return projectDao.readProjectByIdProjectOrIdUser(idUser, idProject);
     }
 
+    async GetOneRaw(idUser: number, idProject: number) {
+        return projectDao.GetOneRaw(idUser, idProject);
+    }
+
+    async GetOneRawForUserTeam(idUserTeam: number, idProject: number) {
+        return projectDao.GetOneRawTeam(idUserTeam, idProject);
+    }
+
     async getOneByIdProject(idProject: number) {
         return projectDao.readOne(idProject);
     }

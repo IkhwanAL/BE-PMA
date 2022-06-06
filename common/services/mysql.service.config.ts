@@ -1,32 +1,36 @@
 import { PrismaClient } from '@prisma/client';
 
-class MysqlPrisma {
-    private static Prisma: PrismaClient;
+// class MysqlPrisma {
+//     private static Prisma: PrismaClient;
 
-    private constructor() {
-        MysqlPrisma.Prisma = new PrismaClient({
-            log: ['query', 'info', 'warn', 'error'],
-        });
-    }
+//     private constructor() {
+//         MysqlPrisma.Prisma = new PrismaClient({
+//             log: ['query', 'info', 'warn', 'error'],
+//         });
+//     }
 
-    /**
-     * Get Connection
-     */
-    public static PrismaMysql() {
-        if (!MysqlPrisma.Prisma) {
-            MysqlPrisma.ConnectionPrisma();
-        }
+//     /**
+//      * Get Connection
+//      */
+//     public static PrismaMysql() {
+//         if (!MysqlPrisma.Prisma) {
+//             MysqlPrisma.ConnectionPrisma();
+//         }
 
-        return MysqlPrisma.Prisma;
-    }
+//         return MysqlPrisma.Prisma;
+//     }
 
-    private static ConnectionPrisma() {
-        MysqlPrisma.Prisma = new PrismaClient();
-    }
+//     private static ConnectionPrisma() {
+//         MysqlPrisma.Prisma = new PrismaClient();
+//     }
 
-    private static async CloseConnection() {
-        await MysqlPrisma.Prisma.$disconnect();
-    }
-}
+//     private static async CloseConnection() {
+//         await MysqlPrisma.Prisma.$disconnect();
+//     }
+// }
 
-export default MysqlPrisma.PrismaMysql();
+let MysqlPrisma = new PrismaClient({
+    log: ['error', 'query'],
+});
+
+export default MysqlPrisma;
