@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, project, projectactivity, userteam } from '@prisma/client';
 import moment from 'moment';
 import MysqlPrisma from '../../common/services/mysql.service.config';
 import { CreateProjectDto } from '../dto/create.project.dto';
@@ -22,6 +22,129 @@ class ProjectDao {
                 },
             },
         });
+    }
+
+    async GetOneRaw(
+        idUser: number,
+        idProject: number
+    ): Promise<
+        project & {
+            projectactivity: projectactivity[];
+            userteam: (userteam & {
+                user: {
+                    id: number;
+                    firstName: string;
+                    lastName: string;
+                    email: string;
+                    username: string;
+                };
+            })[];
+        }
+    > {
+        let ObjResult: project & {
+            projectactivity: projectactivity[];
+            userteam: (userteam & {
+                user: {
+                    id: number;
+                    firstName: string;
+                    lastName: string;
+                    email: string;
+                    username: string;
+                };
+            })[];
+        };
+
+        const Project = await MysqlPrisma.project.findFirst({
+            where: {
+                projectId: idProject,
+                userOwner: idUser,
+            },
+        });
+
+        const ProjectActivity = await MysqlPrisma.$queryRaw<
+            projectactivity[]
+        >`SELECT * FROM projectactivity WHERE projectId = ${idProject} ORDER BY CHAR_LENGTH(parent)`;
+
+        const UserTeam = await MysqlPrisma.userteam.findMany({
+            where: {
+                projectId: idProject,
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        firstName: true,
+                        lastName: true,
+                    },
+                },
+            },
+        });
+
+        ObjResult = {
+            ...Project,
+            projectactivity: ProjectActivity,
+            userteam: UserTeam,
+        };
+
+        return ObjResult;
+    }
+
+    async GetOneRawTeam(
+        idProject: number,
+        idUserTeam: number
+    ): Promise<
+        project & {
+            projectactivity: projectactivity[];
+            userteam: (userteam & {
+                user: {
+                    id: number;
+                    firstName: string;
+                    lastName: string;
+                    email: string;
+                    username: string;
+                };
+            })[];
+        }
+    > {
+        const Project = await MysqlPrisma.project.findFirst({
+            where: {
+                userteam: {
+                    some: {
+                        userId: idUserTeam,
+                        projectId: idProject,
+                    },
+                },
+            },
+        });
+
+        const UserTeam = await MysqlPrisma.userteam.findMany({
+            where: {
+                projectId: idProject,
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        firstName: true,
+                        lastName: true,
+                    },
+                },
+            },
+        });
+
+        const ProjectActivity = await MysqlPrisma.$queryRaw<
+            projectactivity[]
+        >`SELECT * FROM projectactivity WHERE projectId = ${idProject} ORDER BY CHAR_LENGTH(parent)`;
+
+        return {
+            ...Project,
+            projectactivity: ProjectActivity,
+            userteam: UserTeam,
+        };
     }
 
     async readProjectByIdProjectOrIdUser(idUser: number, idProject: number) {
@@ -87,6 +210,9 @@ class ProjectDao {
                 projectactivity: {
                     include: {
                         subdetailprojectactivity: true,
+                    },
+                    orderBy: {
+                        parent: 'asc',
                     },
                 },
             },
@@ -204,7 +330,6 @@ class ProjectDao {
         startDate?: Date,
         endDate?: Date
     ) {
-        console.log(endDate, deadline, idProject);
         if (startDate && endDate) {
             throw Error('Gagal');
         }

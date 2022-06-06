@@ -1,4 +1,6 @@
 import { project, projectactivity, user, userteam } from '@prisma/client';
+import { ifError } from 'assert';
+import { Console } from 'console';
 import moment from 'moment';
 
 export interface CPM {
@@ -39,7 +41,7 @@ export class CPM {
 
     private LongestTime = 0;
 
-    private keyOrder: number[] = [];
+    private forwardPassKeyOrder: number[] = [];
 
     constructor(
         data: project & {
@@ -74,10 +76,10 @@ export class CPM {
      */
     private convert() {
         const ProjectActivityTemp = this.project.projectactivity;
-
+        // Forward
         // N
         for (const iterator of ProjectActivityTemp) {
-            this.keyOrder.push(iterator.projectActivityId);
+            this.forwardPassKeyOrder.push(iterator.projectActivityId);
             this.convertResult[iterator.projectActivityId] = {
                 ...iterator,
                 ParentActivity: {},
@@ -183,7 +185,6 @@ export class CPM {
         };
     }) {
         const tempReverseObj = Act;
-
         // N
         const arrReverse = this.reverseObjAct(tempReverseObj) as Array<
             projectactivity & {
@@ -229,26 +230,11 @@ export class CPM {
                         Act[currentId.key].timeToComplete;
                 }
             }
-
-            const ef = this.memoize[currentId.key].ef;
-            const es = this.memoize[currentId.key].es;
-            const ls = this.memoize[currentId.key].ls;
-            const lf = this.memoize[currentId.key].lf;
-
-            if (lf - ef === 0) {
-                // this.memoize[currentId.key].f = lf - ef;
-                // this.memoize[currentId.key].critical = true;
-                this.EndDate = moment(this.EndDate)
-                    .add(Act[currentId.key].timeToComplete, 'days')
-                    .toDate();
-            } else if (ls - es === 0) {
-                // this.memoize[currentId.key].f = ls - es;
-                // this.memoize[currentId.key].critical = true;
-                this.EndDate = moment(this.EndDate)
-                    .add(Act[currentId.key].timeToComplete, 'days')
-                    .toDate();
-            }
         }
+    }
+
+    private SetEndDate(EndDate: Date, TimeToComplete: number) {
+        this.EndDate = moment(EndDate).add(TimeToComplete, 'days').toDate();
     }
 
     /**
@@ -265,19 +251,27 @@ export class CPM {
             };
         };
     }) {
+        console.log(this.forwardPassKeyOrder);
         // N^2
-        for (const currentId in this.keyOrder) {
+        for (const currentId of this.forwardPassKeyOrder) {
             if (!this.memoize[currentId]) {
                 this.memoize[currentId] = {} as CPM;
             }
-            console.log(Act[currentId], currentId);
+
             if (!Act[currentId].parent) {
                 this.memoize[currentId].es = 0;
                 this.memoize[currentId].ef = Act[currentId].timeToComplete + 0;
+                continue;
             }
 
             if (Act[currentId].parent) {
                 const PreviousId = Act[currentId].ParentActivity; // Yang Terhubung
+                // console.log(currentId);
+                // console.log(
+                //     'Previous',
+                //     Object.keys(PreviousId)[0],
+                //     this.memoize
+                // );
                 if (Object.keys(PreviousId).length <= 1) {
                     this.memoize[currentId].es =
                         this.memoize[
@@ -309,6 +303,9 @@ export class CPM {
     }
 
     private calculateFloatPointActivity() {
+        const Test: {
+            [key: string]: { Parent: string | number; Child: string | number };
+        } = {};
         for (const iterator in this.memoize) {
             const ef = this.memoize[iterator].ef;
             const es = this.memoize[iterator].es;
@@ -329,6 +326,53 @@ export class CPM {
                 this.memoize[iterator].critical = false;
             }
         }
+
+        let FinishedCalculated = {};
+        for (const it in this.memoize) {
+            // console.log(Test);
+            const Parent = this.convertResult[it].parent;
+            // console.log(Parent, it);
+            if (!Parent) {
+                if (this.memoize[it].critical) {
+                    this.EndDate = moment(this.EndDate)
+                        .add(this.convertResult[it].timeToComplete, 'days')
+                        .toDate();
+                    // console.log(this.EndDate, it);
+                }
+                continue;
+            }
+
+            if (Parent) {
+                const Split = Parent.split(',');
+
+                if (Split.length <= 1) {
+                    if (FinishedCalculated[Split[0]]) {
+                        continue;
+                    }
+                    if (this.memoize[it].critical) {
+                        this.EndDate = moment(this.EndDate)
+                            .add(this.convertResult[it].timeToComplete, 'days')
+                            .toDate();
+                        // console.log(this.EndDate, it);
+                    }
+
+                    FinishedCalculated[Split[0]] = {
+                        Parent: Split[0],
+                        Child: it,
+                    };
+                }
+
+                if (Split.length >= 2) {
+                    if (this.memoize[it].critical) {
+                        this.EndDate = moment(this.EndDate)
+                            .add(this.convertResult[it].timeToComplete, 'days')
+                            .toDate();
+                        // console.log(this.EndDate, it);
+                    }
+                }
+            }
+        }
+        // console.log(this.EndDate);
     }
     //#endregion
 

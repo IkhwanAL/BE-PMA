@@ -4,6 +4,7 @@ import {
     projectactivity_position,
     subdetailprojectactivity,
     usertaskfromassignee,
+    userteam,
 } from '@prisma/client';
 import { Request, Response } from 'express';
 import { bodyBlacklist } from 'express-winston';
@@ -29,6 +30,7 @@ import userteamService from '../../userTeam/service/userteam.service';
 import { CreateProjectActivityDto } from '../dto/create.projectActivity.dto';
 import { PatchProjectActivityDto } from '../dto/patch.projectActivity.dto';
 import projectActivityService from '../service/projectActivity.service';
+import 'dotenv/config';
 
 class ProjectACtivityController {
     Email = new EmailNodeMailer();
@@ -108,7 +110,7 @@ class ProjectACtivityController {
                 subdetailprojectactivity
             );
 
-            let project = await projectService.getOne(
+            let project = await projectService.GetOneRaw(
                 req.body.id,
                 req.body.idProject
             );
@@ -125,7 +127,7 @@ class ProjectACtivityController {
 
             if (cpm.getDeadLine() !== 0) {
                 const saveDeadLineProject = await projectDao.patchDeadline(
-                    req.body.idProject,
+                    req.body.idProject ?? payload.projectId,
                     cpm.getDeadLine(),
                     null,
                     cpm.getDate()
@@ -162,6 +164,7 @@ class ProjectACtivityController {
 
             return HttpResponse.Created(res, project);
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
@@ -213,7 +216,7 @@ class ProjectACtivityController {
                 FindSubDetailActivity
             );
 
-            let project = await projectService.getOne(
+            let project = await projectService.GetOneRaw(
                 req.body.id,
                 req.body.idProject
             );
@@ -224,14 +227,14 @@ class ProjectACtivityController {
                     req.body.idProject
                 );
             }
-
+            console.log(project);
             const cpm = new CPM(project, project.startDate);
 
             cpm.calculate();
 
             if (cpm.getDeadLine() !== 0) {
                 const saveDeadLineProject = await projectDao.patchDeadline(
-                    req.body.idProject,
+                    req.body.idProject ?? project.projectId,
                     cpm.getDeadLine(),
                     null,
                     cpm.getDate()
@@ -265,13 +268,43 @@ class ProjectACtivityController {
                 },
                 StatsActivity.Update
             );
-            await mysqlServiceConfig.$disconnect();
 
             return HttpResponse.Created(res, projectActivity);
         } catch (error) {
             console.log(error);
             return HttpResponse.InternalServerError(res);
         }
+    };
+
+    public Sort = (
+        Project: project & {
+            projectactivity: projectactivity[];
+            userteam: (userteam & {
+                user: {
+                    id: number;
+                    firstName: string;
+                    lastName: string;
+                    email: string;
+                    username: string;
+                };
+            })[];
+        }
+    ) => {
+        const ProjectActivity = Project.projectactivity;
+
+        function Compate(a: projectactivity, b: projectactivity) {
+            if (a.parent < b.parent) {
+                return -1;
+            }
+
+            if (a.parent > b.parent) {
+                return 1;
+            }
+
+            return 0;
+        }
+
+        console.log(ProjectActivity.sort(Compate));
     };
 
     async deleteProjectActivity(req: Request, res: Response) {
@@ -299,12 +332,12 @@ class ProjectACtivityController {
                 req.body.idProjectActivity
             );
 
-            let project = await projectService.getOne(
+            let project = await projectService.GetOneRaw(
                 req.body.id,
                 req.body.idProject
             );
             if (!project) {
-                project = await projectService.getOneWithIdUserTeam(
+                project = await projectService.GetOneRawForUserTeam(
                     req.body.id,
                     req.body.idProject
                 );
@@ -313,10 +346,9 @@ class ProjectACtivityController {
             const cpm = new CPM(project, project.startDate);
 
             cpm.calculate();
-
             if (cpm.getDeadLine() !== 0) {
                 const saveDeadLineProject = await projectDao.patchDeadline(
-                    req.body.idProject,
+                    project.projectId,
                     cpm.getDeadLine(),
                     null,
                     cpm.getDate()
@@ -435,6 +467,9 @@ class ProjectACtivityController {
         Context: ProjectActivityContext,
         Stats: StatsActivity
     ) => {
+        if (!process.env.DEBUG) {
+            return;
+        }
         const user = (await userService.readById(idUser, true, [
             'username',
             'email',
