@@ -2,6 +2,7 @@ import { project, projectactivity, user, userteam } from '@prisma/client';
 import { ifError } from 'assert';
 import { Console } from 'console';
 import moment from 'moment';
+import { HttpResponse } from '../services/http.service.config';
 
 export interface CPM {
     es: number;
@@ -16,6 +17,7 @@ export interface CPM {
  */
 export class CPM {
     private EndDate: Date;
+    private Stop = false;
     private readonly project: project & {
         projectactivity: projectactivity[];
         userteam: (userteam & {
@@ -43,6 +45,8 @@ export class CPM {
 
     private forwardPassKeyOrder: number[] = [];
 
+    private Tree: Map<string, projectactivity>;
+
     constructor(
         data: project & {
             projectactivity: projectactivity[];
@@ -67,6 +71,10 @@ export class CPM {
             this.LongestTime = 0;
         } else {
             this.convert();
+            this.SortActivity();
+            if (this.Stop) {
+                return;
+            }
             this.Start();
         }
     }
@@ -168,6 +176,38 @@ export class CPM {
         this.calculateFloatPointActivity();
     }
 
+    private SortActivity = () => {
+        const PRACT = this.convertResult;
+        const NodeTree = new Map<string, projectactivity>();
+        let TotalNodeThatDoesNotHaveAParent = 0;
+        // Mencari Activity Yang Gk Ada Parent
+        for (const key in PRACT) {
+            const par = PRACT[key].parent;
+            if (par === '') {
+                TotalNodeThatDoesNotHaveAParent++;
+                NodeTree.set(key, PRACT[key]);
+                break;
+            }
+        }
+
+        for (const [key, value] of NodeTree) {
+            for (const iterator in PRACT) {
+                const FindParent = PRACT[iterator].parent.split(',');
+                const isThereAParent = FindParent.find((x) => x == key);
+
+                if (isThereAParent) {
+                    NodeTree.set(iterator, PRACT[iterator]);
+                }
+            }
+            // What If There`s No Dependencies
+        }
+        console.log('Cut Loose');
+        // NodeTree.forEach((x, key) => {
+        //     console.log(x, key);
+        // });
+        this.Tree = NodeTree;
+    };
+
     //#region Calculate Pass
 
     /**
@@ -184,57 +224,60 @@ export class CPM {
             };
         };
     }) {
-        const tempReverseObj = Act;
-        // N
-        const arrReverse = this.reverseObjAct(tempReverseObj) as Array<
-            projectactivity & {
-                ParentActivity: { [key: string]: projectactivity };
-                ChildActivity: { [key: string]: projectactivity };
-                key: string;
-            }
-        >;
-        // N^2
-        for (const currentId of arrReverse) {
-            if (!Act[currentId.key].child) {
-                this.memoize[currentId.key].lf = this.LongestTime;
-                this.memoize[currentId.key].ls =
-                    this.LongestTime - Act[currentId.key].timeToComplete;
-            }
-
-            if (this.convertResult[currentId.key].child) {
-                const PreviousId = Act[currentId.key].ChildActivity;
-
-                if (Object.keys(PreviousId).length <= 1) {
-                    this.memoize[currentId.key].lf =
-                        this.memoize[
-                            PreviousId[
-                                Object.keys(PreviousId)[0]
-                            ].projectActivityId
-                        ].ls;
+        try {
+            const tempReverseObj = this.Tree;
+            // N
+            const arrReverse = this.reverseObjAct(tempReverseObj) as Array<
+                projectactivity & {
+                    ParentActivity: { [key: string]: projectactivity };
+                    ChildActivity: { [key: string]: projectactivity };
+                    key: string;
+                }
+            >;
+            // N^2
+            for (const currentId of arrReverse) {
+                if (!Act[currentId.key].child) {
+                    this.memoize[currentId.key].lf = this.LongestTime;
                     this.memoize[currentId.key].ls =
-                        this.memoize[currentId.key].lf -
-                        Act[currentId.key].timeToComplete;
+                        this.LongestTime - Act[currentId.key].timeToComplete;
                 }
 
-                if (Object.keys(PreviousId).length >= 2) {
-                    const GetLSValue: Array<number> = [];
+                if (this.convertResult[currentId.key].child) {
+                    const PreviousId = Act[currentId.key].ChildActivity;
 
-                    for (const key in PreviousId) {
-                        const num = this.memoize[key].ls;
-                        GetLSValue.push(num);
+                    if (Object.keys(PreviousId).length <= 1) {
+                        this.memoize[currentId.key].lf =
+                            this.memoize[
+                                PreviousId[
+                                    Object.keys(PreviousId)[0]
+                                ].projectActivityId
+                            ].ls;
+                        this.memoize[currentId.key].ls =
+                            this.memoize[currentId.key].lf -
+                            Act[currentId.key].timeToComplete;
                     }
 
-                    this.memoize[currentId.key].lf = Math.min(...GetLSValue);
-                    this.memoize[currentId.key].ls =
-                        this.memoize[currentId.key].lf -
-                        Act[currentId.key].timeToComplete;
+                    if (Object.keys(PreviousId).length >= 2) {
+                        const GetLSValue: Array<number> = [];
+
+                        for (const key in PreviousId) {
+                            const num = this.memoize[key].ls;
+                            GetLSValue.push(num);
+                        }
+
+                        this.memoize[currentId.key].lf = Math.min(
+                            ...GetLSValue
+                        );
+                        this.memoize[currentId.key].ls =
+                            this.memoize[currentId.key].lf -
+                            Act[currentId.key].timeToComplete;
+                    }
                 }
             }
+        } catch (error) {
+            console.log(error);
+            throw Error('Error');
         }
-    }
-
-    private SetEndDate(EndDate: Date, TimeToComplete: number) {
-        this.EndDate = moment(EndDate).add(TimeToComplete, 'days').toDate();
     }
 
     /**
@@ -251,61 +294,57 @@ export class CPM {
             };
         };
     }) {
-        console.log(this.forwardPassKeyOrder);
         // N^2
-        for (const currentId of this.forwardPassKeyOrder) {
-            if (!this.memoize[currentId]) {
-                this.memoize[currentId] = {} as CPM;
-            }
-
-            if (!Act[currentId].parent) {
-                this.memoize[currentId].es = 0;
-                this.memoize[currentId].ef = Act[currentId].timeToComplete + 0;
-                continue;
-            }
-
-            if (Act[currentId].parent) {
-                const PreviousId = Act[currentId].ParentActivity; // Yang Terhubung
-                // console.log(currentId);
-                // console.log(
-                //     'Previous',
-                //     Object.keys(PreviousId)[0],
-                //     this.memoize
-                // );
-                if (Object.keys(PreviousId).length <= 1) {
-                    this.memoize[currentId].es =
-                        this.memoize[
-                            PreviousId[
-                                Object.keys(PreviousId)[0]
-                            ].projectActivityId
-                        ].ef;
-                    this.memoize[currentId].ef =
-                        this.memoize[currentId].es +
-                        Act[currentId].timeToComplete;
+        try {
+            for (const [currentId, _values] of this.Tree) {
+                if (!this.memoize[currentId]) {
+                    this.memoize[currentId] = {} as CPM;
                 }
 
-                if (Object.keys(PreviousId).length >= 2) {
-                    const GetEFValue: Array<number> = [];
+                if (!Act[currentId].parent) {
+                    this.memoize[currentId].es = 0;
+                    this.memoize[currentId].ef =
+                        Act[currentId].timeToComplete + 0;
+                    continue;
+                }
 
-                    for (const key in PreviousId) {
-                        const num = this.memoize[key].ef;
-
-                        GetEFValue.push(num);
+                if (Act[currentId].parent) {
+                    const PreviousId = Act[currentId].ParentActivity; // Yang Terhubung
+                    if (Object.keys(PreviousId).length <= 1) {
+                        this.memoize[currentId].es =
+                            this.memoize[
+                                PreviousId[
+                                    Object.keys(PreviousId)[0]
+                                ].projectActivityId
+                            ].ef;
+                        this.memoize[currentId].ef =
+                            this.memoize[currentId].es +
+                            Act[currentId].timeToComplete;
                     }
 
-                    this.memoize[currentId].es = Math.max(...GetEFValue);
-                    this.memoize[currentId].ef =
-                        this.memoize[currentId].es +
-                        Act[currentId].timeToComplete;
+                    if (Object.keys(PreviousId).length >= 2) {
+                        const GetEFValue: Array<number> = [];
+
+                        for (const key in PreviousId) {
+                            const num = this.memoize[key].ef;
+
+                            GetEFValue.push(num);
+                        }
+
+                        this.memoize[currentId].es = Math.max(...GetEFValue);
+                        this.memoize[currentId].ef =
+                            this.memoize[currentId].es +
+                            Act[currentId].timeToComplete;
+                    }
                 }
             }
+        } catch (error) {
+            console.log(error);
+            throw Error('Error');
         }
     }
 
     private calculateFloatPointActivity() {
-        const Test: {
-            [key: string]: { Parent: string | number; Child: string | number };
-        } = {};
         for (const iterator in this.memoize) {
             const ef = this.memoize[iterator].ef;
             const es = this.memoize[iterator].es;
@@ -329,15 +368,15 @@ export class CPM {
 
         let FinishedCalculated = {};
         for (const it in this.memoize) {
-            // console.log(Test);
+            //
             const Parent = this.convertResult[it].parent;
-            // console.log(Parent, it);
+            //
             if (!Parent) {
                 if (this.memoize[it].critical) {
                     this.EndDate = moment(this.EndDate)
                         .add(this.convertResult[it].timeToComplete, 'days')
                         .toDate();
-                    // console.log(this.EndDate, it);
+                    //
                 }
                 continue;
             }
@@ -353,7 +392,7 @@ export class CPM {
                         this.EndDate = moment(this.EndDate)
                             .add(this.convertResult[it].timeToComplete, 'days')
                             .toDate();
-                        // console.log(this.EndDate, it);
+                        //
                     }
 
                     FinishedCalculated[Split[0]] = {
@@ -367,12 +406,12 @@ export class CPM {
                         this.EndDate = moment(this.EndDate)
                             .add(this.convertResult[it].timeToComplete, 'days')
                             .toDate();
-                        // console.log(this.EndDate, it);
+                        //
                     }
                 }
             }
         }
-        // console.log(this.EndDate);
+        //
     }
     //#endregion
 
