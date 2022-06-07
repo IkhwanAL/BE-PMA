@@ -303,9 +303,6 @@ export class CPM {
     }
 
     private calculateFloatPointActivity() {
-        const Test: {
-            [key: string]: { Parent: string | number; Child: string | number };
-        } = {};
         for (const iterator in this.memoize) {
             const ef = this.memoize[iterator].ef;
             const es = this.memoize[iterator].es;
