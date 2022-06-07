@@ -289,7 +289,6 @@ export class CPM {
             }
             // What If There`s No Dependencies
         }
-        console.log('Cut Loose');
         /**
          * * Assign To Class Properties Tree
          */
@@ -519,7 +518,6 @@ export class CPM {
                 }
             }
         } catch (error) {
-            console.log(error);
             throw Error('Error');
         }
     }

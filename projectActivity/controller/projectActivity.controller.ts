@@ -164,7 +164,6 @@ class ProjectACtivityController {
 
             return HttpResponse.Created(res, project);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
@@ -271,7 +270,6 @@ class ProjectACtivityController {
 
             return HttpResponse.Created(res, projectActivity);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
