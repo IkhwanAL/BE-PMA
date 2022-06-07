@@ -13,7 +13,8 @@ export interface CPM {
     critical: boolean;
 }
 /**
- *
+ * * Using Graph With Memoize
+ * * Using Memoize To Memory The Result
  */
 export class CPM {
     private EndDate: Date;
