@@ -227,7 +227,7 @@ class ProjectACtivityController {
                     req.body.idProject
                 );
             }
-            console.log(project);
+
             const cpm = new CPM(project, project.startDate);
 
             cpm.calculate();
@@ -303,8 +303,6 @@ class ProjectACtivityController {
 
             return 0;
         }
-
-        console.log(ProjectActivity.sort(Compate));
     };
 
     async deleteProjectActivity(req: Request, res: Response) {
@@ -362,7 +360,6 @@ class ProjectACtivityController {
 
             return HttpResponse.NoContent(res);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
