@@ -230,7 +230,7 @@ class ProjectACtivityController {
             const cpm = new CPM(project, project.startDate);
 
             cpm.calculate();
-
+            console.log(cpm.getDeadLine());
             if (cpm.getDeadLine() !== 0) {
                 const saveDeadLineProject = await projectDao.patchDeadline(
                     req.body.idProject ?? project.projectId,

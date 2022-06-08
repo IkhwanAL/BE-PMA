@@ -31,6 +31,24 @@ class UserTeamDao {
         });
     }
 
+    async isItLeader(idProject: number) {
+        return MysqlPrisma.userteam.findFirst({
+            where: {
+                role: 'Proyek_Manager',
+                projectId: idProject,
+            },
+        });
+    }
+
+    async getTeamFromProyek(idUser: number, idProject: number) {
+        return MysqlPrisma.userteam.findFirst({
+            where: {
+                userId: idUser,
+                projectId: idProject,
+            },
+        });
+    }
+
     async getTeamOfProject(idUserTeam: number, idProject: number) {
         return MysqlPrisma.userteam.findFirst({
             where: {

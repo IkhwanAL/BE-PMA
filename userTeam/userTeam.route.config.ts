@@ -26,7 +26,7 @@ export class UserTeamRoutes extends CommonRoutesConfig {
 
         // Invite User
         this.app.post(
-            '/invite',
+            '/invite/:idProject',
             userTeamMiddleware.Authentication,
             userTeamMiddleware.checkProject,
             userTeamMiddleware.checkUserTeam,

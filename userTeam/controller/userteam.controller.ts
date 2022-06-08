@@ -260,6 +260,7 @@ class UserTeamController {
 
             return HttpResponse.BadRequest(res);
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }

@@ -36,6 +36,7 @@ export class EmailNodeMailer {
     }
 
     public async send() {
+        console.log('Too Logion');
         return this.transporter.sendMail(this.setOptions);
     }
 }

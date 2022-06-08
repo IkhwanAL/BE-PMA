@@ -36,7 +36,7 @@ export class ProjectActivityRoute extends CommonRoutesConfig {
         );
 
         this.app
-            .route('/projectactivity/:idProjectActivity')
+            .route('/projectactivity/:idProject/:idProjectActivity')
             .all(projectActivityMiddleware.Authentication)
             .delete(
                 projectActivityMiddleware.checkIsItLeader,

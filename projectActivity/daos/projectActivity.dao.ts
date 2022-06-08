@@ -1,7 +1,9 @@
 import {
     projectactivity,
+    projectactivity_position,
     subdetailprojectactivity,
     usertaskfromassignee,
+    userteam_role,
 } from '@prisma/client';
 import MysqlPrisma from '../../common/services/mysql.service.config';
 import { ProjectActivityType } from '../../common/@types/project.types';
@@ -84,15 +86,21 @@ class ProjectActivityDao {
         });
     }
 
-    async patchProjectActivityById(
+    patchProjectActivityById = async (
         idProjectActivity: number,
         resource: PatchProjectActivityDto,
         idUser?: number
-    ) {
+    ) => {
         const { subdetailprojectactivity, usertaskfromassignee, ...rest } =
             resource;
         return MysqlPrisma.$transaction(async (QueryPrisma) => {
-            const leader = userteamDao.getLeader(idUser);
+            const ProjectId = await this.GetidProyekFromIdActivity(
+                idProjectActivity
+            );
+            const leader = await userteamDao.getTeamFromProyek(
+                idUser,
+                ProjectId.projectId
+            );
 
             const UpdateSubDetailProjectActivity = async (
                 data: SubDetailProjectActivityPatch[]
@@ -161,7 +169,7 @@ class ProjectActivityDao {
                     });
             };
 
-            if (!leader) {
+            if (leader.role !== userteam_role.Proyek_Manager) {
                 await UpdateSubDetailProjectActivity(subdetailprojectactivity);
 
                 return rest;
@@ -183,7 +191,7 @@ class ProjectActivityDao {
                 return UpdateQuery;
             }
         });
-    }
+    };
 
     async deleteProjectActivity(idProjectActivity: number) {
         return MysqlPrisma.projectactivity.delete({
@@ -276,6 +284,17 @@ class ProjectActivityDao {
             },
         });
     }
+
+    GetidProyekFromIdActivity = async (idProjectActivity: number) => {
+        return MysqlPrisma.projectactivity.findFirst({
+            where: {
+                projectActivityId: idProjectActivity,
+            },
+            select: {
+                projectId: true,
+            },
+        });
+    };
 }
 
 export default new ProjectActivityDao();

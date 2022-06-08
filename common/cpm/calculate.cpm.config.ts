@@ -257,7 +257,7 @@ export class CPM {
          * * If There No Parent On Every Activity
          * * System Cannot Calculated It
          */
-        if (TotalWithParent !== 0) {
+        if (TotalWithParent === 0) {
             this.Stop = true;
             return;
         }

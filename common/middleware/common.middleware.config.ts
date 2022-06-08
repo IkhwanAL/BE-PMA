@@ -139,12 +139,11 @@ export abstract class CommonMiddleware {
         next: express.NextFunction
     ) {
         try {
-            const leader = await userteamDao.getLeader(req.body.id);
+            const leader = await userteamDao.isItLeader(req.body.idProject);
 
-            if (!leader) {
+            if (leader.userId !== req.body.id) {
                 return HttpResponse.Unauthorized(res);
             }
-
             next();
         } catch (error) {
             return HttpResponse.InternalServerError(res);

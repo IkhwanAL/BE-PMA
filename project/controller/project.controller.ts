@@ -94,7 +94,7 @@ class ProjectController extends CommonController {
                 req.body.idProject
             );
 
-            return HttpResponse.NoContent(res);
+            return HttpResponse.Ok(res, {});
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }
@@ -154,7 +154,7 @@ class ProjectController extends CommonController {
                 req.body.idProject
             );
 
-            const cpm = new CPM(FullDetailProject);
+            const cpm = new CPM(FullDetailProject, FullDetailProject.startDate);
 
             cpm.calculate();
 
@@ -165,6 +165,7 @@ class ProjectController extends CommonController {
                     null,
                     cpm.getDate()
                 );
+
                 project.deadline = saveDeadLineProject.deadline;
                 project.deadlineInString = saveDeadLineProject.deadlineInString;
             } else {
@@ -195,6 +196,7 @@ class ProjectController extends CommonController {
                 projectDescription: project.projectDescription,
             });
         } catch (error) {
+            console.log(error.message);
             return HttpResponse.InternalServerError(res);
         }
     };
