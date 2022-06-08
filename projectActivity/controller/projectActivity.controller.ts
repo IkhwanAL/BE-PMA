@@ -462,7 +462,8 @@ class ProjectACtivityController {
         Context: ProjectActivityContext,
         Stats: StatsActivity
     ) => {
-        if (!process.env.DEBUG) {
+        // Jika Debug True Tidak Kirim Email
+        if (process.env.DEBUG) {
             return;
         }
         const user = (await userService.readById(idUser, true, [
