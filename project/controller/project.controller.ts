@@ -116,7 +116,6 @@ class ProjectController extends CommonController {
 
             return HttpResponse.Ok(res, project);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
@@ -207,7 +206,6 @@ class ProjectController extends CommonController {
                 projectDescription: project.projectDescription,
             });
         } catch (error) {
-            console.log(error.message);
             return HttpResponse.InternalServerError(res);
         }
     };

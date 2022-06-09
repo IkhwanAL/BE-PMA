@@ -241,6 +241,7 @@ export class CPM {
             }
         >();
         let TotalWithParent = 0;
+        let TotalWithChild = 0;
         /**
          * * For Every Activity Where No Parent At All
          * * Will Automatically Set The Node Of Graph
@@ -253,11 +254,20 @@ export class CPM {
             }
         }
 
+        for (const key in PRACT) {
+            const child = PRACT[key].child;
+            if (child === '') {
+                TotalWithChild++;
+            }
+        }
+
         /**
-         * * If There No Parent On Every Activity
+         * * If There No First Parent Or Last Child On Every Activity
          * * System Cannot Calculated It
+         * * The Reason is To Prevent From Infinite Loop
+         * * Can Cause Error StackOverflow
          */
-        if (TotalWithParent === 0) {
+        if (TotalWithParent === 0 || TotalWithChild === 0) {
             this.Stop = true;
             return;
         }
@@ -704,10 +714,6 @@ export class CPM {
 
             return;
         } catch (error) {
-            // if (error) {
-            //     console.log(error);
-            //     return;
-            // }
             throw Error('Error');
         }
     }
@@ -752,58 +758,6 @@ export class CPM {
         this.EndDate = moment(this.EndDate)
             .add(this.LongestTime, 'days')
             .toDate();
-
-        let FinishedCalculated = {};
-
-        // for (const [it, _values] of this.Tree) {
-        //     //
-        //     const Parent = this.Tree.get(it).parent;
-        //     const Child = this.Tree.get(it).child;
-
-        //     //
-        //     if (!Parent) {
-        //         if (this.memoize[it].critical) {
-        //             this.EndDate = moment(this.EndDate)
-        //                 .add(this.Tree.get(it).timeToComplete, 'days')
-        //                 .toDate();
-        //             console.log(this.EndDate, 'No Parent', it);
-        //             //
-        //         }
-        //         continue;
-        //     }
-
-        //     if (Parent) {
-        //         const Split = Parent.split(',');
-
-        //         if (Split.length <= 1) {
-        //             if (FinishedCalculated[Split[0]]) {
-        //                 continue;
-        //             }
-        //             if (this.memoize[it].critical) {
-        //                 this.EndDate = moment(this.EndDate)
-        //                     .add(this.Tree.get(it).timeToComplete, 'days')
-        //                     .toDate();
-        //                 console.log(this.EndDate, 'Parent 1', it);
-        //             }
-
-        //             FinishedCalculated[Split[0]] = {
-        //                 Parent: Split[0],
-        //                 Child: it,
-        //             };
-        //         }
-
-        //         if (Split.length >= 2) {
-        //             if (this.memoize[it].critical) {
-        //                 this.EndDate = moment(this.EndDate)
-        //                     .add(this.Tree.get(it).timeToComplete, 'days')
-        //                     .toDate();
-        //                 console.log(this.EndDate, 'Parent More Than 2', it);
-        //             }
-        //         }
-        //         // console.log(FinishedCalculated);
-        //     }
-        // }
-        //
     }
     //#endregion
 
@@ -819,17 +773,5 @@ export class CPM {
     public getDate() {
         return this.EndDate;
     }
-    //#endregion
-
-    //#region of Reverse Object
-    /**
-     * * BIG O: N
-     * @param obj
-     * @returns
-     */
-    private reverseObjAct: any = (obj: any) =>
-        Object.keys(obj)
-            .reverse()
-            .map((key) => ({ ...obj[key], key: key }));
     //#endregion
 }

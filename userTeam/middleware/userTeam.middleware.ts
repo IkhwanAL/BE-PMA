@@ -15,7 +15,11 @@ class UserTeamMiddleware extends CommonMiddleware {
                 );
 
                 if (!userTeam) {
-                    return HttpResponse.NotFound(res);
+                    return HttpResponse.NotFound(
+                        res,
+                        {},
+                        'Email Tidak Ditemukan'
+                    );
                 }
             }
 

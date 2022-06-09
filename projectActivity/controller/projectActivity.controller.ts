@@ -32,6 +32,8 @@ import { PatchProjectActivityDto } from '../dto/patch.projectActivity.dto';
 import projectActivityService from '../service/projectActivity.service';
 import 'dotenv/config';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import userteamDao from '../../userTeam/daos/userteam.dao';
+import projectActivityDao from '../daos/projectActivity.dao';
 
 class ProjectACtivityController {
     Email = new EmailNodeMailer();
@@ -231,7 +233,7 @@ class ProjectACtivityController {
             const cpm = new CPM(project, project.startDate);
 
             cpm.calculate();
-            console.log(cpm.getDeadLine());
+
             if (cpm.getDeadLine() !== 0) {
                 const saveDeadLineProject = await projectDao.patchDeadline(
                     req.body.idProject ?? project.projectId,
@@ -269,7 +271,11 @@ class ProjectACtivityController {
                 StatsActivity.Update
             );
 
-            return HttpResponse.Created(res, projectActivity);
+            return HttpResponse.Created(
+                res,
+                projectActivity,
+                'Berhasil Update '
+            );
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }
@@ -464,13 +470,15 @@ class ProjectACtivityController {
         Stats: StatsActivity
     ) => {
         // Jika Debug True Tidak Kirim Email
-        if (process.env.DEBUG) {
+
+        if (process.env.DEBUG == 'true') {
             return;
         }
         const user = (await userService.readById(idUser, true, [
             'username',
             'email',
         ])) as RestApiGetUserById;
+
         const team = await userteamService.getTeamWithIdProject(
             project.projectId
         );
@@ -491,18 +499,13 @@ class ProjectACtivityController {
 
         this.Email.setOptionEmail(Contexts);
 
-        this.Email.send(this.CallBackEmail)
-            .then(console.log)
-            .catch(console.log);
+        await this.Email.send(this.CallBackEmail);
     };
 
     public CallBackEmail = (
         err: Error,
         info: SMTPTransport.SentMessageInfo
-    ) => {
-        console.log(err, 'Error');
-        console.log(info, 'Info');
-    };
+    ) => {};
 }
 
 export default new ProjectACtivityController();

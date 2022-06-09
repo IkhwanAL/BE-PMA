@@ -16,7 +16,6 @@ export class EmailNodeMailer {
                 user: process.env.USER,
                 pass: process.env.APP_GMAIL_PASSWORD,
             },
-            // host: 'smtp.gmail.com',
         });
 
         this.handlerOptions = {

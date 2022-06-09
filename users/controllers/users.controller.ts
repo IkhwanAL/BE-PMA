@@ -81,7 +81,7 @@ class UsersController {
                 },
             });
 
-            transporter.send().then(console.log).catch(console.log);
+            transporter.send().then();
 
             // if (response.includes('OK')) {
             return res.status(201).send({ id: id });
@@ -149,7 +149,7 @@ class UsersController {
                 },
             });
 
-            transporter.send().then(console.log).catch(console.log);
+            transporter.send().then();
 
             // if (response.includes('OK')) {
             return HttpResponse.Ok(res, {});

@@ -97,7 +97,7 @@ class UserTeamController {
                 },
             });
 
-            transport.send().then().catch();
+            await transport.send();
 
             // if (response.includes('OK')) {
             return HttpResponse.Created(res, {});
@@ -260,7 +260,6 @@ class UserTeamController {
 
             // return HttpResponse.BadRequest(res);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     }
