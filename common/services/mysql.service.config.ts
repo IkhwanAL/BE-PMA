@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 
 let MysqlPrisma = new PrismaClient({
-    log: ['error'],
+    log: ['error', 'query'],
 });
 
 export default MysqlPrisma;

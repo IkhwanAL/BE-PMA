@@ -97,11 +97,11 @@ class UserTeamController {
                 },
             });
 
-            const { response } = await transport.send();
+            transport.send().then().catch();
 
-            if (response.includes('OK')) {
-                return HttpResponse.Created(res, {});
-            }
+            // if (response.includes('OK')) {
+            return HttpResponse.Created(res, {});
+            // }
 
             return HttpResponse.ServiceUnavailable(res);
         } catch (error) {
@@ -252,13 +252,13 @@ class UserTeamController {
                 },
             });
 
-            const { response } = await trasporter.send();
+            trasporter.send().then().catch();
 
-            if (response.includes('OK')) {
-                return HttpResponse.Ok(res, {});
-            }
+            // if (response.includes('OK')) {
+            return HttpResponse.Ok(res, {});
+            // }
 
-            return HttpResponse.BadRequest(res);
+            // return HttpResponse.BadRequest(res);
         } catch (error) {
             console.log(error);
             return HttpResponse.InternalServerError(res);

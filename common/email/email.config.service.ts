@@ -16,6 +16,7 @@ export class EmailNodeMailer {
                 user: process.env.USER,
                 pass: process.env.APP_GMAIL_PASSWORD,
             },
+            // host: 'smtp.gmail.com',
         });
 
         this.handlerOptions = {
@@ -35,8 +36,9 @@ export class EmailNodeMailer {
         this.setOptions = options;
     }
 
-    public async send() {
-        console.log('Too Logion');
-        return this.transporter.sendMail(this.setOptions);
+    public async send(
+        Callback = (_err: Error, _info: SMTPTransport.SentMessageInfo) => {}
+    ) {
+        return this.transporter.sendMail(this.setOptions, Callback);
     }
 }

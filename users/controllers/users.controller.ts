@@ -81,15 +81,15 @@ class UsersController {
                 },
             });
 
-            const { response } = await transporter.send();
+            transporter.send().then(console.log).catch(console.log);
 
-            if (response.includes('OK')) {
-                return res.status(201).send({ id: id });
-            }
+            // if (response.includes('OK')) {
+            return res.status(201).send({ id: id });
+            // }
 
-            return res.status(409).send({
-                error: 'Something Wrong',
-            });
+            // return res.status(409).send({
+            //     error: 'Something Wrong',
+            // });
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }
@@ -149,11 +149,11 @@ class UsersController {
                 },
             });
 
-            const { response } = await transporter.send();
+            transporter.send().then(console.log).catch(console.log);
 
-            if (response.includes('OK')) {
-                return HttpResponse.Ok(res, {});
-            }
+            // if (response.includes('OK')) {
+            return HttpResponse.Ok(res, {});
+            // }
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }

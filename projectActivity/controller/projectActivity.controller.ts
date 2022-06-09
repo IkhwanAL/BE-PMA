@@ -31,6 +31,7 @@ import { CreateProjectActivityDto } from '../dto/create.projectActivity.dto';
 import { PatchProjectActivityDto } from '../dto/patch.projectActivity.dto';
 import projectActivityService from '../service/projectActivity.service';
 import 'dotenv/config';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 class ProjectACtivityController {
     Email = new EmailNodeMailer();
@@ -490,7 +491,17 @@ class ProjectACtivityController {
 
         this.Email.setOptionEmail(Contexts);
 
-        await this.Email.send();
+        this.Email.send(this.CallBackEmail)
+            .then(console.log)
+            .catch(console.log);
+    };
+
+    public CallBackEmail = (
+        err: Error,
+        info: SMTPTransport.SentMessageInfo
+    ) => {
+        console.log(err, 'Error');
+        console.log(info, 'Info');
     };
 }
 

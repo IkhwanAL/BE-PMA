@@ -4,6 +4,11 @@ import MysqlPrisma from '../../common/services/mysql.service.config';
 import { CreateProjectDto } from '../dto/create.project.dto';
 import { PatchProjectDto } from '../dto/patch.project.dto';
 
+enum OrderBy {
+    desc = 'desc',
+    asc = 'asc',
+}
+
 class ProjectDao {
     async create(id: number, resource: CreateProjectDto) {
         return MysqlPrisma.project.create({
@@ -243,17 +248,8 @@ class ProjectDao {
         });
     }
 
-    async readAll(idUser: number, take = null) {
-        let condition: Prisma.projectFindManyArgs = {};
-
-        if (take) {
-            condition = {
-                ...condition,
-                take: take,
-            };
-        }
+    async readAll(idUser: number, take?: number, Recent?: boolean) {
         return MysqlPrisma.project.findMany({
-            ...condition,
             where: {
                 OR: [
                     {
@@ -268,12 +264,66 @@ class ProjectDao {
                     },
                 ],
             },
+            orderBy: {
+                updatedAt: 'desc',
+            },
+            include: {
+                // projectName: true,
+                // projectId: true,
+                // deadline: true,
+                // projectDescription: true,
+                // deadlineInString: true,
+                user: {
+                    select: {
+                        username: true,
+                    },
+                },
+                userteam: {
+                    select: {
+                        user: {
+                            select: {
+                                username: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    }
+
+    async getRecent(idUser: number) {
+        return MysqlPrisma.project.findMany({
+            take: 4,
+            where: {
+                OR: [
+                    {
+                        userOwner: idUser,
+                    },
+                    {
+                        userteam: {
+                            some: {
+                                userId: idUser,
+                            },
+                        },
+                    },
+                ],
+            },
+            orderBy: {
+                activity: {
+                    _count: 'desc',
+                },
+            },
             select: {
                 projectName: true,
                 projectId: true,
                 deadline: true,
                 projectDescription: true,
                 deadlineInString: true,
+                activity: {
+                    orderBy: {
+                        createdAt: 'asc',
+                    },
+                },
                 user: {
                     select: {
                         username: true,

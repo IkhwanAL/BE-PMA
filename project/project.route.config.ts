@@ -15,6 +15,11 @@ export class ProjectRoute extends CommonRoutesConfig {
             .get(projectController.getAllProject)
             .post(projectController.createProject);
 
+        this.app
+            .route('/project/recent')
+            .all(projectMiddleware.Authentication)
+            .get(projectController.getRecent);
+
         this.app.param('idProject', projectMiddleware.extractidProject);
 
         this.app.get(

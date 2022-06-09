@@ -110,6 +110,17 @@ class ProjectController extends CommonController {
         }
     }
 
+    async getRecent(req: Request, res: Response) {
+        try {
+            const project = await projectService.getRecentProject(req.body.id);
+
+            return HttpResponse.Ok(res, project);
+        } catch (error) {
+            console.log(error);
+            return HttpResponse.InternalServerError(res);
+        }
+    }
+
     // Mengambil Sebagian Kecil Project Dengan Id User
     async getOneSmallProject(req: Request, res: Response) {
         try {
