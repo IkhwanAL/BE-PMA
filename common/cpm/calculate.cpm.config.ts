@@ -49,7 +49,7 @@ export class CPM {
 
     private forwardPassKeyOrder: number[] = [];
 
-    private Tree: Map<
+    private Graph: Map<
         string,
         projectactivity & {
             ParentActivity: {
@@ -309,7 +309,7 @@ export class CPM {
         /**
          * * Assign To Class Properties Tree
          */
-        this.Tree = NodeTree;
+        this.Graph = NodeTree;
     };
 
     //#region Calculate Pass
@@ -358,7 +358,10 @@ export class CPM {
                  * * It Mean The Activity Is Located At The Back
                  * * A Starting Poing For BackwardPass
                  */
-                if (!Act[keyActivy]?.child || !this.Tree.get(keyActivy).child) {
+                if (
+                    !Act[keyActivy]?.child ||
+                    !this.Graph.get(keyActivy).child
+                ) {
                     /**
                      * * Set Memoise Value With New lf Properties with Longest Time
                      */
@@ -371,7 +374,7 @@ export class CPM {
                     this.memoize[keyActivy].ls =
                         this.LongestTime -
                         (Act[keyActivy]?.timeToComplete ??
-                            this.Tree.get(keyActivy).timeToComplete);
+                            this.Graph.get(keyActivy).timeToComplete);
                 }
                 /**
                  * * If Child Is Exist From Activity
@@ -383,7 +386,7 @@ export class CPM {
                      */
                     const PreviousId =
                         Act[keyActivy]?.ChildActivity ??
-                        this.Tree.get(keyActivy).ChildActivity;
+                        this.Graph.get(keyActivy).ChildActivity;
 
                     /**
                      * * Check The Length Of Previous Value That Been Recently Get
@@ -427,7 +430,7 @@ export class CPM {
                         this.memoize[keyActivy].ls =
                             this.memoize[keyActivy].lf -
                             (Act[keyActivy]?.timeToComplete ??
-                                this.Tree.get(keyActivy).timeToComplete);
+                                this.Graph.get(keyActivy).timeToComplete);
                     }
 
                     /**
@@ -493,7 +496,7 @@ export class CPM {
                         this.memoize[keyActivy].ls =
                             this.memoize[keyActivy].lf -
                             (Act[keyActivy]?.timeToComplete ??
-                                this.Tree.get(keyActivy).timeToComplete);
+                                this.Graph.get(keyActivy).timeToComplete);
                     }
                 }
             }
@@ -501,19 +504,19 @@ export class CPM {
             /**
              * * Reverse The Value Of Class Properties Tree
              */
-            const arrReverse = new Map(Array.from(this.Tree).reverse());
+            const arrReverse = new Map(Array.from(this.Graph).reverse());
 
             /**
              * * N^2
              * * Loop On Every Activity From arrReverse
              */
             for (const [currentId, _values] of arrReverse) {
-                if (!Act[currentId]?.child || this.Tree.get(currentId).child) {
+                if (!Act[currentId]?.child || this.Graph.get(currentId).child) {
                     this.memoize[currentId].lf = this.LongestTime;
                     this.memoize[currentId].ls =
                         this.LongestTime -
                         (Act[currentId]?.timeToComplete ??
-                            this.Tree.get(currentId).timeToComplete);
+                            this.Graph.get(currentId).timeToComplete);
                 }
 
                 if (this.convertResult[currentId].child) {
@@ -620,20 +623,20 @@ export class CPM {
                 }
 
                 if (
-                    (!Act[keyAct]?.parent || !this.Tree.get(keyAct).parent) &&
+                    (!Act[keyAct]?.parent || !this.Graph.get(keyAct).parent) &&
                     Object.keys(this.memoize[keyAct]).length === 0
                 ) {
                     this.memoize[keyAct].es = 0;
                     this.memoize[keyAct].ef =
                         (Act[keyAct]?.timeToComplete ??
-                            this.Tree.get(keyAct).timeToComplete) + 0;
+                            this.Graph.get(keyAct).timeToComplete) + 0;
                     return;
                 }
 
-                if (Act[keyAct]?.parent || this.Tree.get(keyAct).parent) {
+                if (Act[keyAct]?.parent || this.Graph.get(keyAct).parent) {
                     const PreviousId =
                         Act[keyAct]?.ParentActivity ??
-                        this.Tree.get(keyAct).ParentActivity; // Yang Terhubung
+                        this.Graph.get(keyAct).ParentActivity; // Yang Terhubung
                     if (Object.keys(PreviousId).length <= 1) {
                         const EFCHeck =
                             this.memoize[
@@ -665,7 +668,7 @@ export class CPM {
                         this.memoize[keyAct].ef =
                             this.memoize[keyAct].es +
                             (Act[keyAct]?.timeToComplete ??
-                                this.Tree.get(keyAct).timeToComplete);
+                                this.Graph.get(keyAct).timeToComplete);
                     }
 
                     if (Object.keys(PreviousId).length >= 2) {
@@ -689,7 +692,7 @@ export class CPM {
                             this.memoize[keyAct].ef =
                                 this.memoize[keyAct].es +
                                 (Act[keyAct]?.timeToComplete ??
-                                    this.Tree.get(keyAct).timeToComplete);
+                                    this.Graph.get(keyAct).timeToComplete);
                         }
                     }
                 }
@@ -697,24 +700,24 @@ export class CPM {
                 return;
             }
 
-            for (const [currentId, _values] of this.Tree) {
+            for (const [currentId, _values] of this.Graph) {
                 if (!this.memoize[currentId]) {
                     this.memoize[currentId] = {} as CPM;
                 }
                 if (
-                    (!this.Tree.get(currentId).parent ||
-                        this.Tree.get(currentId).parent == '') &&
+                    (!this.Graph.get(currentId).parent ||
+                        this.Graph.get(currentId).parent == '') &&
                     Object.keys(this.memoize[currentId]).length === 0
                 ) {
                     this.memoize[currentId].es = 0;
                     this.memoize[currentId].ef =
                         (Act[currentId]?.timeToComplete ??
-                            this.Tree.get(currentId).timeToComplete) + 0;
+                            this.Graph.get(currentId).timeToComplete) + 0;
                     continue;
                 }
 
-                if (this.Tree.get(currentId).parent) {
-                    const PreviousId = this.Tree.get(currentId).ParentActivity; // Yang Terhubung
+                if (this.Graph.get(currentId).parent) {
+                    const PreviousId = this.Graph.get(currentId).ParentActivity; // Yang Terhubung
                     if (Object.keys(PreviousId).length <= 1) {
                         /**
                          * * Finding EF Value From Previous Node Or Activity
@@ -755,7 +758,7 @@ export class CPM {
                          */
                         this.memoize[currentId].ef =
                             this.memoize[currentId].es +
-                            this.Tree.get(currentId).timeToComplete;
+                            this.Graph.get(currentId).timeToComplete;
                     }
                     if (Object.keys(PreviousId).length >= 2) {
                         const GetEFValue: Array<number> = [];
@@ -776,7 +779,7 @@ export class CPM {
                         this.memoize[currentId].es = Math.max(...GetEFValue);
                         this.memoize[currentId].ef =
                             this.memoize[currentId].es +
-                            this.Tree.get(currentId).timeToComplete;
+                            this.Graph.get(currentId).timeToComplete;
                     }
                 }
             }
