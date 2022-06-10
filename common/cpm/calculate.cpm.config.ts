@@ -49,8 +49,6 @@ export class CPM {
 
     private forwardPassKeyOrder: number[] = [];
 
-    private calls;
-
     private Tree: Map<
         string,
         projectactivity & {
@@ -176,44 +174,48 @@ export class CPM {
      * * A Funtion That Start A Calculation
      */
     private Start() {
-        /**
-         * * Referencing Variable
-         */
-        const Act = this.convertResult;
-        /**
-         * * Forward Pass
-         */
-        this.forwardPass(Act);
+        try {
+            /**
+             * * Referencing Variable
+             */
+            const Act = this.convertResult;
+            /**
+             * * Forward Pass
+             */
+            this.forwardPass(Act);
 
-        /**
-         * * Temp Value For EF Value For Every Activity
-         */
-        const tempNumValue = [];
+            /**
+             * * Temp Value For EF Value For Every Activity
+             */
+            const tempNumValue = [];
 
-        // N
-        for (const key in this.memoize) {
-            tempNumValue.push(this.memoize[key].ef);
+            // N
+            for (const key in this.memoize) {
+                tempNumValue.push(this.memoize[key].ef);
+            }
+
+            /**
+             * * Find The Hihgest Value to Set The Deadline
+             */
+            const highestKeyID = Math.max(...tempNumValue);
+
+            /**
+             * * Put IT Inside Class Properties
+             */
+            this.LongestTime = highestKeyID;
+
+            /**
+             * * Backward Pass
+             */
+            this.backwardPass(Act);
+
+            /**
+             * * Finding Float Point, Critical Point And Deadline Date
+             */
+            this.calculateFloatPointActivity();
+        } catch (error) {
+            console.log(error);
         }
-
-        /**
-         * * Find The Hihgest Value to Set The Deadline
-         */
-        const highestKeyID = Math.max(...tempNumValue);
-
-        /**
-         * * Put IT Inside Class Properties
-         */
-        this.LongestTime = highestKeyID;
-
-        /**
-         * * Backward Pass
-         */
-        this.backwardPass(Act);
-
-        /**
-         * * Finding Float Point, Critical Point And Deadline Date
-         */
-        this.calculateFloatPointActivity();
     }
 
     /**
@@ -247,20 +249,20 @@ export class CPM {
          * * Will Automatically Set The Node Of Graph
          */
         for (const key in PRACT) {
-            const par = PRACT[key].parent;
-            if (par === '') {
+            const par = Object.keys(PRACT[key].ParentActivity).length;
+            if (par === 0) {
                 NodeTree.set(key, PRACT[key]);
                 TotalWithParent++;
             }
         }
 
         for (const key in PRACT) {
-            const child = PRACT[key].child;
-            if (child === '') {
+            const child = Object.keys(PRACT[key].ChildActivity).length;
+            if (child === 0) {
                 TotalWithChild++;
             }
         }
-
+        console.log(TotalWithChild, TotalWithChild);
         /**
          * * If There No First Parent Or Last Child On Every Activity
          * * System Cannot Calculated It
@@ -280,10 +282,15 @@ export class CPM {
              * * in Every Graph Loop The Activity
              */
             for (const iterator in PRACT) {
+                if (!PRACT[iterator].parent) {
+                    continue;
+                }
+
                 /**
                  * * Finding Parent Of It
                  */
                 const FindParent = PRACT[iterator].parent.split(',');
+
                 /**
                  * * Make Sure The Parent Or Dependencies Is Exist With Graph
                  */
@@ -382,6 +389,27 @@ export class CPM {
                      * * Check The Length Of Previous Value That Been Recently Get
                      */
                     if (Object.keys(PreviousId).length <= 1) {
+                        const LFCHeck =
+                            this.memoize[
+                                PreviousId[Object.keys(PreviousId)[0]]
+                                    .projectActivityId
+                                // .projectActivity
+                            ]?.lf;
+
+                        if (!LFCHeck) {
+                            /**
+                             * * Do The Recusion To Find The Value
+                             * ! Do With Caution
+                             */
+                            this.forwardPass(
+                                Act,
+                                false,
+                                '' +
+                                    PreviousId[Object.keys(PreviousId)[0]]
+                                        .projectActivityId
+                            );
+                        }
+
                         /**
                          * * Calculated THe Value Of LF With The Child Value Of LS
                          * * LF = LS
@@ -492,6 +520,27 @@ export class CPM {
                     const PreviousId = Act[currentId].ChildActivity;
 
                     if (Object.keys(PreviousId).length <= 1) {
+                        const LFCHeck =
+                            this.memoize[
+                                PreviousId[Object.keys(PreviousId)[0]]
+                                    .projectActivityId
+                                // .projectActivity
+                            ]?.lf;
+
+                        if (!LFCHeck) {
+                            /**
+                             * * Do The Recusion To Find The Value
+                             * ! Do With Caution
+                             */
+                            this.forwardPass(
+                                Act,
+                                false,
+                                '' +
+                                    PreviousId[Object.keys(PreviousId)[0]]
+                                        .projectActivityId
+                            );
+                        }
+
                         this.memoize[currentId].lf =
                             this.memoize[
                                 PreviousId[
@@ -559,7 +608,6 @@ export class CPM {
         Stop = false,
         keyActivy?: string
     ) {
-        // this.calls++;
         if (Stop) {
             return;
         }
@@ -587,6 +635,27 @@ export class CPM {
                         Act[keyAct]?.ParentActivity ??
                         this.Tree.get(keyAct).ParentActivity; // Yang Terhubung
                     if (Object.keys(PreviousId).length <= 1) {
+                        const EFCHeck =
+                            this.memoize[
+                                PreviousId[Object.keys(PreviousId)[0]]
+                                    .projectActivityId
+                                // .projectActivity
+                            ]?.ef;
+
+                        if (!EFCHeck) {
+                            /**
+                             * * Do The Recusion To Find The Value
+                             * ! Do With Caution
+                             */
+                            this.forwardPass(
+                                Act,
+                                false,
+                                '' +
+                                    PreviousId[Object.keys(PreviousId)[0]]
+                                        .projectActivityId
+                            );
+                        }
+
                         this.memoize[keyAct].es =
                             this.memoize[
                                 PreviousId[
@@ -752,6 +821,7 @@ export class CPM {
                 this.memoize[iterator].critical = false;
             }
         }
+        console.log(this.LongestTime);
         /**
          * * Set End Date
          */
