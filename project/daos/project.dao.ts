@@ -1,4 +1,10 @@
-import { Prisma, project, projectactivity, userteam } from '@prisma/client';
+import {
+    Prisma,
+    project,
+    projectactivity,
+    subdetailprojectactivity,
+    userteam,
+} from '@prisma/client';
 import moment from 'moment';
 import MysqlPrisma from '../../common/services/mysql.service.config';
 import { CreateProjectDto } from '../dto/create.project.dto';
@@ -34,7 +40,9 @@ class ProjectDao {
         idProject: number
     ): Promise<
         project & {
-            projectactivity: projectactivity[];
+            projectactivity: (projectactivity & {
+                subdetailprojectactivity: subdetailprojectactivity[];
+            })[];
             userteam: (userteam & {
                 user: {
                     id: number;
@@ -47,7 +55,9 @@ class ProjectDao {
         }
     > {
         let ObjResult: project & {
-            projectactivity: projectactivity[];
+            projectactivity: (projectactivity & {
+                subdetailprojectactivity: subdetailprojectactivity[];
+            })[];
             userteam: (userteam & {
                 user: {
                     id: number;
@@ -67,8 +77,19 @@ class ProjectDao {
         });
 
         const ProjectActivity = await MysqlPrisma.$queryRaw<
-            projectactivity[]
+            (projectactivity & {
+                subdetailprojectactivity: subdetailprojectactivity[];
+            })[]
         >`SELECT * FROM projectactivity WHERE projectId = ${idProject} ORDER BY CHAR_LENGTH(parent)`;
+
+        for (const iterator in ProjectActivity) {
+            const Sub = await MysqlPrisma.subdetailprojectactivity.findMany({
+                where: {
+                    detailProyekId: ProjectActivity[iterator].projectActivityId,
+                },
+            });
+            ProjectActivity[iterator].subdetailprojectactivity = Sub;
+        }
 
         const UserTeam = await MysqlPrisma.userteam.findMany({
             where: {
@@ -101,7 +122,9 @@ class ProjectDao {
         idUserTeam: number
     ): Promise<
         project & {
-            projectactivity: projectactivity[];
+            projectactivity: (projectactivity & {
+                subdetailprojectactivity: subdetailprojectactivity[];
+            })[];
             userteam: (userteam & {
                 user: {
                     id: number;
@@ -142,8 +165,19 @@ class ProjectDao {
         });
 
         const ProjectActivity = await MysqlPrisma.$queryRaw<
-            projectactivity[]
+            (projectactivity & {
+                subdetailprojectactivity: subdetailprojectactivity[];
+            })[]
         >`SELECT * FROM projectactivity WHERE projectId = ${idProject} ORDER BY CHAR_LENGTH(parent)`;
+
+        for (const iterator in ProjectActivity) {
+            const Sub = await MysqlPrisma.subdetailprojectactivity.findMany({
+                where: {
+                    detailProyekId: ProjectActivity[iterator].projectActivityId,
+                },
+            });
+            ProjectActivity[iterator].subdetailprojectactivity = Sub;
+        }
 
         return {
             ...Project,
