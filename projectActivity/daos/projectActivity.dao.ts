@@ -93,104 +93,115 @@ class ProjectActivityDao {
     ) => {
         const { subdetailprojectactivity, usertaskfromassignee, ...rest } =
             resource;
-        return MysqlPrisma.$transaction(async (QueryPrisma) => {
-            const ProjectId = await this.GetidProyekFromIdActivity(
-                idProjectActivity
-            );
-            const leader = await userteamDao.getTeamFromProyek(
-                idUser,
-                ProjectId.projectId
-            );
+        return MysqlPrisma.$transaction(
+            async (QueryPrisma) => {
+                const ProjectId = await this.GetidProyekFromIdActivity(
+                    idProjectActivity
+                );
+                const leader = await userteamDao.getTeamFromProyek(
+                    idUser,
+                    ProjectId.projectId
+                );
 
-            const UpdateSubDetailProjectActivity = async (
-                data: SubDetailProjectActivityPatch[]
-            ) => {
-                const SavedId: number[] = [];
+                const UpdateSubDetailProjectActivity = async (
+                    data: SubDetailProjectActivityPatch[]
+                ) => {
+                    const SavedId: number[] = [];
 
-                for (const iterator of data) {
-                    const IdProjectSubActivity =
-                        iterator.subDetailProjectActivityId
-                            ? iterator.subDetailProjectActivityId
-                            : 0;
-                    const update =
-                        await QueryPrisma.subdetailprojectactivity.upsert({
+                    for (const iterator of data) {
+                        const IdProjectSubActivity =
+                            iterator.subDetailProjectActivityId
+                                ? iterator.subDetailProjectActivityId
+                                : 0;
+                        const update =
+                            await QueryPrisma.subdetailprojectactivity.upsert({
+                                where: {
+                                    subDetailProjectActivityId:
+                                        IdProjectSubActivity,
+                                },
+                                update: {
+                                    description: iterator.description,
+                                    isComplete: iterator.isComplete,
+                                    detailProyekId: iterator.detailProyekId,
+                                    updatedAt: new Date(),
+                                },
+                                create: {
+                                    description: iterator.description,
+                                    isComplete: iterator.isComplete,
+                                    detailProyekId: iterator.detailProyekId,
+                                    createdAt: new Date(),
+                                    updatedAt: new Date(),
+                                },
+                            });
+                        SavedId.push(update.subDetailProjectActivityId);
+                    }
+
+                    // const deleteData =
+                    //     await QueryPrisma.subdetailprojectactivity.deleteMany({
+                    //         where: {
+                    //             subDetailProjectActivityId: {
+                    //                 notIn: SavedId,
+                    //             },
+                    //         },
+                    //     });
+                };
+
+                const UpdateUserTaskFromAssignee = async (data: number[]) => {
+                    const deleteMany =
+                        await QueryPrisma.usertaskfromassignee.deleteMany({
                             where: {
-                                subDetailProjectActivityId:
-                                    IdProjectSubActivity,
+                                projectActivityId: idProjectActivity,
                             },
-                            update: {
-                                description: iterator.description,
-                                isComplete: iterator.isComplete,
-                                detailProyekId: iterator.detailProyekId,
-                                updatedAt: new Date(),
+                        });
+
+                    const usertask = [];
+                    for (const iterator of data) {
+                        const payload = {
+                            idUser: iterator,
+                            projectActivityId: idProjectActivity,
+                        };
+
+                        usertask.push(payload);
+                    }
+
+                    const createMany =
+                        await QueryPrisma.usertaskfromassignee.createMany({
+                            data: usertask,
+                        });
+                };
+
+                if (leader.role !== userteam_role.Proyek_Manager) {
+                    await UpdateSubDetailProjectActivity(
+                        subdetailprojectactivity
+                    );
+
+                    return rest;
+                } else {
+                    await UpdateSubDetailProjectActivity(
+                        subdetailprojectactivity
+                    );
+                    await UpdateUserTaskFromAssignee(
+                        usertaskfromassignee as number[]
+                    );
+                    const UpdateQuery =
+                        await QueryPrisma.projectactivity.update({
+                            where: {
+                                projectActivityId: idProjectActivity,
                             },
-                            create: {
-                                description: iterator.description,
-                                isComplete: iterator.isComplete,
-                                detailProyekId: iterator.detailProyekId,
-                                createdAt: new Date(),
+                            data: {
+                                ...rest,
                                 updatedAt: new Date(),
                             },
                         });
-                    SavedId.push(update.subDetailProjectActivityId);
+
+                    return UpdateQuery;
                 }
-
-                // const deleteData =
-                //     await QueryPrisma.subdetailprojectactivity.deleteMany({
-                //         where: {
-                //             subDetailProjectActivityId: {
-                //                 notIn: SavedId,
-                //             },
-                //         },
-                //     });
-            };
-
-            const UpdateUserTaskFromAssignee = async (data: number[]) => {
-                const deleteMany =
-                    await QueryPrisma.usertaskfromassignee.deleteMany({
-                        where: {
-                            projectActivityId: idProjectActivity,
-                        },
-                    });
-
-                const usertask = [];
-                for (const iterator of data) {
-                    const payload = {
-                        idUser: iterator,
-                        projectActivityId: idProjectActivity,
-                    };
-
-                    usertask.push(payload);
-                }
-
-                const createMany =
-                    await QueryPrisma.usertaskfromassignee.createMany({
-                        data: usertask,
-                    });
-            };
-
-            if (leader.role !== userteam_role.Proyek_Manager) {
-                await UpdateSubDetailProjectActivity(subdetailprojectactivity);
-
-                return rest;
-            } else {
-                await UpdateSubDetailProjectActivity(subdetailprojectactivity);
-                await UpdateUserTaskFromAssignee(
-                    usertaskfromassignee as number[]
-                );
-                const UpdateQuery = await QueryPrisma.projectactivity.update({
-                    where: {
-                        projectActivityId: idProjectActivity,
-                    },
-                    data: {
-                        ...rest,
-                        updatedAt: new Date(),
-                    },
-                });
-
-                return UpdateQuery;
+            },
+            {
+                maxWait: 10000,
+                timeout: 30000,
             }
-        });
+        );
     };
 
     async deleteProjectActivity(idProjectActivity: number) {
