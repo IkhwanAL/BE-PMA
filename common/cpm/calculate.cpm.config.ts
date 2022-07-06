@@ -1,8 +1,6 @@
 import { project, projectactivity, user, userteam } from '@prisma/client';
-import { ifError } from 'assert';
-import { Console } from 'console';
+
 import moment from 'moment';
-import { HttpResponse } from '../services/http.service.config';
 
 export interface CPM {
     es: number;
@@ -243,24 +241,41 @@ export class CPM {
         >();
         let TotalWithParent = 0;
         let TotalWithChild = 0;
+        let NoDependencies = 0;
         /**
          * * For Every Activity Where No Parent At All
          * * Will Automatically Set The Node Of Graph
          */
         for (const key in PRACT) {
             const par = Object.keys(PRACT[key].ParentActivity).length;
-            if (par === 0) {
+            const child = Object.keys(PRACT[key].ChildActivity).length;
+
+            if (par === 0 && child !== 0) {
                 NodeTree.set(key, PRACT[key]);
                 TotalWithParent++;
             }
         }
 
         for (const key in PRACT) {
+            const par = Object.keys(PRACT[key].ParentActivity).length;
             const child = Object.keys(PRACT[key].ChildActivity).length;
-            if (child === 0) {
+
+            if (child === 0 && par !== 0) {
+                NodeTree.set(key, PRACT[key]);
                 TotalWithChild++;
             }
         }
+
+        for (const key in PRACT) {
+            const par = Object.keys(PRACT[key].ParentActivity).length;
+            const child = Object.keys(PRACT[key].ChildActivity).length;
+
+            if (par === 0 && child === 0) {
+                NodeTree.set(key, PRACT[key]);
+                NoDependencies++;
+            }
+        }
+
         /**
          * * If There No First Parent Or Last Child On Every Activity
          * * System Cannot Calculated It
@@ -305,7 +320,7 @@ export class CPM {
             // What If There`s No Dependencies
         }
         /**
-         * * Assign To Class Properties Tree
+         * * Assign To Class Properties Graph
          */
         this.Graph = NodeTree;
     };
@@ -833,15 +848,23 @@ export class CPM {
 
     //#region GetResult
     public getDeadLine(): number {
+        // console.log(this.LongestTime);
         return this.LongestTime;
     }
 
     public getCalculate() {
+        // console.log(this.project);
+        // console.log(this.memoize);
         return this.memoize;
     }
 
     public getDate() {
+        // console.log(this.EndDate);
         return this.EndDate;
+    }
+
+    public isItStop() {
+        return this.Stop;
     }
     //#endregion
 }

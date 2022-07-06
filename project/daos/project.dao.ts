@@ -513,6 +513,22 @@ class ProjectDao {
             },
         });
     }
+
+    async getOneWithProjectId(idProject: number) {
+        return MysqlPrisma.project.findFirst({
+            where: {
+                projectId: idProject,
+            },
+            include: {
+                projectactivity: true,
+                userteam: {
+                    include: {
+                        user: true,
+                    },
+                },
+            },
+        });
+    }
 }
 
 export default new ProjectDao();
