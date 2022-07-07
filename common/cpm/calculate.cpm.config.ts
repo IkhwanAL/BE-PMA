@@ -535,7 +535,7 @@ export class CPM {
                             PreviousId[Object.keys(PreviousId)[0]]
                                 .projectActivityId
                             // .projectActivity
-                        ].lf;
+                        ]?.lf;
 
                     if (!LFCHeck) {
                         /**
@@ -566,11 +566,11 @@ export class CPM {
                     const GetLSValue: Array<number> = [];
 
                     for (const key in PreviousId) {
-                        const num = this.memoize[key].ls;
+                        const num = this.memoize[key]?.ls;
 
                         if (!num) {
                             this.backwardPass(Act, false, key);
-                            const nums = this.memoize[key]?.ls;
+                            const nums = this.memoize[key].ls;
                             GetLSValue.push(nums);
                         }
                         if (num) {
@@ -635,9 +635,7 @@ export class CPM {
                 }
 
                 if (this.Graph.get(keyAct).parent) {
-                    const PreviousId =
-                        Act[keyAct]?.ParentActivity ??
-                        this.Graph.get(keyAct).ParentActivity; // Yang Terhubung
+                    const PreviousId = this.Graph.get(keyAct).ParentActivity; // Yang Terhubung
                     if (Object.keys(PreviousId).length <= 1) {
                         const EFCHeck =
                             this.memoize[
@@ -679,7 +677,7 @@ export class CPM {
 
                             if (!num) {
                                 this.forwardPass(Act, false, key);
-                                const nums = this.memoize[key]?.ef;
+                                const nums = this.memoize[key].ef;
                                 GetEFValue.push(nums);
                             }
 

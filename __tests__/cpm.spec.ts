@@ -3,9 +3,10 @@ import projectDao from '../project/daos/project.dao';
 
 const idDataToTest_Fail = 1;
 const idDataToTest_Complete = 2;
+const idDataToTest_Test = 3;
 
 describe('Critical Path Method Dapat menentukan batas waktu pengerjaan', () => {
-    test('seharusnya sistem dapat menolak kegiatan yang menyebabkan perulangan tak terbatas', async () => {
+    test('sistem seharusnya dapat menghentikan kalkulasi yang menyebabkan perulangan tak terbatas', async () => {
         let one = await projectDao.getOneWithProjectId(idDataToTest_Fail);
 
         const cpm = new CPM(one, one.startDate);
@@ -15,11 +16,11 @@ describe('Critical Path Method Dapat menentukan batas waktu pengerjaan', () => {
         expect(cpm.isItStop()).toBeTruthy();
     });
 
-    test('seharusnya menolak jika aktifitas kurang dari 2', async () => {
+    test('sistem seharusnya menolak jika aktifitas kurang dari 2', async () => {
         let one = await projectDao.getOneWithProjectId(idDataToTest_Complete);
 
         one = {
-            projectactivity: one.projectactivity.slice(0, 1), // Mengurangi Value Aktifitas Kurang Dari 2
+            projectactivity: one.projectactivity, // Mengurangi Value Aktifitas Kurang Dari 2
             userteam: one.userteam,
             createdAt: one.createdAt,
             deadline: one.deadline,
@@ -40,7 +41,7 @@ describe('Critical Path Method Dapat menentukan batas waktu pengerjaan', () => {
         expect(cpm.getCalculate()).toEqual({});
     });
 
-    test('seharusnya dapat menentukan nilai ef, es, ls, ls', async () => {
+    test('sistem seharusnya dapat menentukan nilai ef, es', async () => {
         const one = await projectDao.getOneWithProjectId(idDataToTest_Complete);
 
         const cpm = new CPM(one, one.startDate);
@@ -54,16 +55,10 @@ describe('Critical Path Method Dapat menentukan batas waktu pengerjaan', () => {
 
             expect(res[iterator].es).not.toBeNull();
             expect(res[iterator].es).not.toBeNaN();
-
-            expect(res[iterator].lf).not.toBeNull();
-            expect(res[iterator].lf).not.toBeNaN();
-
-            expect(res[iterator].ls).not.toBeNull();
-            expect(res[iterator].ls).not.toBeNaN();
         }
     });
 
-    test('seharusnya bisa menghitung deadline', async () => {
+    test('sistem seharusnya bisa menghitung deadline', async () => {
         const one = await projectDao.getOneWithProjectId(idDataToTest_Complete);
 
         const cpm = new CPM(one, one.startDate);
@@ -77,7 +72,23 @@ describe('Critical Path Method Dapat menentukan batas waktu pengerjaan', () => {
 });
 
 describe('Critical Path Method dapat menentukan kegiatan kritikal', () => {
-    test('seharusnya dapat menentukan nilai float pada aktifitas', async () => {
+    test('sistem seharusnya dapat menentukan nilai lf, ls', async () => {
+        const one = await projectDao.getOneWithProjectId(idDataToTest_Complete);
+
+        const cpm = new CPM(one, one.startDate);
+
+        cpm.calculate();
+        const res = cpm.getCalculate();
+
+        for (const iterator in res) {
+            expect(res[iterator].lf).not.toBeNull();
+            expect(res[iterator].lf).not.toBeNaN();
+
+            expect(res[iterator].ls).not.toBeNull();
+            expect(res[iterator].ls).not.toBeNaN();
+        }
+    });
+    test('sistem seharusnya dapat menentukan nilai float pada aktifitas', async () => {
         const one = await projectDao.getOneWithProjectId(idDataToTest_Complete);
 
         const cpm = new CPM(one, one.startDate);
@@ -90,7 +101,7 @@ describe('Critical Path Method dapat menentukan kegiatan kritikal', () => {
             expect(res[iterator].f).not.toBeNaN();
         }
     });
-    test('seharusnya dapat menentukan nilai jalur kritikal', async () => {
+    test('sistem seharusnya dapat menentukan nilai jalur kritikal', async () => {
         const one = await projectDao.getOneWithProjectId(idDataToTest_Complete);
 
         const cpm = new CPM(one, one.startDate);
