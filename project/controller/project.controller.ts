@@ -224,13 +224,13 @@ class ProjectController extends CommonController {
                 );
             }
 
-            // const NewProject = await this.calc(project, req.body.idProject);
-            // const NewNewProject = await this.countProjectActivityProgress(
-            //     NewProject,
-            //     res
-            // );
-
-            return HttpResponse.Ok(res, project);
+            const NewProject = await this.calc(project, req.body.idProject);
+            const NewNewProject = await this.countProjectActivityProgress(
+                NewProject,
+                res
+            );
+            console;
+            return HttpResponse.Ok(res, NewNewProject);
         } catch (error) {
             return HttpResponse.InternalServerError(res);
         }

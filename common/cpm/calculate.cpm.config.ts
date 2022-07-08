@@ -1,8 +1,6 @@
 import { project, projectactivity, user, userteam } from '@prisma/client';
-import { ifError } from 'assert';
-import { Console } from 'console';
+
 import moment from 'moment';
-import { HttpResponse } from '../services/http.service.config';
 
 export interface CPM {
     es: number;
@@ -183,7 +181,6 @@ export class CPM {
              * * Forward Pass
              */
             this.forwardPass(Act);
-
             /**
              * * Temp Value For EF Value For Every Activity
              */
@@ -244,25 +241,41 @@ export class CPM {
         >();
         let TotalWithParent = 0;
         let TotalWithChild = 0;
+        let NoDependencies = 0;
         /**
          * * For Every Activity Where No Parent At All
          * * Will Automatically Set The Node Of Graph
          */
         for (const key in PRACT) {
             const par = Object.keys(PRACT[key].ParentActivity).length;
-            if (par === 0) {
+            const child = Object.keys(PRACT[key].ChildActivity).length;
+
+            if (par === 0 && child !== 0) {
                 NodeTree.set(key, PRACT[key]);
                 TotalWithParent++;
             }
         }
 
         for (const key in PRACT) {
+            const par = Object.keys(PRACT[key].ParentActivity).length;
             const child = Object.keys(PRACT[key].ChildActivity).length;
-            if (child === 0) {
+
+            if (child === 0 && par !== 0) {
+                NodeTree.set(key, PRACT[key]);
                 TotalWithChild++;
             }
         }
-        console.log(TotalWithChild, TotalWithChild);
+
+        for (const key in PRACT) {
+            const par = Object.keys(PRACT[key].ParentActivity).length;
+            const child = Object.keys(PRACT[key].ChildActivity).length;
+
+            if (par === 0 && child === 0) {
+                NodeTree.set(key, PRACT[key]);
+                NoDependencies++;
+            }
+        }
+
         /**
          * * If There No First Parent Or Last Child On Every Activity
          * * System Cannot Calculated It
@@ -307,7 +320,7 @@ export class CPM {
             // What If There`s No Dependencies
         }
         /**
-         * * Assign To Class Properties Tree
+         * * Assign To Class Properties Graph
          */
         this.Graph = NodeTree;
     };
@@ -341,247 +354,246 @@ export class CPM {
         Stop = false,
         keyActivy?: string
     ) {
-        try {
+        // try {
+        /**
+         * * Used For Stopping From Infinite Lopp
+         */
+        if (Stop) {
+            return;
+        }
+
+        /**
+         * * If Paramater keyActivity is Exists
+         * * Do Command Below
+         */
+        if (keyActivy) {
             /**
-             * * Used For Stopping From Infinite Lopp
+             * * If There`s No Child From Param Or From Class Properties
+             * * It Mean The Activity Is Located At The Back
+             * * A Starting Poing For BackwardPass
              */
-            if (Stop) {
-                return;
+            if (!Act[keyActivy]?.child || !this.Graph.get(keyActivy).child) {
+                /**
+                 * * Set Memoise Value With New lf Properties with Longest Time
+                 */
+                this.memoize[keyActivy].lf = this.LongestTime;
+
+                /**
+                 * * Set Memoize Value With New ls Value With
+                 * * LS = LF - Time To Complete
+                 */
+                this.memoize[keyActivy].ls =
+                    this.LongestTime -
+                    (Act[keyActivy]?.timeToComplete ??
+                        this.Graph.get(keyActivy).timeToComplete);
             }
             /**
-             * * If Paramater keyActivity is Exists
-             * * Do Command Below
+             * * If Child Is Exist From Activity
+             * * Check
              */
-            if (keyActivy) {
+            if (this.convertResult[keyActivy].child) {
                 /**
-                 * * If There`s No Child From Param Or From Class Properties
-                 * * It Mean The Activity Is Located At The Back
-                 * * A Starting Poing For BackwardPass
+                 * * Get The Value First
                  */
-                if (
-                    !Act[keyActivy]?.child ||
-                    !this.Graph.get(keyActivy).child
-                ) {
-                    /**
-                     * * Set Memoise Value With New lf Properties with Longest Time
-                     */
-                    this.memoize[keyActivy].lf = this.LongestTime;
+                const PreviousId =
+                    Act[keyActivy]?.ChildActivity ??
+                    this.Graph.get(keyActivy).ChildActivity;
+
+                /**
+                 * * Check The Length Of Previous Value That Been Recently Get
+                 */
+                if (Object.keys(PreviousId).length <= 1) {
+                    const LFCHeck =
+                        this.memoize[
+                            PreviousId[Object.keys(PreviousId)[0]]
+                                .projectActivityId
+                            // .projectActivity
+                        ]?.lf;
+
+                    if (!LFCHeck) {
+                        /**
+                         * * Do The Recusion To Find The Value
+                         * ! Do With Caution
+                         */
+                        this.backwardPass(
+                            Act,
+                            false,
+                            '' +
+                                PreviousId[Object.keys(PreviousId)[0]]
+                                    .projectActivityId
+                        );
+                    }
 
                     /**
-                     * * Set Memoize Value With New ls Value With
-                     * * LS = LF - Time To Complete
+                     * * Calculated THe Value Of LF With The Child Value Of LS
+                     * * LF = LS
+                     */
+                    this.memoize[keyActivy].lf =
+                        this.memoize[
+                            PreviousId[
+                                Object.keys(PreviousId)[0]
+                            ].projectActivityId
+                        ].ls;
+                    /**
+                     * * Calculated The Value OF LS With Current LF
+                     * * LS = LF - Time To Completed
                      */
                     this.memoize[keyActivy].ls =
-                        this.LongestTime -
+                        this.memoize[keyActivy].lf -
                         (Act[keyActivy]?.timeToComplete ??
                             this.Graph.get(keyActivy).timeToComplete);
                 }
+
                 /**
-                 * * If Child Is Exist From Activity
+                 * * If The Child For Activity Is More Than 2
                  * * Check
                  */
-                if (this.convertResult[keyActivy].child) {
+                if (Object.keys(PreviousId).length >= 2) {
                     /**
-                     * * Get The Value First
+                     * * Set An Empty Value For Finding LF Value From Previous Activity
                      */
-                    const PreviousId =
-                        Act[keyActivy]?.ChildActivity ??
-                        this.Graph.get(keyActivy).ChildActivity;
+                    const GetLSValue: Array<number> = [];
 
                     /**
-                     * * Check The Length Of Previous Value That Been Recently Get
+                     * * Traverse The Previous Value
                      */
-                    if (Object.keys(PreviousId).length <= 1) {
-                        const LFCHeck =
-                            this.memoize[
-                                PreviousId[Object.keys(PreviousId)[0]]
-                                    .projectActivityId
-                                // .projectActivity
-                            ]?.lf;
+                    for (const key in PreviousId) {
+                        /**
+                         * * Get The Ls
+                         */
+                        const num = this.memoize[key].ls;
 
-                        if (!LFCHeck) {
+                        /**
+                         * * If LS isn`t Exist
+                         */
+                        if (!num) {
                             /**
-                             * * Do The Recusion To Find The Value
+                             * * Do A Recursion
+                             * ! Can Cause Infinite Loop
                              * ! Do With Caution
+                             * ! Recommended Using Debugger
+                             * * The Recursion is For Calculate Previous Node
+                             * * if The LS Value Isn`t Exist
                              */
-                            this.forwardPass(
-                                Act,
-                                false,
-                                '' +
-                                    PreviousId[Object.keys(PreviousId)[0]]
-                                        .projectActivityId
-                            );
+                            this.backwardPass(Act, false, key);
+                            /**
+                             * * After Calculation
+                             * * Get The Value
+                             */
+                            const nums = this.memoize[key]?.ls;
+                            /**
+                             * * Store It to Array
+                             */
+                            GetLSValue.push(nums);
                         }
-
                         /**
-                         * * Calculated THe Value Of LF With The Child Value Of LS
-                         * * LF = LS
+                         * * If Value LS is Exist Then
+                         * * Instant Push
                          */
-                        this.memoize[keyActivy].lf =
-                            this.memoize[
-                                PreviousId[
-                                    Object.keys(PreviousId)[0]
-                                ].projectActivityId
-                            ].ls;
-                        /**
-                         * * Calculated The Value OF LS With Current LF
-                         * * LS = LF - Time To Completed
-                         */
-                        this.memoize[keyActivy].ls =
-                            this.memoize[keyActivy].lf -
-                            (Act[keyActivy]?.timeToComplete ??
-                                this.Graph.get(keyActivy).timeToComplete);
+                        if (num) {
+                            this.backwardPass(Act, true);
+                            GetLSValue.push(num);
+                        }
                     }
 
                     /**
-                     * * If The Child For Activity Is More Than 2
-                     * * Check
+                     * * Finding The Minimal For Every Pushed Value
                      */
-                    if (Object.keys(PreviousId).length >= 2) {
-                        /**
-                         * * Set An Empty Value For Finding LF Value From Previous Activity
-                         */
-                        const GetLSValue: Array<number> = [];
-
-                        /**
-                         * * Traverse The Previous Value
-                         */
-                        for (const key in PreviousId) {
-                            /**
-                             * * Get The Ls
-                             */
-                            const num = this.memoize[key].ls;
-
-                            /**
-                             * * If LS isn`t Exist
-                             */
-                            if (!num) {
-                                /**
-                                 * * Do A Recursion
-                                 * ! Can Cause Infinite Loop
-                                 * ! Do With Caution
-                                 * ! Recommended Using Debugger
-                                 * * The Recursion is For Calculate Previous Node
-                                 * * if The LS Value Isn`t Exist
-                                 */
-                                this.backwardPass(Act[key], false, key);
-                                /**
-                                 * * After Calculation
-                                 * * Get The Value
-                                 */
-                                const nums = this.memoize[key]?.ls;
-                                /**
-                                 * * Store It to Array
-                                 */
-                                GetLSValue.push(nums);
-                            }
-                            /**
-                             * * If Value LS is Exist Then
-                             * * Instant Push
-                             */
-                            if (num) {
-                                this.backwardPass(Act, true);
-                                GetLSValue.push(num);
-                            }
-                        }
-
-                        /**
-                         * * Finding The Minimal For Every Pushed Value
-                         */
-                        this.memoize[keyActivy].lf = Math.min(...GetLSValue);
-                        /**
-                         * * Calculated The LS Value With
-                         * * LS = LF - TIme To Completed
-                         */
-                        this.memoize[keyActivy].ls =
-                            this.memoize[keyActivy].lf -
-                            (Act[keyActivy]?.timeToComplete ??
-                                this.Graph.get(keyActivy).timeToComplete);
-                    }
+                    this.memoize[keyActivy].lf = Math.min(...GetLSValue);
+                    /**
+                     * * Calculated The LS Value With
+                     * * LS = LF - TIme To Completed
+                     */
+                    this.memoize[keyActivy].ls =
+                        this.memoize[keyActivy].lf -
+                        (Act[keyActivy]?.timeToComplete ??
+                            this.Graph.get(keyActivy).timeToComplete);
                 }
             }
-
-            /**
-             * * Reverse The Value Of Class Properties Tree
-             */
-            const arrReverse = new Map(Array.from(this.Graph).reverse());
-
-            /**
-             * * N^2
-             * * Loop On Every Activity From arrReverse
-             */
-            for (const [currentId, _values] of arrReverse) {
-                if (!Act[currentId]?.child || this.Graph.get(currentId).child) {
-                    this.memoize[currentId].lf = this.LongestTime;
-                    this.memoize[currentId].ls =
-                        this.LongestTime -
-                        (Act[currentId]?.timeToComplete ??
-                            this.Graph.get(currentId).timeToComplete);
-                }
-
-                if (this.convertResult[currentId].child) {
-                    const PreviousId = Act[currentId].ChildActivity;
-
-                    if (Object.keys(PreviousId).length <= 1) {
-                        const LFCHeck =
-                            this.memoize[
-                                PreviousId[Object.keys(PreviousId)[0]]
-                                    .projectActivityId
-                                // .projectActivity
-                            ]?.lf;
-
-                        if (!LFCHeck) {
-                            /**
-                             * * Do The Recusion To Find The Value
-                             * ! Do With Caution
-                             */
-                            this.forwardPass(
-                                Act,
-                                false,
-                                '' +
-                                    PreviousId[Object.keys(PreviousId)[0]]
-                                        .projectActivityId
-                            );
-                        }
-
-                        this.memoize[currentId].lf =
-                            this.memoize[
-                                PreviousId[
-                                    Object.keys(PreviousId)[0]
-                                ].projectActivityId
-                            ].ls;
-                        this.memoize[currentId].ls =
-                            this.memoize[currentId].lf -
-                            Act[currentId].timeToComplete;
-                    }
-
-                    if (Object.keys(PreviousId).length >= 2) {
-                        const GetLSValue: Array<number> = [];
-
-                        for (const key in PreviousId) {
-                            const num = this.memoize[key].ls;
-
-                            if (!num) {
-                                this.backwardPass(Act, false, key);
-                                const nums = this.memoize[key]?.ls;
-                                GetLSValue.push(nums);
-                            }
-                            if (num) {
-                                this.backwardPass(Act, true);
-                                GetLSValue.push(num);
-                            }
-                        }
-
-                        this.memoize[currentId].lf = Math.min(...GetLSValue);
-                        this.memoize[currentId].ls =
-                            this.memoize[currentId].lf -
-                            Act[currentId].timeToComplete;
-                    }
-                }
-            }
-        } catch (error) {
-            throw Error('Error');
         }
+
+        /**
+         * * Reverse The Value Of Class Properties Tree
+         */
+        const arrReverse = new Map(Array.from(this.Graph).reverse());
+
+        /**
+         * * N^2
+         * * Loop On Every Activity From arrReverse
+         */
+        for (const [currentId, _values] of arrReverse) {
+            if (!Act[currentId]?.child || this.Graph.get(currentId).child) {
+                this.memoize[currentId].lf = this.LongestTime;
+                this.memoize[currentId].ls =
+                    this.LongestTime -
+                    (Act[currentId]?.timeToComplete ??
+                        this.Graph.get(currentId).timeToComplete);
+            }
+
+            if (this.convertResult[currentId].child) {
+                const PreviousId = Act[currentId].ChildActivity;
+
+                if (Object.keys(PreviousId).length <= 1) {
+                    const id =
+                        PreviousId[Object.keys(PreviousId)[0]]
+                            .projectActivityId;
+                    const LFCHeck =
+                        this.memoize[
+                            PreviousId[Object.keys(PreviousId)[0]]
+                                .projectActivityId
+                            // .projectActivity
+                        ]?.lf;
+
+                    if (!LFCHeck) {
+                        /**
+                         * * Do The Recusion To Find The Value
+                         * ! Do With Caution
+                         */
+                        this.backwardPass(
+                            Act,
+                            false,
+                            '' +
+                                PreviousId[Object.keys(PreviousId)[0]]
+                                    .projectActivityId
+                        );
+                    }
+
+                    this.memoize[currentId].lf =
+                        this.memoize[
+                            PreviousId[
+                                Object.keys(PreviousId)[0]
+                            ].projectActivityId
+                        ].ls;
+                    this.memoize[currentId].ls =
+                        this.memoize[currentId].lf -
+                        Act[currentId].timeToComplete;
+                }
+
+                if (Object.keys(PreviousId).length >= 2) {
+                    const GetLSValue: Array<number> = [];
+
+                    for (const key in PreviousId) {
+                        const num = this.memoize[key].ls;
+
+                        if (!num) {
+                            this.backwardPass(Act, false, key);
+                            const nums = this.memoize[key]?.ls;
+                            GetLSValue.push(nums);
+                        }
+                        if (num) {
+                            GetLSValue.push(num);
+                        }
+                    }
+
+                    this.memoize[currentId].lf = Math.min(...GetLSValue);
+                    this.memoize[currentId].ls =
+                        this.memoize[currentId].lf -
+                        Act[currentId].timeToComplete;
+                }
+            }
+        }
+
+        return;
     }
 
     /**
@@ -609,7 +621,7 @@ export class CPM {
                   };
               }),
         Stop = false,
-        keyActivy?: string
+        keyActivy?: string // it mean can be undefined
     ) {
         if (Stop) {
             return;
@@ -679,21 +691,22 @@ export class CPM {
 
                             if (!num) {
                                 this.forwardPass(Act, false, key);
+                                const nums = this.memoize[key]?.ef;
+                                GetEFValue.push(nums);
                             }
 
                             if (num) {
                                 this.forwardPass(Act, true);
+                                GetEFValue.push(num);
                             }
-
-                            GetEFValue.push(num);
                         }
-                        if (GetEFValue.length >= 2) {
-                            this.memoize[keyAct].es = Math.max(...GetEFValue);
-                            this.memoize[keyAct].ef =
-                                this.memoize[keyAct].es +
-                                (Act[keyAct]?.timeToComplete ??
-                                    this.Graph.get(keyAct).timeToComplete);
-                        }
+                        // if (GetEFValue.length >= 2) {
+                        this.memoize[keyAct].es = Math.max(...GetEFValue);
+                        this.memoize[keyAct].ef =
+                            this.memoize[keyAct].es +
+                            (Act[keyAct]?.timeToComplete ??
+                                this.Graph.get(keyAct).timeToComplete);
+                        // }
                     }
                 }
 
@@ -824,7 +837,6 @@ export class CPM {
                 this.memoize[iterator].critical = false;
             }
         }
-        console.log(this.LongestTime);
         /**
          * * Set End Date
          */
@@ -836,15 +848,23 @@ export class CPM {
 
     //#region GetResult
     public getDeadLine(): number {
+        // console.log(this.LongestTime);
         return this.LongestTime;
     }
 
     public getCalculate() {
+        // console.log(this.project);
+        // console.log(this.memoize);
         return this.memoize;
     }
 
     public getDate() {
+        // console.log(this.EndDate);
         return this.EndDate;
+    }
+
+    public isItStop() {
+        return this.Stop;
     }
     //#endregion
 }

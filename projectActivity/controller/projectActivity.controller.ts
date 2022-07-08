@@ -277,7 +277,6 @@ class ProjectACtivityController {
                 'Berhasil Update '
             );
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
