@@ -211,7 +211,8 @@ export class CPM {
              */
             this.calculateFloatPointActivity();
         } catch (error) {
-            console.log(error);
+            this.Stop = true;
+            return;
         }
     }
 
@@ -358,9 +359,9 @@ export class CPM {
         /**
          * * Used For Stopping From Infinite Lopp
          */
-        if (Stop) {
-            return;
-        }
+        // if (Stop) {
+        //     return;
+        // }
 
         /**
          * * If Paramater keyActivity is Exists
@@ -372,7 +373,7 @@ export class CPM {
              * * It Mean The Activity Is Located At The Back
              * * A Starting Poing For BackwardPass
              */
-            if (!Act[keyActivy]?.child || !this.Graph.get(keyActivy).child) {
+            if (!this.Graph.get(keyActivy).child) {
                 /**
                  * * Set Memoise Value With New lf Properties with Longest Time
                  */
@@ -383,9 +384,7 @@ export class CPM {
                  * * LS = LF - Time To Complete
                  */
                 this.memoize[keyActivy].ls =
-                    this.LongestTime -
-                    (Act[keyActivy]?.timeToComplete ??
-                        this.Graph.get(keyActivy).timeToComplete);
+                    this.LongestTime - this.Graph.get(keyActivy).timeToComplete;
             }
             /**
              * * If Child Is Exist From Activity
@@ -395,9 +394,7 @@ export class CPM {
                 /**
                  * * Get The Value First
                  */
-                const PreviousId =
-                    Act[keyActivy]?.ChildActivity ??
-                    this.Graph.get(keyActivy).ChildActivity;
+                const PreviousId = this.Graph.get(keyActivy).ChildActivity;
 
                 /**
                  * * Check The Length Of Previous Value That Been Recently Get
@@ -408,7 +405,7 @@ export class CPM {
                             PreviousId[Object.keys(PreviousId)[0]]
                                 .projectActivityId
                             // .projectActivity
-                        ]?.lf;
+                        ].lf;
 
                     if (!LFCHeck) {
                         /**
@@ -440,8 +437,7 @@ export class CPM {
                      */
                     this.memoize[keyActivy].ls =
                         this.memoize[keyActivy].lf -
-                        (Act[keyActivy]?.timeToComplete ??
-                            this.Graph.get(keyActivy).timeToComplete);
+                        this.Graph.get(keyActivy).timeToComplete;
                 }
 
                 /**
@@ -506,8 +502,7 @@ export class CPM {
                      */
                     this.memoize[keyActivy].ls =
                         this.memoize[keyActivy].lf -
-                        (Act[keyActivy]?.timeToComplete ??
-                            this.Graph.get(keyActivy).timeToComplete);
+                        this.Graph.get(keyActivy).timeToComplete;
                 }
             }
         }
@@ -522,12 +517,10 @@ export class CPM {
          * * Loop On Every Activity From arrReverse
          */
         for (const [currentId, _values] of arrReverse) {
-            if (!Act[currentId]?.child || this.Graph.get(currentId).child) {
+            if (!this.Graph.get(currentId).child) {
                 this.memoize[currentId].lf = this.LongestTime;
                 this.memoize[currentId].ls =
-                    this.LongestTime -
-                    (Act[currentId]?.timeToComplete ??
-                        this.Graph.get(currentId).timeToComplete);
+                    this.LongestTime - this.Graph.get(currentId).timeToComplete;
             }
 
             if (this.convertResult[currentId].child) {
@@ -573,11 +566,11 @@ export class CPM {
                     const GetLSValue: Array<number> = [];
 
                     for (const key in PreviousId) {
-                        const num = this.memoize[key].ls;
+                        const num = this.memoize[key]?.ls;
 
                         if (!num) {
                             this.backwardPass(Act, false, key);
-                            const nums = this.memoize[key]?.ls;
+                            const nums = this.memoize[key].ls;
                             GetLSValue.push(nums);
                         }
                         if (num) {
@@ -623,9 +616,9 @@ export class CPM {
         Stop = false,
         keyActivy?: string // it mean can be undefined
     ) {
-        if (Stop) {
-            return;
-        }
+        // if (Stop) {
+        //     return;
+        // }
         // N^2
         try {
             if (keyActivy) {
@@ -634,28 +627,22 @@ export class CPM {
                     this.memoize[keyAct] = {} as CPM;
                 }
 
-                if (
-                    (!Act[keyAct]?.parent || !this.Graph.get(keyAct).parent) &&
-                    Object.keys(this.memoize[keyAct]).length === 0
-                ) {
+                if (!this.Graph.get(keyAct).parent) {
                     this.memoize[keyAct].es = 0;
                     this.memoize[keyAct].ef =
-                        (Act[keyAct]?.timeToComplete ??
-                            this.Graph.get(keyAct).timeToComplete) + 0;
+                        this.Graph.get(keyAct).timeToComplete + 0;
                     return;
                 }
 
-                if (Act[keyAct]?.parent || this.Graph.get(keyAct).parent) {
-                    const PreviousId =
-                        Act[keyAct]?.ParentActivity ??
-                        this.Graph.get(keyAct).ParentActivity; // Yang Terhubung
+                if (this.Graph.get(keyAct).parent) {
+                    const PreviousId = this.Graph.get(keyAct).ParentActivity; // Yang Terhubung
                     if (Object.keys(PreviousId).length <= 1) {
                         const EFCHeck =
                             this.memoize[
                                 PreviousId[Object.keys(PreviousId)[0]]
                                     .projectActivityId
                                 // .projectActivity
-                            ]?.ef;
+                            ].ef;
 
                         if (!EFCHeck) {
                             /**
@@ -679,8 +666,7 @@ export class CPM {
                             ].ef;
                         this.memoize[keyAct].ef =
                             this.memoize[keyAct].es +
-                            (Act[keyAct]?.timeToComplete ??
-                                this.Graph.get(keyAct).timeToComplete);
+                            this.Graph.get(keyAct).timeToComplete;
                     }
 
                     if (Object.keys(PreviousId).length >= 2) {
@@ -691,7 +677,7 @@ export class CPM {
 
                             if (!num) {
                                 this.forwardPass(Act, false, key);
-                                const nums = this.memoize[key]?.ef;
+                                const nums = this.memoize[key].ef;
                                 GetEFValue.push(nums);
                             }
 
@@ -704,8 +690,7 @@ export class CPM {
                         this.memoize[keyAct].es = Math.max(...GetEFValue);
                         this.memoize[keyAct].ef =
                             this.memoize[keyAct].es +
-                            (Act[keyAct]?.timeToComplete ??
-                                this.Graph.get(keyAct).timeToComplete);
+                            this.Graph.get(keyAct).timeToComplete;
                         // }
                     }
                 }
@@ -724,8 +709,7 @@ export class CPM {
                 ) {
                     this.memoize[currentId].es = 0;
                     this.memoize[currentId].ef =
-                        (Act[currentId]?.timeToComplete ??
-                            this.Graph.get(currentId).timeToComplete) + 0;
+                        this.Graph.get(currentId).timeToComplete + 0;
                     continue;
                 }
 
@@ -799,7 +783,8 @@ export class CPM {
 
             return;
         } catch (error) {
-            throw Error('Error');
+            this.Stop = true;
+            return;
         }
     }
 
@@ -826,12 +811,6 @@ export class CPM {
             if (lf - ef === 0) {
                 this.memoize[iterator].f = lf - ef;
                 this.memoize[iterator].critical = true;
-            } else if (ls - es === 0) {
-                this.memoize[iterator].f = ls - es;
-                this.memoize[iterator].critical = true;
-            } else if (lf - ef < 0) {
-                this.memoize[iterator].f = ls - es;
-                this.memoize[iterator].critical = false;
             } else {
                 this.memoize[iterator].f = lf - ef;
                 this.memoize[iterator].critical = false;
@@ -848,18 +827,14 @@ export class CPM {
 
     //#region GetResult
     public getDeadLine(): number {
-        // console.log(this.LongestTime);
         return this.LongestTime;
     }
 
     public getCalculate() {
-        // console.log(this.project);
-        // console.log(this.memoize);
         return this.memoize;
     }
 
     public getDate() {
-        // console.log(this.EndDate);
         return this.EndDate;
     }
 
