@@ -55,6 +55,9 @@
     },
     "transformIgnorePatterns": [
       "node_modules/(?!variables/.*)"
+    ],
+    "collectCoverageFrom": [
+      "common/cpm/calculate.cpm.config.ts"
     ]
   },
   "name": "ApiExpressPMA",

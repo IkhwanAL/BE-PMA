@@ -136,14 +136,14 @@ class ProjectActivityDao {
                         SavedId.push(update.subDetailProjectActivityId);
                     }
 
-                    // const deleteData =
-                    //     await QueryPrisma.subdetailprojectactivity.deleteMany({
-                    //         where: {
-                    //             subDetailProjectActivityId: {
-                    //                 notIn: SavedId,
-                    //             },
-                    //         },
-                    //     });
+                    await QueryPrisma.subdetailprojectactivity.deleteMany({
+                        where: {
+                            subDetailProjectActivityId: {
+                                notIn: SavedId,
+                            },
+                            detailProyekId: idProjectActivity,
+                        },
+                    });
                 };
 
                 const UpdateUserTaskFromAssignee = async (data: number[]) => {

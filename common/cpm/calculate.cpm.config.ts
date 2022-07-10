@@ -2,7 +2,7 @@ import { project, projectactivity, user, userteam } from '@prisma/client';
 
 import moment from 'moment';
 
-export interface CPM {
+export interface ICPM {
     es: number;
     ef: number;
     ls: number;
@@ -32,7 +32,7 @@ export class CPM {
     /**
      * * Memoize Variable That Activity Is Already Calculated
      */
-    private memoize: { [key: string]: CPM } = {};
+    private memoize: { [key: string]: ICPM } = {};
 
     private convertResult: {
         [key: string]: projectactivity & {
@@ -359,9 +359,9 @@ export class CPM {
         /**
          * * Used For Stopping From Infinite Lopp
          */
-        // if (Stop) {
-        //     return;
-        // }
+        if (Stop) {
+            return;
+        }
 
         /**
          * * If Paramater keyActivity is Exists
@@ -404,8 +404,7 @@ export class CPM {
                         this.memoize[
                             PreviousId[Object.keys(PreviousId)[0]]
                                 .projectActivityId
-                            // .projectActivity
-                        ].lf;
+                        ]?.lf;
 
                     if (!LFCHeck) {
                         /**
@@ -457,7 +456,7 @@ export class CPM {
                         /**
                          * * Get The Ls
                          */
-                        const num = this.memoize[key].ls;
+                        const num = this.memoize[key]?.ls;
 
                         /**
                          * * If LS isn`t Exist
@@ -476,7 +475,7 @@ export class CPM {
                              * * After Calculation
                              * * Get The Value
                              */
-                            const nums = this.memoize[key]?.ls;
+                            const nums = this.memoize[key].ls;
                             /**
                              * * Store It to Array
                              */
@@ -527,9 +526,6 @@ export class CPM {
                 const PreviousId = Act[currentId].ChildActivity;
 
                 if (Object.keys(PreviousId).length <= 1) {
-                    const id =
-                        PreviousId[Object.keys(PreviousId)[0]]
-                            .projectActivityId;
                     const LFCHeck =
                         this.memoize[
                             PreviousId[Object.keys(PreviousId)[0]]
@@ -616,15 +612,15 @@ export class CPM {
         Stop = false,
         keyActivy?: string // it mean can be undefined
     ) {
-        // if (Stop) {
-        //     return;
-        // }
+        if (Stop) {
+            return;
+        }
         // N^2
         try {
             if (keyActivy) {
                 const keyAct = keyActivy;
                 if (!this.memoize[keyAct]) {
-                    this.memoize[keyAct] = {} as CPM;
+                    this.memoize[keyAct] = {} as ICPM;
                 }
 
                 if (!this.Graph.get(keyAct).parent) {
@@ -637,12 +633,15 @@ export class CPM {
                 if (this.Graph.get(keyAct).parent) {
                     const PreviousId = this.Graph.get(keyAct).ParentActivity; // Yang Terhubung
                     if (Object.keys(PreviousId).length <= 1) {
+                        // const id =
+                        //     PreviousId[Object.keys(PreviousId)[0]]
+                        //         .projectActivityId;
                         const EFCHeck =
                             this.memoize[
                                 PreviousId[Object.keys(PreviousId)[0]]
                                     .projectActivityId
                                 // .projectActivity
-                            ].ef;
+                            ]?.ef;
 
                         if (!EFCHeck) {
                             /**
@@ -700,11 +699,10 @@ export class CPM {
 
             for (const [currentId, _values] of this.Graph) {
                 if (!this.memoize[currentId]) {
-                    this.memoize[currentId] = {} as CPM;
+                    this.memoize[currentId] = {} as ICPM;
                 }
                 if (
-                    (!this.Graph.get(currentId).parent ||
-                        this.Graph.get(currentId).parent == '') &&
+                    !this.Graph.get(currentId).parent &&
                     Object.keys(this.memoize[currentId]).length === 0
                 ) {
                     this.memoize[currentId].es = 0;
@@ -762,14 +760,14 @@ export class CPM {
 
                         for (const key in PreviousId) {
                             const num = this.memoize[key]?.ef;
-                            if (num) {
-                                GetEFValue.push(num);
-                            }
-
+                            // console.log(num);
                             if (!num) {
                                 this.forwardPass(Act, false, key);
                                 const nums = this.memoize[key]?.ef;
                                 GetEFValue.push(nums);
+                            }
+                            if (num) {
+                                GetEFValue.push(num);
                             }
                         }
 

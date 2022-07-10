@@ -2,7 +2,7 @@ import { CPM } from '../common/cpm/calculate.cpm.config';
 import projectDao from '../project/daos/project.dao';
 
 const idDataToTest_Fail = 1;
-const idDataToTest_Complete = 2;
+const idDataToTest_Complete = 6;
 const idDataToTest_Test = 3;
 
 describe('Critical Path Method Dapat menentukan batas waktu pengerjaan', () => {
@@ -20,7 +20,7 @@ describe('Critical Path Method Dapat menentukan batas waktu pengerjaan', () => {
         let one = await projectDao.getOneWithProjectId(idDataToTest_Complete);
 
         one = {
-            projectactivity: one.projectactivity, // Mengurangi Value Aktifitas Kurang Dari 2
+            projectactivity: one.projectactivity.slice(0, 1), // Mengurangi Value Aktifitas Kurang Dari 2
             userteam: one.userteam,
             createdAt: one.createdAt,
             deadline: one.deadline,
