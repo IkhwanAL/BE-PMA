@@ -1441,6 +1441,11 @@ cookie@0.5.0:
   resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.5.0.tgz#d1f5d71adec6558c58f389987c366aa47e994f8b"
   integrity sha512-YZ3GUyn/o8gfKJlnlX7g7xq4gyO6OSuhGPKaaGssGB2qgDUS0gPgtTvoyZLTt9Ab6dC4hfc9dV5arkvc/OCmrw==
 
+core-js@^3.17.3:
+  version "3.23.4"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.23.4.tgz#92d640faa7f48b90bbd5da239986602cfc402aa6"
+  integrity sha512-vjsKqRc1RyAJC3Ye2kYqgfdThb3zYnx9CrqoCcjMOENMtQPC7ZViBvlDxwYU/2z2NI/IPuiXw5mT4hWhddqjzQ==
+
 cors@^2.8.5:
   version "2.8.5"
   resolved "https://registry.yarnpkg.com/cors/-/cors-2.8.5.tgz#eac11da51592dd86b9f06f6e7ac293b3df875d29"
@@ -2355,6 +2360,14 @@ jest-config@^28.1.2:
     pretty-format "^28.1.1"
     slash "^3.0.0"
     strip-json-comments "^3.1.1"
+
+jest-coverage-to-csv@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/jest-coverage-to-csv/-/jest-coverage-to-csv-1.1.1.tgz#d9ba5467e20fd5a13ac178ff9fbb75bc2d5ae754"
+  integrity sha512-fiu/GiLaoksnJzS4/L3oSNHr5h8R+ZaGYxaz1v7ISMypeaxDf7qdbVORrobhNxnFDokdgZy3ld1f7sL+IbA0Eg==
+  dependencies:
+    core-js "^3.17.3"
+    yargs "^17.1.1"
 
 jest-diff@^28.1.1:
   version "28.1.1"
@@ -4124,7 +4137,7 @@ yargs-parser@^21.0.0, yargs-parser@^21.0.1:
   resolved "https://registry.yarnpkg.com/yargs-parser/-/yargs-parser-21.0.1.tgz#0267f286c877a4f0f728fceb6f8a3e4cb95c6e35"
   integrity sha512-9BK1jFpLzJROCI5TzwZL/TU4gqjK5xiHV/RfWLOahrjAko/e4DJkRDZQXfvqAsiZzzYhgAzbgz6lg48jcm4GLg==
 
-yargs@^17.3.1:
+yargs@^17.1.1, yargs@^17.3.1:
   version "17.5.1"
   resolved "https://registry.yarnpkg.com/yargs/-/yargs-17.5.1.tgz#e109900cab6fcb7fd44b1d8249166feb0b36e58e"
   integrity sha512-t6YAJcxDkNX7NFYiVtKvWUz8l+PaKTLiL63mJYWR2GnHq2gjEWISzsLp9wg3aY36dY1j+gfIEL3pIF+XlJJfbA==

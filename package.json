@@ -35,6 +35,7 @@
     "@types/shortid": "^0.0.29",
     "cross-env": "^7.0.3",
     "jest": "^28.1.2",
+    "jest-coverage-to-csv": "^1.1.1",
     "jest-mock-extended": "^2.0.6",
     "nodemon": "^2.0.15",
     "source-map-support": "^0.5.21",
@@ -44,13 +45,18 @@
   },
   "jest": {
     "collectCoverage": true,
-    
     "coverageReporters": [
       "json",
       "html",
       "clover",
+      "cobertura",
       "lcov",
-      ["text", {"skipFull": true}]
+      [
+        "text",
+        {
+          "skipFull": true
+        }
+      ]
     ],
     "preset": "ts-jest",
     "testEnvironment": "node",
@@ -63,7 +69,6 @@
     "collectCoverageFrom": [
       "common/cpm/calculate.cpm.config.ts"
     ]
-
   },
   "name": "ApiExpressPMA",
   "version": "1.0.0",
