@@ -1,9 +1,12 @@
+import moment from 'moment';
 import { CPM } from '../common/cpm/calculate.cpm.config';
 import projectDao from '../project/daos/project.dao';
+import projectService from '../project/service/project.service';
+import projectActivityDao from '../projectActivity/daos/projectActivity.dao';
 
 const idDataToTest_Fail = 1;
 const idDataToTest_Complete = 6;
-const idDataToTest_Test = 3;
+const idDataToTest_Test = 10;
 
 describe('Critical Path Method Dapat menentukan batas waktu pengerjaan', () => {
     test('sistem seharusnya dapat menghentikan kalkulasi yang menyebabkan perulangan tak terbatas', async () => {
@@ -42,7 +45,7 @@ describe('Critical Path Method Dapat menentukan batas waktu pengerjaan', () => {
     });
 
     test('sistem seharusnya dapat menentukan nilai ef, es', async () => {
-        const one = await projectDao.getOneWithProjectId(idDataToTest_Complete);
+        const one = await projectDao.getOneWithProjectId(idDataToTest_Test);
 
         const cpm = new CPM(one, one.startDate);
 
@@ -67,7 +70,39 @@ describe('Critical Path Method Dapat menentukan batas waktu pengerjaan', () => {
 
         expect(cpm.getDate()).toBeDefined();
         expect(cpm.getDeadLine()).not.toEqual(0);
-        // expect(cpm.getDate()).toEqual(new Date('2022-09-22T00:00:00.000Z'));
+    });
+    test('sistem seharusnya bisa menghitung jika ada perubahan waktu pada aktifitas', async () => {
+        // Id 52 Dimiliki Oleh Id Project Id 6
+        await projectActivityDao.patchProjectActivityById(52, {
+            timeToComplete: 10,
+            subdetailprojectactivity: [],
+            usertaskfromassignee: [],
+        });
+
+        const one = await projectDao.getOneWithProjectId(idDataToTest_Complete);
+
+        const cpm = new CPM(one, one.startDate);
+
+        cpm.calculate();
+
+        expect(cpm.getDate()).toBeDefined();
+        expect(cpm.getDeadLine()).not.toEqual(0);
+
+        // Tanggal Mulai Berubah
+        await projectService.patchProject(4, idDataToTest_Complete, {
+            startDate: moment('2022-07-15').toDate(),
+        });
+
+        const oneAgain = await projectDao.getOneWithProjectId(
+            idDataToTest_Complete
+        );
+
+        const cpmAgain = new CPM(oneAgain, oneAgain.startDate);
+
+        cpmAgain.calculate();
+
+        expect(cpm.getDate()).toBeDefined();
+        expect(cpm.getDeadLine()).not.toEqual(0);
     });
 });
 

@@ -1,4 +1,4 @@
-import { project, projectactivity, user, userteam } from '@prisma/client';
+import { project, projectactivity, userteam } from '@prisma/client';
 
 import moment from 'moment';
 

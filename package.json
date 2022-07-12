@@ -44,9 +44,13 @@
   },
   "jest": {
     "collectCoverage": true,
+    
     "coverageReporters": [
       "json",
-      "html"
+      "html",
+      "clover",
+      "lcov",
+      ["text", {"skipFull": true}]
     ],
     "preset": "ts-jest",
     "testEnvironment": "node",
@@ -59,6 +63,7 @@
     "collectCoverageFrom": [
       "common/cpm/calculate.cpm.config.ts"
     ]
+
   },
   "name": "ApiExpressPMA",
   "version": "1.0.0",
