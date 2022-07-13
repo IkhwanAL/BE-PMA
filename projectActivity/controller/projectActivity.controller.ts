@@ -207,7 +207,7 @@ class ProjectACtivityController {
                     rest,
                     id
                 );
-
+            // console.log(projectActivity);
             const FindSubDetailActivity =
                 await subProjectActivityDao.getBasedOnIdProjectActivity(
                     IdProjectActivityParams

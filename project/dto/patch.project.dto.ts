@@ -4,4 +4,5 @@ export interface PatchProjectDto {
     deadline?: Date;
     deadlineInString?: string;
     userOwner?: string;
+    startDate?: Date;
 }
