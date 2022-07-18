@@ -96,6 +96,7 @@ class ProjectController extends CommonController {
 
             return HttpResponse.Ok(res, {});
         } catch (error) {
+            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };

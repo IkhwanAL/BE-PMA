@@ -17,7 +17,7 @@ model activity {
   subDetailProjectActivityId Int?
   createdAt                  DateTime?
   projectactivity            projectactivity?          @relation(fields: [projectActivityId], references: [projectActivityId], onUpdate: SetNull, map: "Activity_projectActivityId_fkey")
-  project                    project?                  @relation(fields: [projectId], references: [projectId], onUpdate: SetNull, map: "Activity_projectId_fkey")
+  project                    project?                  @relation(fields: [projectId], references: [projectId], onDelete: Cascade, map: "Activity_projectId_fkey")
   subdetailprojectactivity   subdetailprojectactivity? @relation(fields: [subDetailProjectActivityId], references: [subDetailProjectActivityId], onUpdate: SetNull, map: "Activity_subDetailProjectActivityId_fkey")
   user                       user                      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Activity_userId_fkey")
 
@@ -52,6 +52,7 @@ model projectactivity {
   critical                 Boolean?
   progress                 Float                      @default(0)
   position                 projectactivity_position   @default(To_Do)
+  startDate                DateTime?
   timeToComplete           Int
   status                   Boolean                    @default(false)
   description              String
@@ -124,15 +125,22 @@ model userteam {
 }
 
 model link {
-  linkId      Int       @id @default(autoincrement())
-  link        String    @db.VarChar(255)
-  description String    @db.VarChar(255)
-  expiredAt   DateTime?
-  createdAt   DateTime?
+  linkId      Int      @id @default(autoincrement())
   userId      Int
-  user        user      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "userId_Link")
+  createdAt   DateTime @default(now())
+  link        String   @db.VarChar(255)
+  description String   @db.VarChar(255)
+  expiredAt   DateTime @default(now())
+  user        user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Link_userId_fkey")
 
-  @@index([userId], map: "userId_Link")
+  @@index([userId], map: "Link_userId_fkey")
+}
+
+model session {
+  id        String   @id
+  sid       String   @unique(map: "Session_sid_key")
+  data      String
+  expiresAt DateTime @default(now())
 }
 
 enum projectactivity_position {
