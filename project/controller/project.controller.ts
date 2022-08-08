@@ -230,7 +230,7 @@ class ProjectController extends CommonController {
                 NewProject,
                 res
             );
-            console;
+
             return HttpResponse.Ok(res, NewNewProject);
         } catch (error) {
             return HttpResponse.InternalServerError(res);

@@ -80,8 +80,8 @@ class ProjectDao {
             (projectactivity & {
                 subdetailprojectactivity: subdetailprojectactivity[];
             })[]
-        >`SELECT * FROM projectactivity WHERE projectId = ${idProject} ORDER BY CHAR_LENGTH(parent)`;
-
+        >`SELECT * FROM projectactivity WHERE projectId = ${idProject} ORDER BY updatedAt DESC`;
+        // console.log(ProjectActivity);
         for (const iterator in ProjectActivity) {
             const Sub = await MysqlPrisma.subdetailprojectactivity.findMany({
                 where: {
@@ -312,6 +312,11 @@ class ProjectDao {
                         username: true,
                     },
                 },
+                projectactivity: {
+                    select: {
+                        progress: true,
+                    },
+                },
                 userteam: {
                     select: {
                         user: {
@@ -356,6 +361,11 @@ class ProjectDao {
                 activity: {
                     orderBy: {
                         createdAt: 'asc',
+                    },
+                },
+                projectactivity: {
+                    select: {
+                        progress: true,
                     },
                 },
                 user: {

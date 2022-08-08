@@ -227,7 +227,7 @@ export class CPM {
          */
         const PRACT = this.convertResult;
         /**
-         * * Create A New Node Tree Or A Head
+         * * Create A New Node Graph Or A Head
          */
         const NodeTree = new Map<
             string,
