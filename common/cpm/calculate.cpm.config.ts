@@ -1,6 +1,6 @@
 import { project, projectactivity, userteam } from '@prisma/client';
 
-import moment from 'moment';
+import moment, { Moment } from 'moment';
 
 export interface ICPM {
     es: number;
@@ -9,6 +9,8 @@ export interface ICPM {
     lf: number;
     f: number;
     critical: boolean;
+    date: Date;
+    status: string;
 }
 /**
  * * Using Graph With Memoize
@@ -385,6 +387,7 @@ export class CPM {
                  */
                 this.memoize[keyActivy].ls =
                     this.LongestTime - this.Graph.get(keyActivy).timeToComplete;
+                this.memoize[keyActivy].status = 'END';
             }
             /**
              * * If Child Is Exist From Activity
@@ -520,6 +523,7 @@ export class CPM {
                 this.memoize[currentId].lf = this.LongestTime;
                 this.memoize[currentId].ls =
                     this.LongestTime - this.Graph.get(currentId).timeToComplete;
+                this.memoize[currentId].status = 'END';
             }
 
             if (this.convertResult[currentId].child) {
@@ -624,18 +628,23 @@ export class CPM {
                 }
 
                 if (!this.Graph.get(keyAct).parent) {
+                    const val = this.Graph.get(keyAct).timeToComplete;
                     this.memoize[keyAct].es = 0;
                     this.memoize[keyAct].ef =
                         this.Graph.get(keyAct).timeToComplete + 0;
+                    this.memoize[keyAct].date = moment(this.EndDate)
+                        .add(val, 'days')
+                        .toDate();
+                    this.memoize[keyAct].status = 'START';
                     return;
                 }
 
                 if (this.Graph.get(keyAct).parent) {
                     const PreviousId = this.Graph.get(keyAct).ParentActivity; // Yang Terhubung
                     if (Object.keys(PreviousId).length <= 1) {
-                        // const id =
-                        //     PreviousId[Object.keys(PreviousId)[0]]
-                        //         .projectActivityId;
+                        const ID =
+                            PreviousId[Object.keys(PreviousId)[0]]
+                                .projectActivityId;
                         const EFCHeck =
                             this.memoize[
                                 PreviousId[Object.keys(PreviousId)[0]]
@@ -666,23 +675,35 @@ export class CPM {
                         this.memoize[keyAct].ef =
                             this.memoize[keyAct].es +
                             this.Graph.get(keyAct).timeToComplete;
+
+                        this.memoize[keyAct].date = moment(
+                            this.memoize[ID].date
+                        )
+                            .add(this.Graph.get('' + ID).timeToComplete, 'days')
+                            .toDate();
+                        this.memoize[keyAct].status = 'GOING';
                     }
 
                     if (Object.keys(PreviousId).length >= 2) {
                         const GetEFValue: Array<number> = [];
+                        const GetDateValues: Moment[] = [];
 
                         for (const key in PreviousId) {
                             const num = this.memoize[key]?.ef;
+                            const dates = this.memoize[key]?.date;
 
                             if (!num) {
                                 this.forwardPass(Act, false, key);
                                 const nums = this.memoize[key].ef;
+                                const dates = this.memoize[key]?.date;
                                 GetEFValue.push(nums);
+                                GetDateValues.push(moment(dates));
                             }
 
                             if (num) {
                                 this.forwardPass(Act, true);
                                 GetEFValue.push(num);
+                                GetDateValues.push(moment(dates));
                             }
                         }
                         // if (GetEFValue.length >= 2) {
@@ -690,7 +711,12 @@ export class CPM {
                         this.memoize[keyAct].ef =
                             this.memoize[keyAct].es +
                             this.Graph.get(keyAct).timeToComplete;
-                        // }
+
+                        this.memoize[keyAct].date = moment
+                            .max(GetDateValues)
+                            .add(this.Graph.get(keyAct).timeToComplete, 'days')
+                            .toDate();
+                        this.memoize[keyAct].status = 'GOING';
                     }
                 }
 
@@ -705,15 +731,23 @@ export class CPM {
                     !this.Graph.get(currentId).parent &&
                     Object.keys(this.memoize[currentId]).length === 0
                 ) {
+                    const val = this.Graph.get(currentId).timeToComplete;
                     this.memoize[currentId].es = 0;
                     this.memoize[currentId].ef =
                         this.Graph.get(currentId).timeToComplete + 0;
+                    this.memoize[currentId].date = moment(this.EndDate)
+                        .add(val, 'days')
+                        .toDate();
+                    this.memoize[currentId].status = 'START';
                     continue;
                 }
 
                 if (this.Graph.get(currentId).parent) {
                     const PreviousId = this.Graph.get(currentId).ParentActivity; // Yang Terhubung
                     if (Object.keys(PreviousId).length <= 1) {
+                        const ID =
+                            PreviousId[Object.keys(PreviousId)[0]]
+                                .projectActivityId;
                         /**
                          * * Finding EF Value From Previous Node Or Activity
                          */
@@ -754,20 +788,31 @@ export class CPM {
                         this.memoize[currentId].ef =
                             this.memoize[currentId].es +
                             this.Graph.get(currentId).timeToComplete;
+                        this.memoize[currentId].date = moment(
+                            this.memoize[ID].date
+                        )
+                            .add(this.Graph.get('' + ID).timeToComplete, 'days')
+                            .toDate();
+                        this.memoize[currentId].status = 'GOING';
                     }
                     if (Object.keys(PreviousId).length >= 2) {
                         const GetEFValue: Array<number> = [];
+                        const GetDateValues: Moment[] = [];
 
                         for (const key in PreviousId) {
                             const num = this.memoize[key]?.ef;
+                            const dates = this.memoize[key]?.date;
                             // console.log(num);
                             if (!num) {
                                 this.forwardPass(Act, false, key);
                                 const nums = this.memoize[key]?.ef;
+                                const dates = this.memoize[key]?.date;
                                 GetEFValue.push(nums);
+                                GetDateValues.push(moment(dates));
                             }
                             if (num) {
                                 GetEFValue.push(num);
+                                GetDateValues.push(moment(dates));
                             }
                         }
 
@@ -775,6 +820,15 @@ export class CPM {
                         this.memoize[currentId].ef =
                             this.memoize[currentId].es +
                             this.Graph.get(currentId).timeToComplete;
+
+                        this.memoize[currentId].date = moment
+                            .max(GetDateValues)
+                            .add(
+                                this.Graph.get(currentId).timeToComplete,
+                                'days'
+                            )
+                            .toDate();
+                        this.memoize[currentId].status = 'GOING';
                     }
                 }
             }

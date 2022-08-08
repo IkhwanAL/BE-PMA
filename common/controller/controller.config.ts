@@ -26,10 +26,11 @@ export class CommonController {
         },
         idProject: number
     ): Promise<ProjecType> {
+        // console.log(_project.startDate, 'asd');
         const cpm = new CPM(_project, _project.startDate);
 
         cpm.calculate();
-
+        // console.log(cpm.getCalculate());
         if (cpm.getDeadLine() !== 0) {
             const saveDeadLineProject = await projectDao.patchDeadline(
                 idProject,
@@ -49,6 +50,8 @@ export class CommonController {
                     projectactivity & {
                         f: number;
                         critical: boolean;
+                        stats: string;
+                        timeDate: Date;
                         subdetailprojectactivity: subdetailprojectactivity[];
                     }
                 > = [];
@@ -58,8 +61,10 @@ export class CommonController {
 
                     temp.push({
                         ...iterator,
-                        f: calc.f,
+                        stats: calc.status,
                         critical: calc.critical,
+                        f: calc.f,
+                        timeDate: calc.date,
                     });
                 }
 

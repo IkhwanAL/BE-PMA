@@ -75,7 +75,7 @@ class ProjectDao {
                 userOwner: idUser,
             },
         });
-
+        console.log(Project);
         const ProjectActivity = await MysqlPrisma.$queryRaw<
             (projectactivity & {
                 subdetailprojectactivity: subdetailprojectactivity[];

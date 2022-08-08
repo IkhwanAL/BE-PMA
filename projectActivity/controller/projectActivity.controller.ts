@@ -230,6 +230,16 @@ class ProjectACtivityController {
                 );
             }
 
+            const getProject = await projectService.getOneSmallColumn(
+                req.body.id,
+                req.body.idProject
+            );
+
+            project = {
+                ...getProject,
+                ...project,
+            };
+
             const cpm = new CPM(project, project.startDate);
 
             cpm.calculate();
@@ -339,12 +349,23 @@ class ProjectACtivityController {
                 req.body.id,
                 req.body.idProject
             );
+
             if (!project) {
                 project = await projectService.GetOneRawForUserTeam(
                     req.body.id,
                     req.body.idProject
                 );
             }
+
+            const getProject = await projectService.getOneSmallColumn(
+                req.body.id,
+                req.body.idProject
+            );
+
+            project = {
+                ...getProject,
+                ...project,
+            };
 
             const cpm = new CPM(project, project.startDate);
 
