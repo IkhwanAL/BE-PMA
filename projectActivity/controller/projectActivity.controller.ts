@@ -212,7 +212,7 @@ class ProjectACtivityController {
                 await subProjectActivityDao.getBasedOnIdProjectActivity(
                     IdProjectActivityParams
                 );
-
+            // INi ada adalah test coveras
             const Percentage = await this.CalculateProgress(
                 +IdProjectActivityParams,
                 FindSubDetailActivity
