@@ -207,12 +207,12 @@ class ProjectACtivityController {
                     rest,
                     id
                 );
-            // console.log(projectActivity);
+
             const FindSubDetailActivity =
                 await subProjectActivityDao.getBasedOnIdProjectActivity(
                     IdProjectActivityParams
                 );
-
+            // INi ada adalah test coveras
             const Percentage = await this.CalculateProgress(
                 +IdProjectActivityParams,
                 FindSubDetailActivity
@@ -229,6 +229,16 @@ class ProjectACtivityController {
                     req.body.idProject
                 );
             }
+
+            const getProject = await projectService.getOneSmallColumn(
+                req.body.id,
+                req.body.idProject
+            );
+
+            project = {
+                ...getProject,
+                ...project,
+            };
 
             const cpm = new CPM(project, project.startDate);
 
@@ -339,12 +349,23 @@ class ProjectACtivityController {
                 req.body.id,
                 req.body.idProject
             );
+
             if (!project) {
                 project = await projectService.GetOneRawForUserTeam(
                     req.body.id,
                     req.body.idProject
                 );
             }
+
+            const getProject = await projectService.getOneSmallColumn(
+                req.body.id,
+                req.body.idProject
+            );
+
+            project = {
+                ...getProject,
+                ...project,
+            };
 
             const cpm = new CPM(project, project.startDate);
 

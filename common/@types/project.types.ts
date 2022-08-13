@@ -32,6 +32,8 @@ export type ProjecType = project & {
         f?: number;
         critical?: boolean;
         subdetailprojectactivity: subdetailprojectactivity[];
+        stats?: string;
+        timeDate?: Date;
     })[];
 };
 

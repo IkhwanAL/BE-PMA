@@ -49,6 +49,8 @@ export class CommonController {
                     projectactivity & {
                         f: number;
                         critical: boolean;
+                        stats: string;
+                        timeDate: Date;
                         subdetailprojectactivity: subdetailprojectactivity[];
                     }
                 > = [];
@@ -58,8 +60,10 @@ export class CommonController {
 
                     temp.push({
                         ...iterator,
-                        f: calc.f,
+                        stats: calc.status,
                         critical: calc.critical,
+                        f: calc.f,
+                        timeDate: calc.date,
                     });
                 }
 

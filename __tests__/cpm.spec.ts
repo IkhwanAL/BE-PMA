@@ -73,7 +73,7 @@ describe('Critical Path Method Dapat menentukan batas waktu pengerjaan', () => {
     });
     test('sistem seharusnya bisa menghitung jika ada perubahan waktu pada aktifitas', async () => {
         // Id 52 Dimiliki Oleh Id Project Id 6
-        await projectActivityDao.patchProjectActivityById(52, {
+        await projectActivityDao.patchProjectActivityById(51, {
             timeToComplete: 10,
             subdetailprojectactivity: [],
             usertaskfromassignee: [],

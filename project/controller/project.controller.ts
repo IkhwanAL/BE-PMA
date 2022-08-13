@@ -96,7 +96,6 @@ class ProjectController extends CommonController {
 
             return HttpResponse.Ok(res, {});
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
@@ -165,6 +164,16 @@ class ProjectController extends CommonController {
                 req.body.idProject
             );
 
+            const getProject = await projectService.getOneSmallColumn(
+                req.body.id,
+                req.body.idProject
+            );
+
+            FullDetailProject = {
+                ...getProject,
+                ...FullDetailProject,
+            };
+
             const cpm = new CPM(FullDetailProject, FullDetailProject.startDate);
 
             cpm.calculate();
@@ -224,13 +233,21 @@ class ProjectController extends CommonController {
                     req.body.idProject
                 );
             }
-
+            const getProject = await projectService.getOneSmallColumn(
+                req.body.id,
+                req.body.idProject
+            );
+            project = {
+                ...getProject,
+                ...project,
+            };
             const NewProject = await this.calc(project, req.body.idProject);
+
             const NewNewProject = await this.countProjectActivityProgress(
                 NewProject,
                 res
             );
-            console;
+
             return HttpResponse.Ok(res, NewNewProject);
         } catch (error) {
             return HttpResponse.InternalServerError(res);
