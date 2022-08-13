@@ -54,7 +54,7 @@ app.use(express.json());
 app.use(
     cors({
         credentials: true,
-        origin: 'https://project-management-topaz.vercel.app',
+        origin: '*',
     })
 );
 
