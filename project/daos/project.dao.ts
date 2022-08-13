@@ -75,13 +75,13 @@ class ProjectDao {
                 userOwner: idUser,
             },
         });
-        console.log(Project);
+
         const ProjectActivity = await MysqlPrisma.$queryRaw<
             (projectactivity & {
                 subdetailprojectactivity: subdetailprojectactivity[];
             })[]
         >`SELECT * FROM projectactivity WHERE projectId = ${idProject} ORDER BY updatedAt DESC`;
-        // console.log(ProjectActivity);
+
         for (const iterator in ProjectActivity) {
             const Sub = await MysqlPrisma.subdetailprojectactivity.findMany({
                 where: {

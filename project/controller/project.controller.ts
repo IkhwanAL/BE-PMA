@@ -96,7 +96,6 @@ class ProjectController extends CommonController {
 
             return HttpResponse.Ok(res, {});
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
@@ -244,7 +243,6 @@ class ProjectController extends CommonController {
             };
             const NewProject = await this.calc(project, req.body.idProject);
 
-            // console.log(NewProject, 'asd');
             const NewNewProject = await this.countProjectActivityProgress(
                 NewProject,
                 res
@@ -252,7 +250,6 @@ class ProjectController extends CommonController {
 
             return HttpResponse.Ok(res, NewNewProject);
         } catch (error) {
-            console.log(error);
             return HttpResponse.InternalServerError(res);
         }
     };
