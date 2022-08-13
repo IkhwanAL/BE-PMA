@@ -50,6 +50,7 @@ app.use(cookieParser());
 
 app.use(express.json());
 
+// Cors
 app.use(
     cors({
         credentials: true,
@@ -57,12 +58,12 @@ app.use(
     })
 );
 
-app.use(
-    cors({
-        credentials: true,
-        origin: 'http://localhost:3000',
-    })
-);
+// app.use(
+//     cors({
+//         credentials: true,
+//         origin: 'http://localhost:3000',
+//     })
+// );
 
 const loggerOptions: expressWinston.LoggerOptions = {
     transports: [
