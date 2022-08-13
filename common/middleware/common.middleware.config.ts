@@ -140,7 +140,6 @@ export abstract class CommonMiddleware {
     ) {
         try {
             const leader = await userteamDao.isItLeader(req.body.idProject);
-            // console.log(leader.userId, req.body.id);
             if (leader.userId !== req.body.id) {
                 return HttpResponse.Unauthorized(res);
             }

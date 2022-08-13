@@ -802,7 +802,7 @@ export class CPM {
                         for (const key in PreviousId) {
                             const num = this.memoize[key]?.ef;
                             const dates = this.memoize[key]?.date;
-                            // console.log(num);
+
                             if (!num) {
                                 this.forwardPass(Act, false, key);
                                 const nums = this.memoize[key]?.ef;
