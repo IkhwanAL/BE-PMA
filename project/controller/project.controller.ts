@@ -249,7 +249,7 @@ class ProjectController extends CommonController {
                 NewProject,
                 res
             );
-            console.log(NewNewProject);
+
             return HttpResponse.Ok(res, NewNewProject);
         } catch (error) {
             console.log(error);
